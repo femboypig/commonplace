@@ -17,7 +17,7 @@ const char *image_parse(const void *data, size_t size, struct image *image)
     uint32_t cursor = 32, limit, commands;
     uint64_t entry = 0;
     *image = (struct image){.base = UINT32_MAX};
-    if (size < 32 || read32(bytes) != 0xfeedfacf ||
+    if (size < 32 || size > UINT32_MAX || read32(bytes) != 0xfeedfacf ||
         read32(bytes + 4) != 0x1000007 || read32(bytes + 12) != 2)
         return "expected an x86_64 Mach-O executable";
     commands = read32(bytes + 16);
