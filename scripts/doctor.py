@@ -5,12 +5,13 @@ import fcntl
 from pathlib import Path
 import platform
 import shutil
+import subprocess
 import sys
 
 REQUIRED = (
     'clang', 'clang++', 'make', 'bison', 'flex', 'autoreconf', 'libtoolize',
     'curl', 'python3', 'unifdef', 'qemu-system-x86_64', 'qemu-img', 'mformat',
-    'mcopy', 'cpio', 'patch', 'llvm-readobj',
+    'mcopy', 'cpio', 'patch', 'llvm-readobj', 'pkgconf',
 )
 
 
@@ -25,6 +26,13 @@ def main():
         print(f'{tool}: {path or "missing"}')
         if not path:
             missing.append(tool)
+    if shutil.which('pkgconf'):
+        for library in ('libbsd', 'uuid'):
+            found = subprocess.run(['pkgconf', '--exists', library]).returncode == 0
+            print(f'{library}: {"available" if found else "missing"}')
+            if not found:
+                missing.append(library)
+    print('csh (kernel configuration): ' + (shutil.which('csh') or 'missing; install tcsh'))
     firmware = list(Path('/usr/share/edk2-ovmf').rglob('OVMF_CODE*.fd'))
     print('ovmf: ' + (', '.join(str(p) for p in firmware) or 'missing'))
     if not firmware:
