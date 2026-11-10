@@ -41,7 +41,8 @@ static size_t device_tree(void *buffer, size_t capacity, const char *command_lin
         stop("ACPI root pointer not found");
     tree_init(&tree, buffer, capacity);
     tree_begin(&tree, "/");
-    tree_property(&tree, "compatible", "ACPI", 5);
+    const char compatible[] = "commonplace,q35\0ACPI";
+    tree_property(&tree, "compatible", compatible, sizeof(compatible));
     tree_property(&tree, "model", "commonplace", 12);
     tree_begin(&tree, "chosen");
     size_t length = 0;

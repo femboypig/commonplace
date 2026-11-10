@@ -1,0 +1,26 @@
+--- a/iokit/conf/files
++++ b/iokit/conf/files
+@@ -56,6 +56,8 @@
+ iokit/Kernel/IORangeAllocator.cpp			optional iokitcpp
+ iokit/Kernel/IOSubMemoryDescriptor.cpp			optional iokitcpp
+ 
++commonplace/platform/CommonplacePlatform.cpp		optional iokitcpp
++
+ iokit/Kernel/IOPlatformExpert.cpp			optional iokitcpp
+ 
+ iokit/Kernel/IOCPU.cpp					optional iokitcpp
+--- a/iokit/KernelConfigTables.cpp
++++ b/iokit/KernelConfigTables.cpp
+@@ -35,6 +35,12 @@
+ const char * gIOKernelConfigTables =
+ "("
+ "   {"
++"     'IOClass'         = CommonplacePlatform;"
++"     'IOProviderClass' = IOPlatformExpertDevice;"
++"     'IONameMatch'     = 'commonplace,q35';"
++"     'IOProbeScore'    = 1000:32;"
++"   },"
++"   {"
+ "     'IOClass'         = IOPanicPlatform;"
+ "     'IOProviderClass' = IOPlatformExpertDevice;"
+ "     'IOProbeScore'    = 0:32;"

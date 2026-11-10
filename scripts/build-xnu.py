@@ -51,6 +51,7 @@ def main():
     if not source.exists():
         shutil.copytree(ROOT / 'sources' / 'xnu', source, symlinks=True)
     apply_source_patches(source)
+    shutil.copytree(ROOT / 'kernel', source / 'commonplace', dirs_exist_ok=True)
     setup = source / 'SETUP' / 'Makefile'
     contents = (ROOT / 'sources/xnu/SETUP/Makefile').read_text()
     start = contents.index('SETUP_SUBDIRS =')
