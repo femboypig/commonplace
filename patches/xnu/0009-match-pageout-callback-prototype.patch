@@ -1,0 +1,16 @@
+--- a/osfmk/vm/vm_pageout.c
++++ b/osfmk/vm/vm_pageout.c
+@@ -1,3 +1,4 @@
++/* commonplace: match pageout callback prototype (2026-11-10). */
+ /*
+  * Copyright (c) 2000-2014 Apple Inc. All rights reserved.
+  *
+@@ -4134,7 +4135,7 @@
+  * called once per-second via "compute_averages"
+  */
+ void
+-compute_pageout_gc_throttle()
++compute_pageout_gc_throttle(__unused void *arg)
+ {
+ 	if (vm_pageout_considered_page != vm_pageout_considered_page_last) {
+ 
