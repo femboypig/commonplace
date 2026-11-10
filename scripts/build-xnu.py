@@ -124,6 +124,7 @@ def main():
         # Keep newer diagnostic groups visible without making them fatal for
         # Apple's older source. The upstream warning policy remains enabled.
         'OTHER_CFLAGS': ' '.join((
+            '-UTARGET_OS_MAC',
             '-Wno-error=cast-function-type-mismatch',
             '-Wno-error=c99-designator',
             '-Wno-error=misleading-indentation',
@@ -132,6 +133,12 @@ def main():
             '-Wno-error=void-pointer-to-enum-cast',
             '-Wno-error=unused-but-set-variable',
             '-Wno-error=unused-but-set-global',
+            '-Wno-error=unused-but-set-parameter',
+            '-Wno-error=deprecated-declarations',
+            '-Wno-error=missing-designated-field-initializers',
+            '-Wno-error=address-of-packed-member',
+            '-Wno-error=cast-align',
+            '-Wno-error=single-bit-bitfield-constant-conversion',
         )),
         'OTHER_CXXFLAGS': '-std=gnu++98',
         'CC': str(tools / 'x86_64-apple-darwin15-clang') + ' -std=gnu99',
