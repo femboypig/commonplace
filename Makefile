@@ -2,7 +2,7 @@
 PYTHON ?= python3
 JOBS ?= 2
 
-.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot test
+.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd test
 help:
 	@printf '%s\n' 'commonplace — darwin/x86_64' \
 	  'make doctor       check host tools and virtualization' \
@@ -17,6 +17,7 @@ help:
 	  'make check-kernel validate the existing kernel artifact' \
 	  'make loader       build the multiboot darwin loader' \
 	  'make boot         observe a bounded qemu boot and save diagnostics' \
+	  'make boot-bsd     require BSD to reach root device discovery' \
 	  'make test         run targeted regression tests'
 
 fetch:
@@ -55,6 +56,9 @@ loader:
 
 boot: loader check-kernel
 	$(PYTHON) scripts/boot-qemu.py
+
+boot-bsd: loader check-kernel
+	$(PYTHON) scripts/boot-qemu.py --seconds 150 --require-root-wait
 
 test:
 	$(PYTHON) -m unittest discover -s tests -v

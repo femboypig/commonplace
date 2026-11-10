@@ -18,6 +18,7 @@ def boot_state(log):
     return {
         'kernel_entered': 'Darwin Kernel Version 15.6.0:' in log,
         'platform_started': 'commonplace: q35 bootstrap platform started' in log,
+        'crypto_started': 'commonplace: crypto provider started' in log,
         'waiting_for_root': 'Still waiting for root device' in log,
         'fatal': any(marker in log for marker in
                      ('panic(cpu ', 'Panic initiated,', 'boot stopped:')),
@@ -30,6 +31,8 @@ def main():
     parser.add_argument('--memory', type=int, default=1024, help='guest memory in MiB')
     parser.add_argument('--output', type=Path, default=ROOT / 'build/boot',
                         help='directory for this run\'s logs and diagnostics')
+    parser.add_argument('--require-root-wait', action='store_true',
+                        help='require BSD to reach the missing root device loop')
     options = parser.parse_args()
     if not 1 <= options.seconds <= 3600 or not 512 <= options.memory <= 8192:
         parser.error('seconds must be 1..3600 and memory must be 512..8192 MiB')
@@ -57,12 +60,16 @@ def main():
             monitor = None
             try:
                 monitor = Monitor(path, process)
-                deadline = time.monotonic() + options.seconds
+                started = time.monotonic()
+                deadline = started + options.seconds
                 while time.monotonic() < deadline and process.poll() is None:
-                    if serial.exists() and boot_state(serial.read_text(errors='replace'))['fatal']:
-                        break
+                    if serial.exists():
+                        state = boot_state(serial.read_text(errors='replace'))
+                        if state['fatal'] or (options.require_root_wait and state['waiting_for_root']):
+                            break
                     time.sleep(min(0.25, max(0, deadline - time.monotonic())))
-                diagnostics = {'command': command, 'seconds': options.seconds,
+                diagnostics = {'command': command, 'timeout_seconds': options.seconds,
+                               'elapsed_seconds': round(time.monotonic() - started, 3),
                                'status': monitor.command('query-status'),
                                'sha256': {str(p.relative_to(ROOT)):
                                           hashlib.sha256(p.read_bytes()).hexdigest()
@@ -96,7 +103,11 @@ def main():
         raise SystemExit('boot failed: kernel version banner not reached')
     if not diagnostics['boot']['platform_started']:
         raise SystemExit('boot failed: q35 platform did not start')
-    print('bootstrap milestones reached: darwin kernel and q35 platform')
+    if options.require_root_wait and not (diagnostics['boot']['waiting_for_root'] and
+                                         diagnostics['boot']['crypto_started']):
+        raise SystemExit('boot failed: BSD did not reach root device discovery')
+    milestone = 'BSD root device discovery' if options.require_root_wait else 'q35 platform'
+    print('bootstrap milestones reached: darwin kernel and ' + milestone)
 
 
 if __name__ == '__main__':
