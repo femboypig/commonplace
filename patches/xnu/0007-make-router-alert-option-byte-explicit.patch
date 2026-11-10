@@ -1,0 +1,16 @@
+--- a/bsd/netinet/igmp.c
++++ b/bsd/netinet/igmp.c
+@@ -1,3 +1,4 @@
++/* commonplace: preserve the router alert byte explicitly (2026-11-10). */
+ /*
+  * Copyright (c) 2000-2013 Apple Inc. All rights reserved.
+  *
+@@ -555,7 +556,7 @@
+ 	MGET(m, M_WAITOK, MT_DATA);
+ 	p = mtod(m, struct ipoption *);
+ 	p->ipopt_dst.s_addr = INADDR_ANY;
+-	p->ipopt_list[0] = IPOPT_RA;	/* Router Alert Option */
++	p->ipopt_list[0] = (char)IPOPT_RA;	/* Router Alert Option */
+ 	p->ipopt_list[1] = 0x04;	/* 4 bytes long */
+ 	p->ipopt_list[2] = IPOPT_EOL;	/* End of IP option list */
+ 	p->ipopt_list[3] = 0x00;	/* pad byte */
