@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "target": "x86_64-apple-darwin15",
+  "distribution": {
+    "repository": "apple-oss-distributions/distribution-macOS",
+    "tag": "os-x-10116",
+    "revision": "ef0cda0e10a95a7386e80910f2ed9bba3d2ec628"
+  },
+  "sources": {
+    "xnu": {
+      "repository": "apple-oss-distributions/xnu",
+      "tag": "xnu-3248.60.10",
+      "revision": "bf8b17120aa4efaffabea7bff8f4032b7db86442",
+      "url": "https://codeload.github.com/apple-oss-distributions/xnu/tar.gz/refs/tags/xnu-3248.60.10",
+      "sha256": "a4f646c6d34814df5a729a2c0b380c541dd5282b5d82e35e31bf66c034c2b761"
+    },
+    "bootstrap_cmds": {
+      "repository": "apple-oss-distributions/bootstrap_cmds",
+      "tag": "bootstrap_cmds-96.20.2",
+      "revision": "8d9864ad6114ff9d58652535c7c0aa3edf9abae3",
+      "url": "https://codeload.github.com/apple-oss-distributions/bootstrap_cmds/tar.gz/8d9864ad6114ff9d58652535c7c0aa3edf9abae3",
+      "sha256": "764c11eab346f86ab146762100f23febbe0c47a345c63de9e9316026b4f6e389"
+    },
+    "mig_host_compat": {
+      "repository": "markmentovai/bootstrap_cmds",
+      "revision": "f337e600741638896fb6056ce87c6479f74b89a3",
+      "url": "https://codeload.github.com/markmentovai/bootstrap_cmds/tar.gz/f337e600741638896fb6056ce87c6479f74b89a3",
+      "sha256": "aba7ae76ecfc18e895f6f40c39d2b0bdd330aa535bb8bf9703d08b13772be6d0"
+    },
+    "cctools": {
+      "repository": "tpoechtrager/cctools-port",
+      "revision": "ef969083aecf77dee1814d6961a06b88af23edef",
+      "url": "https://codeload.github.com/tpoechtrager/cctools-port/tar.gz/ef969083aecf77dee1814d6961a06b88af23edef",
+      "sha256": "5b0d18bba0dfd17258040e278b3d5454e8cfc88b97ff251ad8a6fc36cb41dc5d"
+    }
+  }
+}
