@@ -15,7 +15,8 @@ def main():
     if '#define OSRELEASE\t"15.6.0"' not in version:
         raise RuntimeError('missing or incorrect Darwin version header')
     for path in ('osfmk/mach/message.h', 'osfmk/mach/machine/vm_types.h',
-                 'bsd/sys/syscall.h', 'iokit/IOKit/IOLib.h'):
+                 'bsd/sys/syscall.h', 'iokit/IOKit/IOLib.h',
+                 'libkern/libkern/section_keywords.h'):
         if not (exported / path).is_file():
             raise RuntimeError(f'missing exported header: {path}')
     events = (OBJECTS / 'DEVELOPMENT_X86_64/bsd/sys/kdebugevents.h').read_text()

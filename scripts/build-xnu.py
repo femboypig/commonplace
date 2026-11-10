@@ -73,6 +73,7 @@ def main():
         },
         'libkern/libkern/Makefile': {
             'install $(DATA_INSTALL_FLAGS)': '$(INSTALL) $(DATA_INSTALL_FLAGS)',
+            '\tprelink.h\n': '\tprelink.h \\\n\tsection_keywords.h\n',
         },
     }.items():
         contents = (ROOT / 'sources/xnu' / filename).read_text()
