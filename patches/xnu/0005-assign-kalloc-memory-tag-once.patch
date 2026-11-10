@@ -1,0 +1,12 @@
+--- a/osfmk/kern/kalloc.c
++++ b/osfmk/kern/kalloc.c
+@@ -484,7 +484,8 @@
+ 			alloc_map = kalloc_map;
+ 
+ 		vm_tag_t tag;
+-		tag = (site ? tag = vm_tag_alloc(site) : VM_KERN_MEMORY_KALLOC);
++		/* commonplace: assign the allocation tag once (2026-11-10). */
++		tag = (site ? vm_tag_alloc(site) : VM_KERN_MEMORY_KALLOC);
+ 
+ 		if (kmem_alloc(alloc_map, (vm_offset_t *)&addr, size, tag) != KERN_SUCCESS) {
+ 			if (alloc_map != kernel_map) {
