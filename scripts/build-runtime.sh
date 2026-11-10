@@ -10,7 +10,7 @@ for source in InstrProfiling InstrProfilingBuffer InstrProfilingPlatformDarwin; 
     object="$project_root/build/profile-runtime/$source.o"
     "$project_root/toolchain/bin/x86_64-apple-darwin15-clang" \
         -std=gnu99 -O2 -ffreestanding -fno-builtin -fno-stack-protector \
-        -mkernel -msoft-float -mno-red-zone -nostdinc \
+        -mkernel -msoft-float -mno-sse -mno-sse2 -mno-mmx -mno-red-zone -nostdinc \
         -isystem "$resource_dir/include" -I"$project_root/compat/runtime" \
         -I"$profile_source" -c "$profile_source/$source.c" -o "$object"
     objects+=("$object")

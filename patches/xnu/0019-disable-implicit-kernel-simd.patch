@@ -1,0 +1,39 @@
+--- a/makedefs/MakeInc.def
++++ b/makedefs/MakeInc.def
+@@ -160,7 +160,8 @@
+ CFLAGS_PROFILE 	=  -pg
+ 
+ CFLAGS_X86_64	= -Dx86_64 -DX86_64 -D__X86_64__ -DLP64 \
+-				-DPAGE_SIZE_FIXED -mkernel -msoft-float 
++				-DPAGE_SIZE_FIXED -mkernel -msoft-float \
++				-mno-sse -mno-sse2 -mno-mmx
+ 
+ CFLAGS_X86_64H = $(CFLAGS_X86_64)
+ 
+--- a/bsd/conf/Makefile.template
++++ b/bsd/conf/Makefile.template
+@@ -74,6 +74,12 @@
+ #
+ # Machine-independent per-file flags
+ #
++
++# These two translation units intentionally perform floating-point arithmetic.
++ifneq ($(filter X86_64 X86_64H,$(CURRENT_ARCH_CONFIG)),)
++tcp_cubic.o_CFLAGS_ADD += -msse -msse2
++cbrtf.o_CFLAGS_ADD += -msse -msse2
++endif
+ 
+ dp_backing_file.o_CFLAGS_ADD	+= -Wshorten-64-to-32
+ ubc_subr.o_CFLAGS_ADD			+= -Wshorten-64-to-32
+--- a/osfmk/i386/fpu.c
++++ b/osfmk/i386/fpu.c
+@@ -725,7 +725,8 @@
+ 	fldcw(control);
+ 
+ 	/* Initialize SSE/SSE2 */
+-	__builtin_ia32_ldmxcsr(0x1f80);
++	uint32_t mxcsr = 0x1f80;
++	__asm__ volatile("ldmxcsr %0" : : "m" (mxcsr));
+ }
+ 
+ /*
