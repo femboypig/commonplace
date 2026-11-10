@@ -1,0 +1,57 @@
+--- a/osfmk/x86_64/idt64.s
++++ b/osfmk/x86_64/idt64.s
+@@ -1,3 +1,4 @@
++/* commonplace: save and restore 16-bit segment selectors (2026-11-10). */
+ /*
+  * Copyright (c) 2010 Apple Inc. All rights reserved.
+  *
+@@ -179,8 +180,10 @@
+ 	/*
+ 	 * Save segment regs - for completeness since theyre not used.
+ 	 */
+-	movl	%fs, R64_FS(%r15)
+-	movl	%gs, R64_GS(%r15)
++	movl	$0, R64_FS(%r15)
++	movw	%fs, R64_FS(%r15)
++	movl	$0, R64_GS(%r15)
++	movw	%gs, R64_GS(%r15)
+ 
+ 	/* Save general-purpose registers */
+ 	mov	%rax, R64_RAX(%r15)
+@@ -236,10 +239,14 @@
+ 	/*
+ 	 * Save segment regs
+ 	 */
+-	movl	%ds, R32_DS(%r15)
+-	movl	%es, R32_ES(%r15)
+-	movl	%fs, R32_FS(%r15)
+-	movl	%gs, R32_GS(%r15)
++	movl	$0, R32_DS(%r15)
++	movw	%ds, R32_DS(%r15)
++	movl	$0, R32_ES(%r15)
++	movw	%es, R32_ES(%r15)
++	movl	$0, R32_FS(%r15)
++	movw	%fs, R32_FS(%r15)
++	movl	$0, R32_GS(%r15)
++	movw	%gs, R32_GS(%r15)
+ 
+ 	/*
+ 	 * Save general 32-bit registers
+@@ -435,13 +442,13 @@
+ 	mov	%r15, %rsp		/* Set the PCB as the stack */
+ 	swapgs
+ EXT(ret32_set_ds):	
+-	movl	R32_DS(%rsp), %ds
++	movw	R32_DS(%rsp), %ds
+ EXT(ret32_set_es):
+-	movl	R32_ES(%rsp), %es
++	movw	R32_ES(%rsp), %es
+ EXT(ret32_set_fs):
+-	movl	R32_FS(%rsp), %fs
++	movw	R32_FS(%rsp), %fs
+ EXT(ret32_set_gs):
+-	movl	R32_GS(%rsp), %gs
++	movw	R32_GS(%rsp), %gs
+ 
+ 	/* pop compat frame + trapno, trapfn and error */	
+ 	add	$(ISS64_OFFSET)+8+8+8, %rsp
