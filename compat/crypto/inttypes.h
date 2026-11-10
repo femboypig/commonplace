@@ -1,0 +1,4 @@
+#ifndef COMMONPLACE_CRYPTO_INTTYPES_H
+#define COMMONPLACE_CRYPTO_INTTYPES_H
+#include <stdint.h>
+#endif
