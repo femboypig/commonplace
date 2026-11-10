@@ -1,0 +1,17 @@
+--- a/tools/lldbmacros/Makefile
++++ b/tools/lldbmacros/Makefile
+@@ -1,3 +1,4 @@
++# commonplace: honor disabled debug symbol bundles (2026-11-10).
+ export MakeInc_cmd=${SRCROOT}/makedefs/MakeInc.cmd
+ export MakeInc_def=${SRCROOT}/makedefs/MakeInc.def
+ export MakeInc_rule=${SRCROOT}/makedefs/MakeInc.rule
+@@ -9,7 +10,9 @@
+ 
+ .PHONY: lldbmacros_install
+ 
++ifeq ($(BUILD_DSYM),1)
+ do_config_all:: lldbmacros_install
++endif
+ 
+ LLDBMACROS_SOURCE:=$(SRCROOT)/tools/lldbmacros/
+ LLDBMACROS_BOOTSTRAP_DEST:=$(OBJPATH)/$(KERNEL_FILE_NAME).dSYM/$(DSYMLLDBMACROSDIR)
