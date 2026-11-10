@@ -2,7 +2,7 @@
 PYTHON ?= python3
 JOBS ?= 2
 
-.PHONY: help fetch doctor tools runtime check-tools xnu-headers check-xnu-host test
+.PHONY: help fetch doctor tools runtime check-tools xnu-headers check-xnu-host kernel check-kernel test
 help:
 	@printf '%s\n' 'commonplace — darwin/x86_64' \
 	  'make doctor       check host tools and virtualization' \
@@ -12,6 +12,8 @@ help:
 	  'make check-tools  test mach-o linking and mach interface generation' \
 	  'make xnu-headers  export apple kernel headers using linux host tools' \
 	  'make check-xnu-host  verify header exports and atomic installation' \
+	  'make kernel       build and validate the development kernel' \
+	  'make check-kernel validate the existing kernel artifact' \
 	  'make test         run source acquisition tests'
 
 fetch:
@@ -34,6 +36,13 @@ xnu-headers: fetch
 
 check-xnu-host:
 	$(PYTHON) scripts/check-xnu-host.py
+
+kernel: runtime
+	$(PYTHON) scripts/build-xnu.py all
+	$(PYTHON) scripts/check-kernel.py
+
+check-kernel:
+	$(PYTHON) scripts/check-kernel.py
 
 test:
 	$(PYTHON) -m unittest discover -s tests -v
