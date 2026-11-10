@@ -2,6 +2,10 @@
 #include <IOKit/IOLib.h>
 #include <libkern/libkern.h>
 
+extern "C" {
+#include <machine/machine_routines.h>
+}
+
 /*
  * Bootstrap platform for QEMU q35: one CPU, the kernel serial console and
  * memory-backed storage. PCI enumeration, ACPI power management and secondary
@@ -22,6 +26,7 @@ bool CommonplacePlatform::start(IOService *provider)
 {
     if (!IOPlatformExpert::start(provider))
         return false;
+    ml_init_max_cpus(1);
     setProperty("platform-name", "commonplace");
     IOLog("commonplace: q35 bootstrap platform started\n");
     registerService();
