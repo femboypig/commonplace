@@ -8,8 +8,36 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def apply_source_patches(source):
+    patches = sorted((ROOT / 'patches/xnu').glob('*.patch'))
+    if not patches:
+        return
+    with tempfile.TemporaryDirectory(dir=ROOT / 'build', prefix='xnu-patches-') as temporary:
+        temporary = Path(temporary)
+        paths = set()
+        for patch in patches:
+            for match in re.finditer(r'^--- a/(.+)$', patch.read_text(), re.MULTILINE):
+                relative = Path(match[1])
+                if relative.is_absolute() or '..' in relative.parts:
+                    raise ValueError(f'invalid patch path: {relative}')
+                paths.add(relative)
+        for relative in paths:
+            destination = temporary / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / 'sources/xnu' / relative, destination)
+        for patch in patches:
+            subprocess.run(['patch', '--batch', '--fuzz=0', '-p1', '-d', str(temporary),
+                            '-i', str(patch)], check=True, stdout=subprocess.DEVNULL)
+        for relative in paths:
+            contents = (temporary / relative).read_bytes()
+            output = source / relative
+            if output.read_bytes() != contents:
+                output.write_bytes(contents)
 
 
 def main():
@@ -21,6 +49,7 @@ def main():
     source = ROOT / 'build' / 'xnu-source'
     if not source.exists():
         shutil.copytree(ROOT / 'sources' / 'xnu', source, symlinks=True)
+    apply_source_patches(source)
     setup = source / 'SETUP' / 'Makefile'
     contents = (ROOT / 'sources/xnu/SETUP/Makefile').read_text()
     start = contents.index('SETUP_SUBDIRS =')

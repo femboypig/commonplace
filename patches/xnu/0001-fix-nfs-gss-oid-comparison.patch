@@ -1,0 +1,12 @@
+--- a/bsd/nfs/nfs_gss.c
++++ b/bsd/nfs/nfs_gss.c
+@@ -3752,7 +3752,8 @@
+ 	/*
+ 	 * Check that we have the DER encoded Kerberos v5 mech OID
+ 	 */
+-	if (bcmp(p, krb5_mech, sizeof(krb5_mech) != 0))
++	/* commonplace: compare the complete OID (2026-11-10). */
++	if (bcmp(p, krb5_mech, sizeof(krb5_mech)) != 0)
+ 		return (AUTH_BADCRED);
+ 	p += sizeof(krb5_mech);
+ 
