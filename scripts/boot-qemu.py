@@ -28,13 +28,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--seconds', type=int, default=15)
     parser.add_argument('--memory', type=int, default=1024, help='guest memory in MiB')
+    parser.add_argument('--output', type=Path, default=ROOT / 'build/boot',
+                        help='directory for this run\'s logs and diagnostics')
     options = parser.parse_args()
     if not 1 <= options.seconds <= 3600 or not 512 <= options.memory <= 8192:
         parser.error('seconds must be 1..3600 and memory must be 512..8192 MiB')
-    output = ROOT / 'build/boot'
+    output = options.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     kernel = ROOT / 'build/xnu/obj/DEVELOPMENT_X86_64/kernel.development'
-    loader = output / 'loader.elf'
+    loader = ROOT / 'build/boot/loader.elf'
     serial = output / 'serial.log'
     for artifact in (kernel, loader):
         if not artifact.is_file():
