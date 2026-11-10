@@ -1,0 +1,25 @@
+--- a/bsd/net/if_utun_crypto_dtls.c
++++ b/bsd/net/if_utun_crypto_dtls.c
+@@ -1,3 +1,4 @@
++/* commonplace: use the bound matching the crypto type enum (2026-11-10). */
+ /*
+  * Copyright (c) 2012-2013 Apple Inc. All rights reserved.
+  *
+@@ -463,7 +464,7 @@
+ 	if (args->ver != UTUN_CRYPTO_DTLS_VER_1) {
+ 		return EINVAL;
+ 	}
+-	if (!args->type || args->type >= UTUN_CRYPTO_INNER_TYPE_MAX) {
++	if (!args->type || args->type >= UTUN_CRYPTO_TYPE_MAX) {
+ 		return EINVAL;
+ 	}
+ 
+@@ -719,7 +720,7 @@
+ 	if (args->ver != UTUN_CRYPTO_DTLS_VER_1) {
+ 		return EINVAL;
+ 	}
+-	if (!args->type || args->type >= UTUN_CRYPTO_INNER_TYPE_MAX) {
++	if (!args->type || args->type >= UTUN_CRYPTO_TYPE_MAX) {
+ 		return EINVAL;
+ 	}
+ 
