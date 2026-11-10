@@ -1,0 +1,47 @@
+--- a/bsd/conf/files
++++ b/bsd/conf/files
+@@ -550,3 +550,8 @@
+ 
+ bsd/pgo/profile_runtime.c        	standard
+ 
++
++libpthread/kern/commonplace_pthread_init.c	standard
++libpthread/kern/commonplace_pthread_policy.c	standard
++libpthread/kern/commonplace_pthread_support.c	standard
++libpthread/kern/commonplace_pthread_synch.c	standard
+--- a/bsd/conf/Makefile.template
++++ b/bsd/conf/Makefile.template
+@@ -292,3 +292,8 @@
+ 
+ include $(MakeInc_rule)
+ include $(MakeInc_dir)
++
++# Compile libpthread as a kernel extension client of the callback ABI.
++PTHREAD_OBJS = commonplace_pthread_init.o commonplace_pthread_policy.o commonplace_pthread_support.o commonplace_pthread_synch.o
++$(foreach file,$(PTHREAD_OBJS),$(eval $(file)_CFLAGS_RM += -DBSD_KERNEL_PRIVATE -DMACH_KERNEL))
++$(foreach file,$(PTHREAD_OBJS),$(eval $(file)_CFLAGS_ADD += -DABSOLUTETIME_SCALAR_TYPE -include kern/thread.h -I$(SRCROOT)/libpthread -I$(SRCROOT)/libpthread/kern))
+--- a/bsd/kern/pthread_shims.c
++++ b/bsd/kern/pthread_shims.c
+@@ -37,6 +37,7 @@
+ #include <kern/zalloc.h>
+ #include <machine/machine_routines.h>
+ #include <mach/task.h>
++#include <mach/kmod.h>
+ #include <mach/thread_act.h>
+ #include <sys/param.h>
+ #include <sys/pthread_shims.h>
+@@ -206,9 +207,14 @@
+ 
+ /* kernel (core) to kext shims */
+ 
++extern kern_return_t pthread_start(kmod_info_t *, void *);
++
+ void
+ pthread_init(void)
+ {
++	if (!pthread_functions && pthread_start(NULL, NULL) != KERN_SUCCESS) {
++		panic("builtin pthread registration failed");
++	}
+ 	if (!pthread_functions) {
+ 		panic("pthread kernel extension not loaded (function table is NULL).");
+ 	}

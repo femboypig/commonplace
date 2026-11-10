@@ -13,8 +13,8 @@ import tempfile
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def apply_source_patches(source):
-    patches = sorted((ROOT / 'patches/xnu').glob('*.patch'))
+def apply_source_patches(source, component='xnu'):
+    patches = sorted((ROOT / 'patches' / component).glob('*.patch'))
     if not patches:
         return
     with tempfile.TemporaryDirectory(dir=ROOT / 'build', prefix='xnu-patches-') as temporary:
@@ -29,7 +29,7 @@ def apply_source_patches(source):
         for relative in paths:
             destination = temporary / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(ROOT / 'sources/xnu' / relative, destination)
+            shutil.copyfile(ROOT / 'sources' / component / relative, destination)
         for patch in patches:
             subprocess.run(['patch', '--batch', '--fuzz=0', '-p1', '-d', str(temporary),
                             '-i', str(patch)], check=True, stdout=subprocess.DEVNULL)
@@ -52,6 +52,13 @@ def main():
         shutil.copytree(ROOT / 'sources' / 'xnu', source, symlinks=True)
     apply_source_patches(source)
     shutil.copytree(ROOT / 'kernel', source / 'commonplace', dirs_exist_ok=True)
+    pthread_source = source / 'libpthread'
+    if not pthread_source.exists():
+        shutil.copytree(ROOT / 'sources/libpthread', pthread_source)
+    apply_source_patches(pthread_source, 'libpthread')
+    for name in ('init', 'policy', 'support', 'synch'):
+        shutil.copy2(pthread_source / f'kern/kern_{name}.c',
+                     pthread_source / f'kern/commonplace_pthread_{name}.c')
     setup = source / 'SETUP' / 'Makefile'
     contents = (ROOT / 'sources/xnu/SETUP/Makefile').read_text()
     start = contents.index('SETUP_SUBDIRS =')

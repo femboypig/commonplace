@@ -1,0 +1,21 @@
+--- a/kern/kern_init.c
++++ b/kern/kern_init.c
+@@ -13,7 +13,7 @@
+ kern_return_t pthread_start(kmod_info_t * ki, void *d);
+ kern_return_t pthread_stop(kmod_info_t *ki, void *d);
+ 
+-pthread_callbacks_t pthread_kern;
++/* The builtin shares XNU's callback pointer and current_uthread implementation. */
+ 
+ const struct pthread_functions_s pthread_internal_functions = {
+ 	.pthread_init = _pthread_init,
+@@ -61,9 +61,3 @@
+ 	return KERN_FAILURE;
+ }
+ 
+-struct uthread*
+-current_uthread(void)
+-{
+-	thread_t th = current_thread();
+-	return pthread_kern->get_bsdthread_info(th);
+-}

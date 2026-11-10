@@ -1,0 +1,54 @@
+--- a/kern/kern_support.c
++++ b/kern/kern_support.c
+@@ -134,7 +134,7 @@
+ 
+ uint32_t pthread_debug_tracing = 1;
+ 
+-SYSCTL_INT(_kern, OID_AUTO, pthread_debug_tracing, CTLFLAG_RW | CTLFLAG_LOCKED,
++SYSCTL_INT(_kern, OID_AUTO, pthread_debug_tracing, CTLFLAG_NOAUTO | CTLFLAG_RW | CTLFLAG_LOCKED,
+ 		   &pthread_debug_tracing, 0, "")
+ 
+ // XXX: Dirty import for sys/signarvar.h that's wrapped in BSD_KERNEL_PRIVATE
+@@ -974,33 +974,33 @@
+ uint32_t wq_max_constrained_threads	= WORKQUEUE_MAXTHREADS / 8;
+ uint32_t wq_max_concurrency = 1; // set to ncpus on load
+ 
+-SYSCTL_INT(_kern, OID_AUTO, wq_yielded_threshold, CTLFLAG_RW | CTLFLAG_LOCKED,
++SYSCTL_INT(_kern, OID_AUTO, wq_yielded_threshold, CTLFLAG_NOAUTO | CTLFLAG_RW | CTLFLAG_LOCKED,
+ 	   &wq_yielded_threshold, 0, "");
+ 
+-SYSCTL_INT(_kern, OID_AUTO, wq_yielded_window_usecs, CTLFLAG_RW | CTLFLAG_LOCKED,
++SYSCTL_INT(_kern, OID_AUTO, wq_yielded_window_usecs, CTLFLAG_NOAUTO | CTLFLAG_RW | CTLFLAG_LOCKED,
+ 	   &wq_yielded_window_usecs, 0, "");
+ 
+-SYSCTL_INT(_kern, OID_AUTO, wq_stalled_window_usecs, CTLFLAG_RW | CTLFLAG_LOCKED,
++SYSCTL_INT(_kern, OID_AUTO, wq_stalled_window_usecs, CTLFLAG_NOAUTO | CTLFLAG_RW | CTLFLAG_LOCKED,
+ 	   &wq_stalled_window_usecs, 0, "");
+ 
+-SYSCTL_INT(_kern, OID_AUTO, wq_reduce_pool_window_usecs, CTLFLAG_RW | CTLFLAG_LOCKED,
++SYSCTL_INT(_kern, OID_AUTO, wq_reduce_pool_window_usecs, CTLFLAG_NOAUTO | CTLFLAG_RW | CTLFLAG_LOCKED,
+ 	   &wq_reduce_pool_window_usecs, 0, "");
+ 
+-SYSCTL_INT(_kern, OID_AUTO, wq_max_timer_interval_usecs, CTLFLAG_RW | CTLFLAG_LOCKED,
++SYSCTL_INT(_kern, OID_AUTO, wq_max_timer_interval_usecs, CTLFLAG_NOAUTO | CTLFLAG_RW | CTLFLAG_LOCKED,
+ 	   &wq_max_timer_interval_usecs, 0, "");
+ 
+-SYSCTL_INT(_kern, OID_AUTO, wq_max_threads, CTLFLAG_RW | CTLFLAG_LOCKED,
++SYSCTL_INT(_kern, OID_AUTO, wq_max_threads, CTLFLAG_NOAUTO | CTLFLAG_RW | CTLFLAG_LOCKED,
+ 	   &wq_max_threads, 0, "");
+ 
+-SYSCTL_INT(_kern, OID_AUTO, wq_max_constrained_threads, CTLFLAG_RW | CTLFLAG_LOCKED,
++SYSCTL_INT(_kern, OID_AUTO, wq_max_constrained_threads, CTLFLAG_NOAUTO | CTLFLAG_RW | CTLFLAG_LOCKED,
+ 	   &wq_max_constrained_threads, 0, "");
+ 
+ #ifdef DEBUG
+-SYSCTL_INT(_kern, OID_AUTO, wq_max_concurrency, CTLFLAG_RW | CTLFLAG_LOCKED,
++SYSCTL_INT(_kern, OID_AUTO, wq_max_concurrency, CTLFLAG_NOAUTO | CTLFLAG_RW | CTLFLAG_LOCKED,
+ 		   &wq_max_concurrency, 0, "");
+ 
+ static int wq_kevent_test SYSCTL_HANDLER_ARGS;
+-SYSCTL_PROC(_debug, OID_AUTO, wq_kevent_test, CTLFLAG_MASKED | CTLFLAG_RW | CTLFLAG_LOCKED | CTLFLAG_ANYBODY | CTLTYPE_OPAQUE, NULL, 0, wq_kevent_test, 0, "-");
++SYSCTL_PROC(_debug, OID_AUTO, wq_kevent_test, CTLFLAG_MASKED | CTLFLAG_NOAUTO | CTLFLAG_RW | CTLFLAG_LOCKED | CTLFLAG_ANYBODY | CTLTYPE_OPAQUE, NULL, 0, wq_kevent_test, 0, "-");
+ #endif
+ 
+ static uint32_t wq_init_constrained_limit = 1;
