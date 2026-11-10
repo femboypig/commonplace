@@ -1,0 +1,45 @@
+--- a/bsd/conf/files
++++ b/bsd/conf/files
+@@ -555,3 +555,14 @@
+ libpthread/kern/commonplace_pthread_policy.c	standard
+ libpthread/kern/commonplace_pthread_support.c	standard
+ libpthread/kern/commonplace_pthread_synch.c	standard
++
++commonplace/crypto/cp_crypto_aes.c	standard
++commonplace/crypto/cp_crypto_cbc.c	standard
++commonplace/crypto/cp_crypto_des.c	standard
++commonplace/crypto/cp_crypto_digests.c	standard
++commonplace/crypto/cp_crypto_gcm.c	standard
++commonplace/crypto/cp_crypto_legacy.c	standard
++commonplace/crypto/cp_crypto_provider.c	standard
++commonplace/crypto/cp_crypto_runtime.c	standard
++commonplace/crypto/cp_crypto_selftest.c	standard
++commonplace/crypto/cp_crypto_xts.c	standard
+--- a/bsd/conf/Makefile.template
++++ b/bsd/conf/Makefile.template
+@@ -303,3 +303,6 @@
+ PTHREAD_OBJS = commonplace_pthread_init.o commonplace_pthread_policy.o commonplace_pthread_support.o commonplace_pthread_synch.o
+ $(foreach file,$(PTHREAD_OBJS),$(eval $(file)_CFLAGS_RM += -DBSD_KERNEL_PRIVATE -DMACH_KERNEL))
+ $(foreach file,$(PTHREAD_OBJS),$(eval $(file)_CFLAGS_ADD += -DABSOLUTETIME_SCALAR_TYPE -include kern/thread.h -I$(SRCROOT)/libpthread -I$(SRCROOT)/libpthread/kern))
++
++CRYPTO_OBJS = cp_crypto_aes.o cp_crypto_cbc.o cp_crypto_des.o cp_crypto_digests.o cp_crypto_gcm.o cp_crypto_legacy.o cp_crypto_provider.o cp_crypto_runtime.o cp_crypto_selftest.o cp_crypto_xts.o
++$(foreach file,$(CRYPTO_OBJS),$(eval $(file)_CFLAGS_ADD += -DOPENSSL_SUPPRESS_DEPRECATED -include $(COMMONPLACE_ROOT)/compat/crypto/namespace.h -I$(COMMONPLACE_ROOT)/compat/crypto -I$(COMMONPLACE_ROOT)/build/openssl/include -I$(COMMONPLACE_ROOT)/sources/openssl/include))
+--- a/bsd/kern/bsd_init.c
++++ b/bsd/kern/bsd_init.c
+@@ -258,6 +258,7 @@
+ extern void kminit(void);
+ extern void file_lock_init(void);
+ extern void kmeminit(void);
++extern void commonplace_crypto_init(void);
+ extern void bsd_bufferinit(void);
+ extern void throttle_init(void);
+ extern void macx_init(void);
+@@ -416,6 +417,8 @@
+ 	
+ 	bsd_init_kprintf("calling kmeminit\n");
+ 	kmeminit();
++	commonplace_crypto_init();
++	printf("commonplace: crypto provider started\n");
+ 	
+ 	bsd_init_kprintf("calling parse_bsd_args\n");
+ 	parse_bsd_args();

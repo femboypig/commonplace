@@ -2,13 +2,14 @@
 PYTHON ?= python3
 JOBS ?= 2
 
-.PHONY: help fetch doctor tools runtime check-tools xnu-headers check-xnu-host kernel check-kernel loader boot test
+.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot test
 help:
 	@printf '%s\n' 'commonplace — darwin/x86_64' \
 	  'make doctor       check host tools and virtualization' \
 	  'make fetch        fetch and verify pinned upstream sources' \
 	  'make tools        build local darwin cross-development tools' \
 	  'make runtime      build kernel profile buffer runtime' \
+	  'make crypto       build freestanding kernel crypto primitives' \
 	  'make check-tools  test mach-o linking and mach interface generation' \
 	  'make xnu-headers  export apple kernel headers using linux host tools' \
 	  'make check-xnu-host  verify header exports and atomic installation' \
@@ -39,7 +40,10 @@ xnu-headers: fetch
 check-xnu-host:
 	$(PYTHON) scripts/check-xnu-host.py
 
-kernel: runtime
+crypto: fetch
+	bash scripts/build-crypto.sh
+
+kernel: runtime crypto
 	$(PYTHON) scripts/build-xnu.py all
 	$(PYTHON) scripts/check-kernel.py
 

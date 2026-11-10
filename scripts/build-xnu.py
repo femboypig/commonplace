@@ -159,7 +159,8 @@ def main():
         'CXX': tools / 'x86_64-apple-darwin15-clang',
         'LD': (str(tools / 'x86_64-apple-darwin15-clang') + ' -nostdlib -fuse-ld='
                + str(tools / 'x86_64-apple-darwin15-ld')),
-        'LD_KERNEL_LIBS': ROOT / 'toolchain/lib/libkernel_profile.a',
+        'LD_KERNEL_LIBS': ' '.join(str(ROOT / 'toolchain/lib' / name) for name in
+                                  ('libkernel_profile.a', 'libkernel_crypto.a')),
         'MIG': tools / 'mig', 'MIGCOM': ROOT / 'toolchain/libexec/migcom',
         'STRIP': tools / 'x86_64-apple-darwin15-strip',
         'LIPO': tools / 'x86_64-apple-darwin15-lipo',

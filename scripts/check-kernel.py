@@ -99,7 +99,9 @@ def main():
     if not {'__start', '_pstart', '_kernel_bootstrap', '_bsd_init', '_version',
             '__ZN19CommonplacePlatform5startEP9IOService',
             '__ZN19CommonplacePlatform9metaClassE',
-            '_pthread_start', '_pthread_internal_functions', '__pthread_init'} <= symbols:
+            '_pthread_start', '_pthread_internal_functions', '__pthread_init',
+            '_commonplace_crypto_init', '_cp_crypto_selftest', '_AES_encrypt',
+            '_cp_openssl_SHA256_Transform', '_CRYPTO_gcm128_encrypt'} <= symbols:
         raise ValueError('required kernel entry points are missing')
     pthread_sysctls = check_pthread_sysctls(image, segments, nm, symbol_file)
     metadata = {
@@ -112,7 +114,9 @@ def main():
         'patches': {str(path.relative_to(ROOT / 'patches')):
                     hashlib.sha256(path.read_bytes()).hexdigest()
                     for path in sorted((ROOT / 'patches').rglob('*.patch'))},
-        'platform_sources': {
+        'crypto_archive_sha256': hashlib.sha256(
+            (ROOT / 'toolchain/lib/libkernel_crypto.a').read_bytes()).hexdigest(),
+        'kernel_sources': {
             str(path.relative_to(ROOT / 'build/xnu-source/commonplace')):
             hashlib.sha256(path.read_bytes()).hexdigest()
             for path in sorted((ROOT / 'build/xnu-source/commonplace').rglob('*'))
