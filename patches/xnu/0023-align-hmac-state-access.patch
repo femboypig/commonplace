@@ -1,0 +1,29 @@
+--- a/osfmk/corecrypto/cchmac/src/cchmac_init.c
++++ b/osfmk/corecrypto/cchmac/src/cchmac_init.c
+@@ -46,8 +46,13 @@
+ 
+     /* Set cchmac_ostate32(di, hc) to the state of the first round of the
+        outer digest. */
+-    ccdigest_copy_state(di, cchmac_ostate32(di, hc), di->initial_state);
+-    di->compress(cchmac_ostate(di, hc), 1, cchmac_data(di, hc));
++    /* The legacy outer-state offset is not naturally aligned. */
++    ccdigest_di_decl(di, outer);
++    ccdigest_init(di, outer);
++    di->compress(ccdigest_state(di, outer), 1, cchmac_data(di, hc));
++    CC_MEMCPY((unsigned char *)hc.hdr + ccdigest_di_size(di),
++        ccdigest_state_u8(di, outer), di->state_size);
++    ccdigest_di_clear(di, outer);
+ 
+     /* Set cchmac_data(di, hc) to key ^ ipad. */
+     for (byte = 0; byte < di->block_size; ++byte) {
+--- a/osfmk/corecrypto/cchmac/src/cchmac_final.c
++++ b/osfmk/corecrypto/cchmac/src/cchmac_final.c
+@@ -18,6 +18,7 @@
+     /* typecast: output size will alwys fit in an unsigned int */
+     cchmac_num(di, hc) = (unsigned int)di->output_size;
+     cchmac_nbits(di, hc) = di->block_size * 8;
+-    ccdigest_copy_state(di, cchmac_istate32(di, hc), cchmac_ostate32(di, hc));
++    CC_MEMCPY(cchmac_istate8(di, hc),
++        (unsigned char *)hc.hdr + ccdigest_di_size(di), di->state_size);
+     ccdigest_final(di, cchmac_digest_ctx(di, hc), mac);
+ }
