@@ -12,6 +12,7 @@ int random_bytes(void *destination, size_t size);
 uint64_t read_tsc(void);
 uint64_t bus_frequency(void);
 uint32_t find_acpi(void);
+void mask_legacy_pic(void);
 _Noreturn void enter_kernel(uint32_t entry, uint32_t arguments);
 
 #endif

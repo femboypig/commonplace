@@ -1,5 +1,11 @@
 #include "platform.h"
 
+void mask_legacy_pic(void)
+{
+    /* BIOS IRQ vectors overlap CPU exceptions; Darwin installs its own APIC. */
+    __asm__ volatile("outb %0, $0x21; outb %0, $0xa1" : : "a"((uint8_t)0xff));
+}
+
 static void cpuid(uint32_t leaf, uint32_t registers[4])
 {
     __asm__ volatile("cpuid" : "=a"(registers[0]), "=b"(registers[1]),

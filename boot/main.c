@@ -46,5 +46,6 @@ void loader_main(uint32_t magic, const uint32_t *info)
     console_write(", boot arguments ");
     console_hex((uintptr_t)args);
     console_write("\n");
+    mask_legacy_pic();
     enter_kernel(image.entry, (uintptr_t)args);
 }
