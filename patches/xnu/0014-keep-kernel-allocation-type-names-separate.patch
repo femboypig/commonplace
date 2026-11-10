@@ -1,0 +1,16 @@
+--- a/bsd/kern/kern_malloc.c
++++ b/bsd/kern/kern_malloc.c
+@@ -1,3 +1,4 @@
++/* commonplace: keep kernel allocation type names separate (2026-11-10). */
+ /*
+  * Copyright (c) 2000-2013 Apple Inc. All rights reserved.
+  *
+@@ -315,7 +316,7 @@
+ 	"",						/* 120 M_NECP_SOCKET_POLICY */
+ 	"",						/* 121 M_NECP_IP_POLICY */
+ #endif
+-	"fdvnodedata"	/* 122 M_FD_VN_DATA */
++	"fdvnodedata",	/* 122 M_FD_VN_DATA */
+ 	"fddirbuf",	/* 123 M_FD_DIRBUF */
+ 	"netagent",	/* 124 M_NETAGENT */
+ 	""
