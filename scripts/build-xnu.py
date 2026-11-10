@@ -145,7 +145,8 @@ def main():
             '-Wno-error=pointer-bool-conversion',
             '-Wno-error=tautological-constant-compare',
         )),
-        'OTHER_CXXFLAGS': '-std=gnu++98',
+        'OTHER_CXXFLAGS': ('-std=gnu++98 -fno-register-global-dtors-with-atexit '
+                           '-mllvm -disable-atexit-based-global-dtor-lowering'),
         'CC': str(tools / 'x86_64-apple-darwin15-clang') + ' -std=gnu99',
         'CXX': tools / 'x86_64-apple-darwin15-clang',
         'LD': (str(tools / 'x86_64-apple-darwin15-clang') + ' -nostdlib -fuse-ld='

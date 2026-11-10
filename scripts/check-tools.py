@@ -42,6 +42,22 @@ def main():
             raise RuntimeError('compiler driver selected an incorrect linker target')
         print('mach-o: compiler driver uses the local darwin linker')
 
+        (directory / 'destructor.cpp').write_text('''\
+volatile unsigned long destroyed;
+struct object { ~object(); };
+object instance;
+object::~object() { ++destroyed; }
+''')
+        run(str(BIN / 'x86_64-apple-darwin15-clang'), '-std=gnu++98',
+            '-mkernel', '-fapple-kext', '-fno-register-global-dtors-with-atexit',
+            '-mllvm', '-disable-atexit-based-global-dtor-lowering',
+            '-c', 'destructor.cpp', '-o', 'destructor.o', cwd=directory)
+        undefined = run(str(BIN / 'x86_64-apple-darwin15-nm'), '-u',
+                        'destructor.o', cwd=directory).stdout.strip()
+        sections = run('llvm-readobj', '--sections', 'destructor.o', cwd=directory).stdout
+        if undefined or '__mod_term_func' not in sections:
+            raise RuntimeError('kernel destructors require a userspace runtime')
+        print('mach-o: kernel destructors use the termination section')
 
         # No SDK is needed for this definition; it exercises the generator,
         # its preprocessor, request/reply numbering and variable-length arrays.
