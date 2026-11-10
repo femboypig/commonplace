@@ -32,6 +32,13 @@
       "revision": "ef969083aecf77dee1814d6961a06b88af23edef",
       "url": "https://codeload.github.com/tpoechtrager/cctools-port/tar.gz/ef969083aecf77dee1814d6961a06b88af23edef",
       "sha256": "5b0d18bba0dfd17258040e278b3d5454e8cfc88b97ff251ad8a6fc36cb41dc5d"
+    },
+    "compiler_rt": {
+      "repository": "llvm-mirror/compiler-rt",
+      "branch": "release_37",
+      "revision": "b5214093d4c91ed5352d35ee9126665fabfa97fe",
+      "url": "https://codeload.github.com/llvm-mirror/compiler-rt/tar.gz/b5214093d4c91ed5352d35ee9126665fabfa97fe",
+      "sha256": "bad8b0fa854f3d7eba58b9fb5aca215dd0adbc91d8d4d12316ec189aae438806"
     }
   }
 }
