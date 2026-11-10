@@ -1,0 +1,16 @@
+--- a/osfmk/kern/waitq.c
++++ b/osfmk/kern/waitq.c
+@@ -1,3 +1,4 @@
++/* commonplace: cast through the declared bit-field storage type (2026-11-10). */
+ /*
+  * Copyright (c) 2015 Apple Inc. All rights reserved.
+  *
+@@ -2946,7 +2947,7 @@
+ 	 *   leave it alone.
+ 	 */
+ 	if (global_q && (queue_empty(&waitq->waitq_queue) || *nthreads == 0))
+-		waitq->waitq_eventmask = (typeof(waitq->waitq_eventmask))eventmask;
++		waitq->waitq_eventmask = (uint32_t)eventmask;
+ 
+ 	/*
+ 	 * Grab the first thread in the queue if no other thread was selected.
