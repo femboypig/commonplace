@@ -3,7 +3,6 @@
 
 import hashlib
 import hmac
-import json
 import os
 from pathlib import Path
 import re
@@ -108,17 +107,25 @@ def main():
         for component in ('cc', 'ccn', 'ccdigest', 'cchmac', 'ccsha1'):
             sources += list((core / component / 'src').glob('*.c'))
         patched = directory / 'patched'
-        for name in ('init', 'final'):
-            relative = Path(f'osfmk/corecrypto/cchmac/src/cchmac_{name}.c')
+        patched_paths = [Path(f'osfmk/corecrypto/cchmac/src/cchmac_{name}.c')
+                         for name in ('init', 'final')]
+        patched_paths.append(Path('libkern/crypto/corecrypto_aes.c'))
+        for relative in patched_paths:
             target = patched / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes((ROOT / 'sources/xnu' / relative).read_bytes())
-        subprocess.run(['patch', '--batch', '--fuzz=0', '-p1', '-d', str(patched),
-                        '-i', str(ROOT / 'patches/xnu/0023-align-hmac-state-access.patch')],
-                       check=True, stdout=subprocess.DEVNULL)
+        for patch in ('0023-align-hmac-state-access.patch', '0025-normalize-legacy-aes-key-lengths.patch'):
+            subprocess.run(['patch', '--batch', '--fuzz=0', '-p1', '-d', str(patched),
+                            '-i', str(ROOT / 'patches/xnu' / patch)],
+                           check=True, stdout=subprocess.DEVNULL)
         sources = [patched / source.relative_to(ROOT / 'sources/xnu')
                    if source.name in ('cchmac_init.c', 'cchmac_final.c') else source
                    for source in sources]
+        (include / 'kern').mkdir()
+        (include / 'kern/debug.h').write_text(
+            'void panic(const char *, ...) __attribute__((noreturn));\n')
+        sources.extend([patched / 'libkern/crypto/corecrypto_aes.c',
+                        ROOT / 'tests/crypto-kernel-probe.c'])
         objects = []
         for index, source in enumerate(sources):
             output = directory / f'{index}.o'

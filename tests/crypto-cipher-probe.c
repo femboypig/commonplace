@@ -1,5 +1,6 @@
 #include "provider.h"
 #include <libkern/crypto/crypto_internal.h>
+#include <libkern/crypto/aes.h>
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -113,8 +114,31 @@ static void xts(const struct cipher_vector *v, const struct ccmode_xts *mode, in
     release(ctx, mode->size);
 }
 
+static void legacy_aes(const struct cipher_vector *v)
+{
+    if (v->mode != AES_CBC) return;
+    unsigned char *output = context(v->size);
+    aes_encrypt_ctx enc;
+    aes_decrypt_ctx dec;
+    for (unsigned unit = 1; unit <= 8; unit += 7) {
+        assert(aes_encrypt_key(v->key, v->key_size * unit, &enc) == aes_good);
+        assert(aes_decrypt_key(v->key, v->key_size * unit, &dec) == aes_good);
+        assert(aes_encrypt_cbc(v->plain, v->iv, v->size / 16, output, &enc) == aes_good);
+        assert(!memcmp(output, v->cipher, v->size));
+        assert(aes_decrypt_cbc(output, v->iv, v->size / 16, output, &dec) == aes_good);
+        assert(!memcmp(output, v->plain, v->size));
+    }
+    const int invalid[] = {0, -1, 15, 33, 129, 255};
+    for (unsigned i = 0; i < sizeof(invalid) / sizeof(invalid[0]); ++i) {
+        assert(aes_encrypt_key(v->key, invalid[i], &enc) == aes_error);
+        assert(aes_decrypt_key(v->key, invalid[i], &dec) == aes_error);
+    }
+    release(output, v->size);
+}
+
 static void check_vector(const struct cipher_vector *v)
 {
+    legacy_aes(v);
     for (int decrypt = 0; decrypt < 2; ++decrypt) {
         switch (v->mode) {
         case AES_ECB: ecb(v, decrypt ? &cp_aes_ecb_dec : &cp_aes_ecb_enc, decrypt); break;
