@@ -46,6 +46,13 @@
       "revision": "769255b09561619684b4c5fce5c8effa83cab9af",
       "url": "https://codeload.github.com/apple-oss-distributions/libpthread/tar.gz/769255b09561619684b4c5fce5c8effa83cab9af",
       "sha256": "6108666200d4a586d4714794eb28803bc6fed4e0ee1d468833715644801b7b60"
+    },
+    "openssl": {
+      "repository": "openssl/openssl",
+      "tag": "openssl-3.5.9",
+      "revision": "45e844fa2a14ec92d146bd8f5778ac130b6625fb",
+      "url": "https://codeload.github.com/openssl/openssl/tar.gz/45e844fa2a14ec92d146bd8f5778ac130b6625fb",
+      "sha256": "f54250b21795bb01240f3f9b42c384868d04460e339e39275aaaf93487f2d903"
     }
   }
 }
