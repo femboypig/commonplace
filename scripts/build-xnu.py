@@ -43,7 +43,7 @@ def apply_source_patches(source):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('target', choices=('exporthdrs', 'all'))
+    parser.add_argument('target', choices=('exporthdrs', 'all', 'link'))
     args = parser.parse_args()
     if args.target == 'all' and not shutil.which('csh'):
         parser.error('csh is required for kernel configuration; install the tcsh package')
@@ -148,6 +148,8 @@ def main():
         'OTHER_CXXFLAGS': '-std=gnu++98',
         'CC': str(tools / 'x86_64-apple-darwin15-clang') + ' -std=gnu99',
         'CXX': tools / 'x86_64-apple-darwin15-clang',
+        'LD': (str(tools / 'x86_64-apple-darwin15-clang') + ' -nostdlib -fuse-ld='
+               + str(tools / 'x86_64-apple-darwin15-ld')),
         'MIG': tools / 'mig', 'MIGCOM': ROOT / 'toolchain/libexec/migcom',
         'STRIP': tools / 'x86_64-apple-darwin15-strip',
         'LIPO': tools / 'x86_64-apple-darwin15-lipo',
@@ -158,8 +160,20 @@ def main():
         'HOST_FLEX': shutil.which('flex'), 'HOST_BISON': shutil.which('bison'),
         'HOST_GM4': shutil.which('m4'),
     }
-    result = subprocess.run(['make', '-C', str(source), args.target,
-                             *[f'{k}={v}' for k, v in variables.items()]])
+    command = ['make', '-C', str(source), args.target]
+    if args.target == 'link':
+        configuration = objects / 'DEVELOPMENT_X86_64'
+        variables.update({
+            'CURRENT_KERNEL_CONFIG': 'DEVELOPMENT', 'CURRENT_ARCH_CONFIG': 'X86_64',
+            'CURRENT_MACHINE_CONFIG': 'NONE',
+            'CURRENT_BUILD_CONFIG': 'DEVELOPMENT^X86_64^NONE',
+            'PRIMARY_BUILD_CONFIGS': 'DEVELOPMENT^X86_64^NONE',
+            'SOURCE': source, 'RELATIVE_SOURCE_PATH': '.',
+            'TARGET': str(configuration) + '/', 'OBJPATH': configuration,
+        })
+        command = ['make', '-C', str(configuration), '-f', str(source / 'Makefile'),
+                   'do_build_kernel']
+    result = subprocess.run(command + [f'{k}={v}' for k, v in variables.items()])
     sys.exit(result.returncode)
 
 

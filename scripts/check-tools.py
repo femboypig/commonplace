@@ -33,6 +33,15 @@ def main():
         if (magic, cpu, file_type) != (0xFEEDFACF, 0x01000007, 2):
             raise RuntimeError('linker did not produce an x86_64 Mach-O executable')
         print('mach-o: freestanding x86_64 kernel link passed')
+        run(str(BIN / 'x86_64-apple-darwin15-clang'), '-nostdlib',
+            '-fuse-ld=' + str(BIN / 'x86_64-apple-darwin15-ld'),
+            '-Wl,-static,-e,_entry,-image_base,0xffffff8000200000',
+            'entry.o', '-o', 'kernel-driver-probe', cwd=directory)
+        driver_header = (directory / 'kernel-driver-probe').read_bytes()[:32]
+        if struct.unpack('<4I', driver_header[:16])[:2] != (0xFEEDFACF, 0x01000007):
+            raise RuntimeError('compiler driver selected an incorrect linker target')
+        print('mach-o: compiler driver uses the local darwin linker')
+
 
         # No SDK is needed for this definition; it exercises the generator,
         # its preprocessor, request/reply numbering and variable-length arrays.
