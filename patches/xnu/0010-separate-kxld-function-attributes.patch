@@ -1,0 +1,16 @@
+--- a/libkern/kxld/kxld_object.h
++++ b/libkern/kxld/kxld_object.h
+@@ -1,3 +1,4 @@
++/* commonplace: separate kxld function attributes (2026-11-10). */
+ /*
+  * Copyright (c) 2009, 2012 Apple Inc. All rights reserved.
+  *
+@@ -56,7 +57,7 @@
+     u_char *file, u_long size, const char *name,
+     struct kxld_array *section_order,
+     cpu_type_t cputype, cpu_subtype_t cpusubtype, KXLDFlags flags)
+-    __attribute__((nonnull(1,2,4) visibility("hidden")));
++    __attribute__((nonnull(1,2,4), visibility("hidden")));
+ 
+ void kxld_object_clear(KXLDObject *object)
+     __attribute__((nonnull, visibility("hidden")));
