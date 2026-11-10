@@ -99,7 +99,7 @@ def main():
                  '-Werror=implicit-function-declaration', '-fno-strict-aliasing',
                  '-fsanitize=address,undefined', '-fno-omit-frame-pointer',
                  '-D__private_extern__=', '-DOPENSSL_SUPPRESS_DEPRECATED',
-                 '-DCOMMONPLACE_CRYPTO_HOST', '-I' + str(include), '-I' + str(directory),
+                 '-DCOMMONPLACE_CRYPTO_HOST', '-include', str(ROOT / 'compat/crypto/namespace.h'), '-I' + str(include), '-I' + str(directory),
                  '-I' + str(ROOT / 'kernel/crypto'), '-I' + str(ROOT / 'build/openssl/include'),
                  '-I' + str(ROOT / 'sources/openssl/include')]
         core = ROOT / 'sources/xnu/osfmk/corecrypto'

@@ -34,7 +34,7 @@ for source in "${sources[@]}"; do
     object="$output/${source//\//-}.o"
     "${compiler[@]}" -std=gnu11 -O2 -g \
         -ffreestanding -fno-builtin -fno-stack-protector -fno-strict-aliasing \
-        -DOPENSSL_AES_CONST_TIME "${target_flags[@]}" \
+        -DOPENSSL_AES_CONST_TIME -include compat/crypto/namespace.h "${target_flags[@]}" \
         -msoft-float -mno-sse -mno-sse2 -mno-mmx -mno-red-zone \
         -Ibuild/openssl/include -Isources/openssl/include -Isources/openssl \
         -c "sources/openssl/crypto/$source.c" -o "$object"
