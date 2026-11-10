@@ -53,6 +53,18 @@
       "revision": "45e844fa2a14ec92d146bd8f5778ac130b6625fb",
       "url": "https://codeload.github.com/openssl/openssl/tar.gz/45e844fa2a14ec92d146bd8f5778ac130b6625fb",
       "sha256": "f54250b21795bb01240f3f9b42c384868d04460e339e39275aaaf93487f2d903"
+    },
+    "hfsprogs": {
+      "repository": "fedora/hfsplus-tools",
+      "revision": "diskdev_cmds-540.1.linux3",
+      "url": "https://src.fedoraproject.org/repo/pkgs/hfsplus-tools/diskdev_cmds-540.1.linux3.tar.gz/0435afc389b919027b69616ad1b05709/diskdev_cmds-540.1.linux3.tar.gz",
+      "sha256": "b01b203a97f9a3bf36a027c13ddfc59292730552e62722d690d33bd5c24f5497"
+    },
+    "hfs_tools": {
+      "repository": "mozilla/libdmg-hfsplus",
+      "revision": "c3ea1b21ecd874021081ff1205351bde2db22a06",
+      "url": "https://codeload.github.com/mozilla/libdmg-hfsplus/tar.gz/c3ea1b21ecd874021081ff1205351bde2db22a06",
+      "sha256": "660b90065432ec0a427a055f3aeef87bf853607611ddbb9160ad0c369a6f8a01"
     }
   }
 }
