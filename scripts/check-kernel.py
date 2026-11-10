@@ -67,7 +67,9 @@ def main():
     if undefined:
         raise ValueError('kernel has unresolved symbols: ' + undefined)
     symbols = set(subprocess.check_output([str(nm), '-gj', str(symbol_file)], text=True).splitlines())
-    if not {'__start', '_pstart', '_kernel_bootstrap', '_bsd_init', '_version'} <= symbols:
+    if not {'__start', '_pstart', '_kernel_bootstrap', '_bsd_init', '_version',
+            '__ZN19CommonplacePlatform5startEP9IOService',
+            '__ZN19CommonplacePlatform9metaClassE'} <= symbols:
         raise ValueError('required kernel entry points are missing')
     metadata = {
         'kernel': str(KERNEL.relative_to(ROOT)), 'version': '15.6.0',
@@ -77,6 +79,12 @@ def main():
         'sources': json.loads((ROOT / 'sources.lock.json').read_text()),
         'patches': {path.name: hashlib.sha256(path.read_bytes()).hexdigest()
                     for path in sorted((ROOT / 'patches/xnu').glob('*.patch'))},
+        'platform_sources': {
+            str(path.relative_to(ROOT / 'build/xnu-source/commonplace')):
+            hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in sorted((ROOT / 'build/xnu-source/commonplace').rglob('*'))
+            if path.is_file()
+        },
         'compiler': subprocess.check_output(['clang', '--version'], text=True).splitlines()[0],
     }
     (ROOT / 'build/kernel.json').write_text(json.dumps(metadata, indent=2) + '\n')
