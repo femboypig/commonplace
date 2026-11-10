@@ -22,6 +22,7 @@ void OPENSSL_die(const char *reason, const char *file, int line)
     abort();
 #else
     panic("commonplace crypto: %s (%s:%d)", reason, file, line);
+    __builtin_trap();
 #endif
 }
 
