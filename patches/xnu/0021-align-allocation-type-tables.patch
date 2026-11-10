@@ -1,0 +1,10 @@
+--- a/bsd/kern/kern_malloc.c
++++ b/bsd/kern/kern_malloc.c
+@@ -319,7 +319,6 @@
+ 	"fdvnodedata",	/* 122 M_FD_VN_DATA */
+ 	"fddirbuf",	/* 123 M_FD_DIRBUF */
+ 	"netagent",	/* 124 M_NETAGENT */
+-	""
+ };
+ 
+ /* for use with kmzones.kz_zalloczone */
