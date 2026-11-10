@@ -2,7 +2,7 @@
 set -euo pipefail
 project_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 object_root=${1:?missing xnu object directory}
-setup="$project_root/sources/xnu/SETUP"
+setup="$project_root/build/xnu-source/SETUP"
 includes="$project_root/sources/cctools/cctools/include"
 host_flags=(-std=gnu99 -O2 -D__private_extern__= -D__DARWIN_UNIX03
     -DHAVE_BCMP=1 -DHAVE_BZERO=1 -DHAVE_BCOPY=1 -DHAVE_INDEX=1 -DHAVE_RINDEX=1
