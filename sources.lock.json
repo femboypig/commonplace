@@ -39,6 +39,13 @@
       "revision": "b5214093d4c91ed5352d35ee9126665fabfa97fe",
       "url": "https://codeload.github.com/llvm-mirror/compiler-rt/tar.gz/b5214093d4c91ed5352d35ee9126665fabfa97fe",
       "sha256": "bad8b0fa854f3d7eba58b9fb5aca215dd0adbc91d8d4d12316ec189aae438806"
+    },
+    "libpthread": {
+      "repository": "apple-oss-distributions/libpthread",
+      "tag": "libpthread-138.10.4",
+      "revision": "769255b09561619684b4c5fce5c8effa83cab9af",
+      "url": "https://codeload.github.com/apple-oss-distributions/libpthread/tar.gz/769255b09561619684b4c5fce5c8effa83cab9af",
+      "sha256": "6108666200d4a586d4714794eb28803bc6fed4e0ee1d468833715644801b7b60"
     }
   }
 }
