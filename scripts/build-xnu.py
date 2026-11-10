@@ -90,7 +90,21 @@ def main():
         'MAKEJOBS': '-j2', 'ARCH_CONFIGS': 'X86_64',
         'KERNEL_CONFIGS': 'DEVELOPMENT', 'BUILD_LTO': '0',
         'BUILD_DSYM': '0', 'DO_CTFCONVERT': '0', 'DO_CTFMERGE': '0',
-        'DO_CTFMACHO': '0', 'CC': tools / 'x86_64-apple-darwin15-clang',
+        'DO_CTFMACHO': '0',
+        # Keep newer diagnostic groups visible without making them fatal for
+        # Apple's older source. The upstream warning policy remains enabled.
+        'OTHER_CFLAGS': ' '.join((
+            '-Wno-error=cast-function-type-mismatch',
+            '-Wno-error=c99-designator',
+            '-Wno-error=misleading-indentation',
+            '-Wno-error=strict-prototypes',
+            '-Wno-error=vla-cxx-extension',
+            '-Wno-error=void-pointer-to-enum-cast',
+            '-Wno-error=unused-but-set-variable',
+            '-Wno-error=unused-but-set-global',
+        )),
+        'OTHER_CXXFLAGS': '-std=gnu++98',
+        'CC': str(tools / 'x86_64-apple-darwin15-clang') + ' -std=gnu99',
         'CXX': tools / 'x86_64-apple-darwin15-clang',
         'MIG': tools / 'mig', 'MIGCOM': ROOT / 'toolchain/libexec/migcom',
         'STRIP': tools / 'x86_64-apple-darwin15-strip',
