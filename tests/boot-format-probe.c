@@ -1,5 +1,6 @@
 #include "image.h"
 #include "tree.h"
+#include "memory.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,9 +79,37 @@ static void test_image(void)
     assert(image_parse(header, sizeof(header), &image));
 }
 
+static void test_memory(void)
+{
+    uint32_t records[] = {
+        20, 0x100000, 0, 0x3ff00000, 0, 1,
+        20, 0, 0, 0xa0000, 0, 1,
+        20, 0xf0000, 0, 0x10000, 0, 2,
+    };
+    struct memory memory;
+    EfiMemoryRange output[8];
+    struct memory_reservation reserved[] = {{0, 0x100000}, {0x100000, 0xd00000}};
+    assert(!memory_read(&memory, records, sizeof(records)));
+    assert(memory.ram_size == 0x3ffa0000);
+    assert(memory_contains(&memory, 0x100000, 0xd00000));
+    assert(!memory_contains(&memory, 0, 0x100000));
+    assert(memory_efi(&memory, reserved, 2, output, 8) == 4);
+    assert(output[0].Type == kEfiReservedMemoryType);
+    assert(output[2].PhysicalStart == 0x100000 && output[2].NumberOfPages == 0xc00);
+    assert(output[3].PhysicalStart == 0xd00000 && output[3].Type == kEfiConventionalMemory);
+    assert(!memory_efi(&memory, reserved, 2, output, 3));
+    reserved[0].end = 0x100001;
+    assert(!memory_efi(&memory, reserved, 2, output, 8));
+    for (size_t size = 1; size < 24; ++size)
+        assert(memory_read(&memory, records, size));
+    records[7] = 0x100001;
+    assert(memory_read(&memory, records, sizeof(records)));
+}
+
 int main(void)
 {
     test_tree();
     test_image();
+    test_memory();
     return 0;
 }

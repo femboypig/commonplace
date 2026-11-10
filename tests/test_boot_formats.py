@@ -13,8 +13,10 @@ class BootFormatsTest(unittest.TestCase):
             subprocess.run([
                 'gcc', '-std=c11', '-Wall', '-Wextra', '-Werror',
                 '-fsanitize=address,undefined', '-fno-omit-frame-pointer',
+                '-I', str(ROOT / 'sources/xnu/pexpert'),
                 '-I', str(ROOT / 'boot'), str(ROOT / 'boot/image.c'),
-                str(ROOT / 'boot/tree.c'), str(ROOT / 'tests/boot-format-probe.c'),
+                str(ROOT / 'boot/tree.c'), str(ROOT / 'boot/memory.c'),
+                str(ROOT / 'tests/boot-format-probe.c'),
                 '-o', str(probe),
             ], check=True)
             subprocess.run([str(probe)], check=True)
