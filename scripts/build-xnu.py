@@ -36,7 +36,8 @@ def apply_source_patches(source):
         for relative in paths:
             contents = (temporary / relative).read_bytes()
             output = source / relative
-            if output.read_bytes() != contents:
+            if not output.exists() or output.read_bytes() != contents:
+                output.parent.mkdir(parents=True, exist_ok=True)
                 output.write_bytes(contents)
 
 

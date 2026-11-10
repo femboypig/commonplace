@@ -1,0 +1,13 @@
+--- a/bsd/sys/vnode_internal.h
++++ b/bsd/sys/vnode_internal.h
+@@ -372,8 +372,9 @@
+  * Crays, so if you decide to port this to such a serious machine,
+  * you might want to consult Intrisics.h's XtOffset{,Of,To}.
+  */
++/* commonplace: compute constant offsets without null subtraction (2026-11-10). */
+ #define VOPARG_OFFSET(p_type,field) \
+-        ((int) (((char *) (&(((p_type)NULL)->field))) - ((char *) NULL)))
++	((int)__builtin_offsetof(__typeof__(*((p_type)0)), field))
+ #define VOPARG_OFFSETOF(s_type,field) \
+ 	VOPARG_OFFSET(s_type*,field)
+ #define VOPARG_OFFSETTO(S_TYPE,S_OFFSET,STRUCT_P) \
