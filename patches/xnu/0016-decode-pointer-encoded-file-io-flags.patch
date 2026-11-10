@@ -1,0 +1,16 @@
+--- a/bsd/kern/kern_descrip.c
++++ b/bsd/kern/kern_descrip.c
+@@ -1,3 +1,4 @@
++/* commonplace: decode pointer-encoded file I/O flags (2026-11-10). */
+ /*
+  * Copyright (c) 2000-2015 Apple Inc. All rights reserved.
+  *
+@@ -2245,7 +2246,7 @@
+ 		if (uap->arg) {
+ 			/* extract 32 bits of flags from userland */
+ 			param_ptr = (caddr_t) uap->arg;
+-			param = (uint32_t) param_ptr;
++			param = (uint32_t)(uintptr_t) param_ptr;
+ 		}
+ 		else {
+ 			/* If no argument is specified, error out */
