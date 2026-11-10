@@ -1,0 +1,16 @@
+--- a/bsd/netkey/key.c
++++ b/bsd/netkey/key.c
+@@ -1,3 +1,4 @@
++/* commonplace: validate pfkey message length (2026-11-10). */
+ /*
+  * Copyright (c) 2008-2016 Apple Inc. All rights reserved.
+  *
+@@ -9304,7 +9305,7 @@
+ 	target = KEY_SENDUP_ONE;
+ 	
+ 	if ((m->m_flags & M_PKTHDR) == 0 ||
+-	    m->m_pkthdr.len != m->m_pkthdr.len) {
++	    m->m_pkthdr.len != orglen) {
+ 		ipseclog((LOG_DEBUG, "key_parse: invalid message length.\n"));
+ 		PFKEY_STAT_INCREMENT(pfkeystat.out_invlen);
+ 		error = EINVAL;
