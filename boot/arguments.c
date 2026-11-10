@@ -25,7 +25,7 @@ static void system_table(uint32_t *table)
 }
 
 static size_t device_tree(void *buffer, size_t capacity, const char *command_line,
-    uint64_t frequency)
+    uint64_t frequency, uint32_t root, uint32_t root_size)
 {
     struct tree tree;
     uint8_t seed[64];
@@ -51,6 +51,10 @@ static size_t device_tree(void *buffer, size_t capacity, const char *command_lin
     tree_property(&tree, "boot-args", command_line, length + 1);
     tree_property(&tree, "random-seed", seed, sizeof(seed));
     tree_begin(&tree, "memory-map");
+    if (root_size) {
+        const uint64_t ramdisk[] = {root, root_size};
+        tree_property(&tree, "RAMDisk", ramdisk, sizeof(ramdisk));
+    }
     tree_end(&tree);
     tree_end(&tree);
     tree_begin(&tree, "efi");
@@ -71,7 +75,8 @@ static size_t device_tree(void *buffer, size_t capacity, const char *command_lin
 }
 
 boot_args *arguments_build(uint32_t arena, const struct image *image,
-    const struct memory *memory, struct memory_reservation loader)
+    const struct memory *memory, struct memory_reservation loader,
+    uint32_t root, uint32_t root_size)
 {
     _Static_assert(sizeof(boot_args) == 4096, "Darwin boot argument ABI");
     _Static_assert(sizeof(EfiMemoryRange) == 40, "EFI memory descriptor ABI");
@@ -79,10 +84,15 @@ boot_args *arguments_build(uint32_t arena, const struct image *image,
     args->Revision = kBootArgsRevision;
     args->Version = kBootArgsVersion;
     args->efiMode = kBootArgsEfiMode64;
-    const char command_line[] = "-v serial=3 debug=0x108 keepsyms=1 cpus=1";
-    copy(args->CommandLine, command_line, sizeof(command_line));
+    const char *command_line = root_size ?
+        "-v serial=3 debug=0x108 keepsyms=1 cpus=1 rd=md0" :
+        "-v serial=3 debug=0x108 keepsyms=1 cpus=1";
+    size_t command_size = 0;
+    while (command_line[command_size]) ++command_size;
+    copy(args->CommandLine, command_line, command_size + 1);
     args->kaddr = image->base;
-    args->ksize = arena + BOOT_ARENA_SIZE - image->base;
+    uint32_t end = root_size ? root + root_size : arena + BOOT_ARENA_SIZE;
+    args->ksize = end - image->base;
     args->PhysicalMemorySize = memory->ram_size;
     args->FSBFrequency = bus_frequency();
     if (!args->FSBFrequency)
@@ -93,7 +103,7 @@ boot_args *arguments_build(uint32_t arena, const struct image *image,
     args->MemoryMapDescriptorVersion = 1;
     const struct memory_reservation reserved[] = {
         {0, 0x100000, kEfiReservedMemoryType},
-        {image->base, arena + BOOT_ARENA_SIZE, kEfiLoaderData}, loader
+        {image->base, end, kEfiLoaderData}, loader
     };
     size_t count = memory_efi(memory, reserved, 3,
         (void *)(uintptr_t)args->MemoryMap, 256);
@@ -104,7 +114,7 @@ boot_args *arguments_build(uint32_t arena, const struct image *image,
     system_table((void *)(uintptr_t)args->efiSystemTable);
     args->deviceTreeP = arena + 0x5000;
     args->deviceTreeLength = device_tree((void *)(uintptr_t)args->deviceTreeP,
-        BOOT_ARENA_SIZE - 0x5000, command_line, args->FSBFrequency);
+        BOOT_ARENA_SIZE - 0x5000, command_line, args->FSBFrequency, root, root_size);
     if (!args->deviceTreeLength)
         stop("device tree capacity exceeded");
     return args;
