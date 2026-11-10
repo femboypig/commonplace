@@ -12,6 +12,7 @@ struct memory_region {
 
 struct memory_reservation {
     uint64_t start, end;
+    uint32_t type;
 };
 
 #define MEMORY_REGIONS 128

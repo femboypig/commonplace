@@ -20,7 +20,8 @@ void loader_main(uint32_t magic, const uint32_t *info)
         stop(error);
     uint32_t arena = (image.end + 4095) & ~4095u;
     struct memory_reservation loader = {
-        (uintptr_t)loader_start, (uintptr_t)loader_end
+        .start = (uintptr_t)loader_start, .end = (uintptr_t)loader_end,
+        .type = kEfiReservedMemoryType
     };
     uint32_t module_start = (uintptr_t)boot.kernel;
     uint32_t module_end = module_start + boot.kernel_size;

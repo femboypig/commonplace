@@ -88,7 +88,10 @@ static void test_memory(void)
     };
     struct memory memory;
     EfiMemoryRange output[8];
-    struct memory_reservation reserved[] = {{0, 0x100000}, {0x100000, 0xd00000}};
+    struct memory_reservation reserved[] = {
+        {0, 0x100000, kEfiReservedMemoryType},
+        {0x100000, 0xd00000, kEfiLoaderData}
+    };
     assert(!memory_read(&memory, records, sizeof(records)));
     assert(memory.ram_size == 0x3ffa0000);
     assert(memory_contains(&memory, 0x100000, 0xd00000));
@@ -96,6 +99,7 @@ static void test_memory(void)
     assert(memory_efi(&memory, reserved, 2, output, 8) == 4);
     assert(output[0].Type == kEfiReservedMemoryType);
     assert(output[2].PhysicalStart == 0x100000 && output[2].NumberOfPages == 0xc00);
+    assert(output[2].Type == kEfiLoaderData);
     assert(output[3].PhysicalStart == 0xd00000 && output[3].Type == kEfiConventionalMemory);
     assert(!memory_efi(&memory, reserved, 2, output, 3));
     reserved[0].end = 0x100001;

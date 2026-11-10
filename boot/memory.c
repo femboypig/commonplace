@@ -72,10 +72,9 @@ size_t memory_efi(const struct memory *memory,
             if (region->type == 1) type = kEfiConventionalMemory;
             if (region->type == 3) type = kEfiACPIReclaimMemory;
             if (region->type == 4) type = kEfiACPIMemoryNVS;
-            int occupied = 0;
             for (size_t j = 0; j < reservations; ++j) {
                 if (cursor >= reserved[j].start && cursor < reserved[j].end)
-                    occupied = 1;
+                    type = reserved[j].type;
                 if (reserved[j].start > cursor && reserved[j].start < next)
                     next = reserved[j].start;
                 if (reserved[j].end > cursor && reserved[j].end < next)
@@ -84,7 +83,7 @@ size_t memory_efi(const struct memory *memory,
             if (count == capacity)
                 return 0;
             output[count++] = (EfiMemoryRange){
-                .Type = occupied ? kEfiReservedMemoryType : type,
+                .Type = type,
                 .PhysicalStart = cursor, .NumberOfPages = (next - cursor) >> 12
             };
             cursor = next;

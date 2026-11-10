@@ -91,7 +91,8 @@ boot_args *arguments_build(uint32_t arena, const struct image *image,
     args->MemoryMapDescriptorSize = sizeof(EfiMemoryRange);
     args->MemoryMapDescriptorVersion = 1;
     const struct memory_reservation reserved[] = {
-        {0, 0x100000}, {image->base, arena + BOOT_ARENA_SIZE}, loader
+        {0, 0x100000, kEfiReservedMemoryType},
+        {image->base, arena + BOOT_ARENA_SIZE, kEfiLoaderData}, loader
     };
     size_t count = memory_efi(memory, reserved, 3,
         (void *)(uintptr_t)args->MemoryMap, 256);
