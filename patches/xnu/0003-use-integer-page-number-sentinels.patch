@@ -1,0 +1,34 @@
+--- a/osfmk/i386/AT386/model_dep.c
++++ b/osfmk/i386/AT386/model_dep.c
+@@ -1,3 +1,4 @@
++/* commonplace: use integer zero for absent page numbers (2026-11-10). */
+ /*
+  * Copyright (c) 2000-2012 Apple Inc. All rights reserved.
+  *
+@@ -187,7 +188,7 @@
+ 
+ 	fp = topfp;
+ 	fp_for_ppn = 0;
+-	ppn = (ppnum_t)NULL;
++	ppn = 0;
+ 
+ 	if (fp >= VM_MIN_KERNEL_ADDRESS)
+ 		dump_kernel_stack = TRUE;
+@@ -210,7 +211,7 @@
+ 			ppn = pmap_find_phys(pmap, fp + FP_LR_OFFSET);
+ 			fp_for_ppn = fp + (is_64_bit ? FP_LR_OFFSET64 : FP_LR_OFFSET);
+ 		}
+-		if (ppn != (ppnum_t)NULL) {
++		if (ppn != 0) {
+ 			if (is_64_bit) {
+ 				lr = ml_phys_read_double_64(((((vm_offset_t)ppn) << PAGE_SHIFT)) | ((fp + FP_LR_OFFSET64) & PAGE_MASK));
+ 			} else {
+@@ -228,7 +229,7 @@
+ 			ppn = pmap_find_phys(pmap, fp);
+ 			fp_for_ppn = fp;
+ 		}
+-		if (ppn != (ppnum_t)NULL) {
++		if (ppn != 0) {
+ 			if (is_64_bit) {
+ 				fp = ml_phys_read_double_64(((((vm_offset_t)ppn) << PAGE_SHIFT)) | (fp & PAGE_MASK));
+ 			} else {
