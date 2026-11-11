@@ -1,0 +1,258 @@
+{
+  "schema": 1,
+  "programs": {
+    "echo": {
+      "sources": [
+        "shell_cmds/echo/echo.c"
+      ]
+    },
+    "true": {
+      "sources": [
+        "shell_cmds/true/true.c"
+      ]
+    },
+    "false": {
+      "sources": [
+        "shell_cmds/false/false.c"
+      ]
+    },
+    "basename": {
+      "sources": [
+        "shell_cmds/basename/basename.c"
+      ]
+    },
+    "dirname": {
+      "sources": [
+        "shell_cmds/dirname/dirname.c"
+      ]
+    },
+    "env": {
+      "sources": [
+        "shell_cmds/env/env.c",
+        "shell_cmds/env/envopts.c"
+      ]
+    },
+    "printenv": {
+      "sources": [
+        "shell_cmds/printenv/printenv.c"
+      ]
+    },
+    "printf": {
+      "sources": [
+        "shell_cmds/printf/printf.c"
+      ]
+    },
+    "pwd": {
+      "sources": [
+        "shell_cmds/pwd/pwd.c"
+      ]
+    },
+    "sleep": {
+      "sources": [
+        "shell_cmds/sleep/sleep.c"
+      ]
+    },
+    "tee": {
+      "sources": [
+        "shell_cmds/tee/tee.c"
+      ]
+    },
+    "test": {
+      "sources": [
+        "shell_cmds/test/test.c"
+      ]
+    },
+    "yes": {
+      "sources": [
+        "shell_cmds/yes/yes.c"
+      ]
+    },
+    "kill": {
+      "sources": [
+        "shell_cmds/kill/kill.c"
+      ]
+    },
+    "uname": {
+      "sources": [
+        "shell_cmds/uname/uname.c"
+      ]
+    },
+    "hostname": {
+      "sources": [
+        "shell_cmds/hostname/hostname.c"
+      ]
+    },
+    "seq": {
+      "sources": [
+        "shell_cmds/seq/seq.c"
+      ]
+    },
+    "jot": {
+      "sources": [
+        "shell_cmds/jot/jot.c"
+      ]
+    },
+    "hexdump": {
+      "sources": [
+        "shell_cmds/hexdump/conv.c",
+        "shell_cmds/hexdump/display.c",
+        "shell_cmds/hexdump/hexdump.c",
+        "shell_cmds/hexdump/hexsyntax.c",
+        "shell_cmds/hexdump/odsyntax.c",
+        "shell_cmds/hexdump/parse.c"
+      ]
+    },
+    "xargs": {
+      "sources": [
+        "shell_cmds/xargs/strnsubst.c",
+        "shell_cmds/xargs/xargs.c"
+      ]
+    },
+    "cat": {
+      "sources": [
+        "text_cmds/cat/cat.c"
+      ]
+    },
+    "head": {
+      "sources": [
+        "text_cmds/head/head.c"
+      ]
+    },
+    "tail": {
+      "sources": [
+        "text_cmds/tail/forward.c",
+        "text_cmds/tail/misc.c",
+        "text_cmds/tail/read.c",
+        "text_cmds/tail/reverse.c",
+        "text_cmds/tail/tail.c"
+      ]
+    },
+    "wc": {
+      "sources": [
+        "text_cmds/wc/wc.c"
+      ]
+    },
+    "cut": {
+      "sources": [
+        "text_cmds/cut/cut.c"
+      ]
+    },
+    "paste": {
+      "sources": [
+        "text_cmds/paste/paste.c"
+      ]
+    },
+    "tr": {
+      "sources": [
+        "text_cmds/tr/cmap.c",
+        "text_cmds/tr/cset.c",
+        "text_cmds/tr/str.c",
+        "text_cmds/tr/tr.c"
+      ]
+    },
+    "uniq": {
+      "sources": [
+        "text_cmds/uniq/uniq.c"
+      ]
+    },
+    "sed": {
+      "sources": [
+        "text_cmds/sed/compile.c",
+        "text_cmds/sed/main.c",
+        "text_cmds/sed/misc.c",
+        "text_cmds/sed/process.c"
+      ]
+    },
+    "ed": {
+      "sources": [
+        "text_cmds/ed/buf.c",
+        "text_cmds/ed/cbc.c",
+        "text_cmds/ed/glbl.c",
+        "text_cmds/ed/io.c",
+        "text_cmds/ed/main.c",
+        "text_cmds/ed/re.c",
+        "text_cmds/ed/sub.c",
+        "text_cmds/ed/undo.c"
+      ]
+    },
+    "mkdir": {
+      "sources": [
+        "file_cmds/mkdir/mkdir.c"
+      ]
+    },
+    "rmdir": {
+      "sources": [
+        "file_cmds/rmdir/rmdir.c"
+      ]
+    },
+    "mkfifo": {
+      "sources": [
+        "file_cmds/mkfifo/mkfifo.c"
+      ]
+    },
+    "ln": {
+      "sources": [
+        "file_cmds/ln/ln.c"
+      ]
+    },
+    "touch": {
+      "sources": [
+        "file_cmds/touch/touch.c"
+      ]
+    },
+    "ls": {
+      "sources": [
+        "file_cmds/ls/cmp.c",
+        "file_cmds/ls/ls.c",
+        "file_cmds/ls/print.c",
+        "file_cmds/ls/util.c"
+      ]
+    },
+    "stat": {
+      "sources": [
+        "file_cmds/stat/stat.c"
+      ]
+    },
+    "cp": {
+      "sources": [
+        "file_cmds/cp/cp.c",
+        "file_cmds/cp/utils.c"
+      ]
+    },
+    "mv": {
+      "sources": [
+        "file_cmds/mv/mv.c"
+      ]
+    },
+    "rm": {
+      "sources": [
+        "file_cmds/rm/rm.c"
+      ]
+    },
+    "chmod": {
+      "sources": [
+        "file_cmds/chmod/chmod.c",
+        "file_cmds/chmod/chmod_acl.c"
+      ]
+    },
+    "sync": {
+      "sources": [
+        "system_cmds/sync.tproj/sync.c"
+      ]
+    },
+    "date": {
+      "sources": [
+        "shell_cmds/date/date.c",
+        "shell_cmds/date/vary.c"
+      ],
+      "flags": [
+        "-DVARIANT_STATIC=1"
+      ]
+    },
+    "id": {
+      "sources": [
+        "shell_cmds/id/id.c"
+      ]
+    }
+  }
+}

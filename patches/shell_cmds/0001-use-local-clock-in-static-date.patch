@@ -1,0 +1,37 @@
+--- a/date/date.c
++++ b/date/date.c
+@@ -303,23 +303,34 @@
+ 
+ 	if (!jflag) {
+ 		/* set the time */
++		#if VARIANT_STATIC
++		/* The bootstrap profile has no timed or accounting daemon. */
++		if (1) {
++#else
+ 		if (nflag || netsettime(tval)) {
++#endif
+ 			struct utmpx ut;
+ 			bzero(&ut, sizeof(ut));
+ 			ut.ut_type = OLD_TIME;
+ 			(void)gettimeofday(&ut.ut_tv, NULL);
++#if !VARIANT_STATIC
+ 			pututxline(&ut);
++#endif
+ 			ut.ut_tv.tv_sec = tval;
+ 			ut.ut_tv.tv_usec = 0;
+ 			if (settimeofday(&ut.ut_tv, NULL))
+ 				err(1, "settimeofday (timeval)");
+ 			ut.ut_type = NEW_TIME;
++#if !VARIANT_STATIC
+ 			pututxline(&ut);
++#endif
+ 		}
+ 
++#if !VARIANT_STATIC
+ 		if ((p = getlogin()) == NULL)
+ 			p = "???";
+ 		syslog(LOG_AUTH | LOG_NOTICE, "date set by %s", p);
++#endif
+ 	}
+ }
+ 
