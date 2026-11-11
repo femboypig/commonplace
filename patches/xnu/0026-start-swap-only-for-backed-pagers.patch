@@ -1,0 +1,11 @@
+--- a/osfmk/vm/vm_compressor.c
++++ b/osfmk/vm/vm_compressor.c
+@@ -544,7 +544,7 @@
+ 	if (vm_pageout_internal_start() != KERN_SUCCESS) {
+ 		panic("vm_compressor_init: Failed to start the internal pageout thread.\n");
+ 	}
+-	if (COMPRESSED_PAGER_IS_ACTIVE || DEFAULT_FREEZER_COMPRESSED_PAGER_IS_ACTIVE)
++	if (COMPRESSED_PAGER_IS_SWAPBACKED || DEFAULT_FREEZER_COMPRESSED_PAGER_IS_SWAPBACKED)
+ 		vm_compressor_swap_init();
+ 
+ 	if (COMPRESSED_PAGER_IS_ACTIVE || DEFAULT_FREEZER_COMPRESSED_PAGER_IS_SWAPBACKED)
