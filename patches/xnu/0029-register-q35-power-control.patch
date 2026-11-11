@@ -1,0 +1,8 @@
+--- a/iokit/conf/files
++++ b/iokit/conf/files
+@@ -110,3 +110,5 @@
+ 
+ commonplace/platform/CommonplaceRTC.cpp standard
+ commonplace/platform/CommonplaceCalendar.c standard
++
++commonplace/platform/CommonplacePower.cpp standard
