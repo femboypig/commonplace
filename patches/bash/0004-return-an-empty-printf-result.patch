@@ -1,0 +1,11 @@
+--- a/bash-3.2/builtins/printf.def
++++ b/bash-3.2/builtins/printf.def
+@@ -577,7 +577,7 @@
+ #else
+   if (string == 0 || len == 0)
+ #endif
+-    return;
++    return 0;
+ 
+ #if 0
+   s = fmt;
