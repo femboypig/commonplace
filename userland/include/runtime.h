@@ -26,5 +26,6 @@ _Static_assert(sizeof(struct system_stat)==144,"Darwin user64_stat64 size");
 _Static_assert(offsetof(struct system_stat,inode)==8,"Darwin inode field");
 _Static_assert(offsetof(struct system_stat,size)==96,"Darwin file size field");
 long file_status(int,struct system_stat *);
+long mount_hfs(const char *, const char *, unsigned);
 long parse_unsigned(const char *);
 #endif
