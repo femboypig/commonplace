@@ -28,7 +28,7 @@ def main():
             output.truncate(32 * 1024 * 1024)
         subprocess.run([str(formatter), '-v', 'commonplace', '-U', '0', '-G', '0',
                         '-M', '755', str(image)], check=True)
-        for directory in ('dev', 'sbin', 'bin', 'etc', 'tmp', 'root'):
+        for directory in ('dev', 'sbin', 'bin', 'etc', 'tmp', 'root', 'data'):
             subprocess.run([str(hfs), str(image), 'mkdir', '/' + directory], check=True)
         hashes = {}
         for destination, program in programs.items():
@@ -40,7 +40,7 @@ def main():
                 raise ValueError('HFS+ program round-trip verification failed: ' + destination)
             hashes[destination] = hashlib.sha256(program.read_bytes()).hexdigest()
         motd = temporary / 'motd'
-        motd.write_text('commonplace\nRAM root: file changes are lost when QEMU exits.\n')
+        motd.write_text('commonplace\nRAM root is temporary. Use mounted /data for persistent files.\n')
         subprocess.run([str(hfs), str(image), 'add', str(motd), '/etc/motd'], check=True)
         subprocess.run([str(hfs), str(image), 'ls', '/bin'], check=True)
         image.replace(OUT / 'root.hfs')
