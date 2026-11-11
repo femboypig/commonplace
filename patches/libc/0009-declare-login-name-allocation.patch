@@ -1,0 +1,10 @@
+--- a/gen/FreeBSD/getlogin.c
++++ b/gen/FreeBSD/getlogin.c
+@@ -37,6 +37,7 @@
+ #include <errno.h>
+ #include <pwd.h>
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
+ #include "namespace.h"

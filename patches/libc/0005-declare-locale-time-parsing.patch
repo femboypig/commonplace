@@ -1,0 +1,10 @@
+--- a/stdtime/FreeBSD/strptime.c
++++ b/stdtime/FreeBSD/strptime.c
+@@ -65,6 +65,7 @@
+ 
+ #include "namespace.h"
+ #include <time.h>
++#include <xlocale/_time.h>
+ #include <ctype.h>
+ #include <errno.h>
+ #include <stdio.h>

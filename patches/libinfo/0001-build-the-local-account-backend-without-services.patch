@@ -1,0 +1,180 @@
+--- a/lookup.subproj/file_module.c
++++ b/lookup.subproj/file_module.c
+@@ -29,18 +29,15 @@
+ #include <time.h>
+ #include <dirent.h>
+ #include <errno.h>
+-#include <notify.h>
+ #include <pthread.h>
+ #include <arpa/inet.h>
+ #include <sys/param.h>
+ #include <sys/mount.h>
+ #include <sys/stat.h>
+ #include <ils.h>
+-#include <dispatch/dispatch.h>
+ #include <TargetConditionals.h>
+ 
+ /* notify SPI */
+-uint32_t notify_peek(int token, uint32_t *val);
+ 
+ extern uint32_t gL1CacheEnabled;
+ 
+@@ -50,7 +47,7 @@
+ #define _PATH_ETHERS "/etc/ethers"
+ #define _PATH_NETGROUP "/etc/netgroup"
+ 
+-static dispatch_once_t rootfs_once;
++static int rootfs_once;
+ static si_item_t *rootfs = NULL;
+ 
+ #define CHUNK 256
+@@ -288,29 +285,7 @@
+ 
+ 	if (vtype >= VALIDATION_COUNT) return;
+ 
+-	bit = 1 << vtype;
+-	if (bit & pp->validation_notify_mask)
+-	{
+-		/* use notify validation for this type */
+-		if (pp->notify_token[vtype] < 0)
+-		{
+-			char *str = NULL;
+-			asprintf(&str, "com.apple.system.info:%s", path);
+-			if (str == NULL) return;
+-
+-			status = notify_register_check(str, &(pp->notify_token[vtype]));
+-			free(str);
+-		}
+-
+-		if (a != NULL)
+-		{
+-			status = notify_peek(pp->notify_token[vtype], &peek);
+-			if (status == NOTIFY_STATUS_OK) *a = ntohl(peek);
+-		}
+-
+-		if (b != NULL) *b = vtype;
+-	}
+-	else
++
+ 	{
+ 		/* use stat() and last mod time for this type */
+ 		memset(&sb, 0, sizeof(struct stat));
+@@ -439,16 +414,7 @@
+ 		if (va != sb.st_mtimespec.tv_sec) return 0;
+ 		if (vb != sb.st_mtimespec.tv_nsec) return 0;
+ 	}
+-	else
+-	{
+-		item_val = va;
+-		curr_val = -1;
+-		status = notify_peek(pp->notify_token[vtype], &curr_val);
+-		if (status != NOTIFY_STATUS_OK) return 0;
+-
+-		curr_val = ntohl(curr_val);
+-		if (item_val != curr_val) return 0;
+-	}
++	else return 0;
+ 
+ 	return 1;
+ }
+@@ -1841,10 +1807,9 @@
+     return result;
+ }
+ 
+-static si_item_t *
+-_fsi_fs_root(si_mod_t *si)
+-{
+-	dispatch_once(&rootfs_once, ^{
++static void
++_fsi_fs_root_initialize(si_mod_t *si)
++{
+ 		struct stat rootstat;
+ 		struct statfs rootfsinfo;
+ 		char *root_spec;
+@@ -1863,8 +1828,12 @@
+ 		root_spec = _fsi_get_device_path(rootstat.st_dev);
+ 
+ 		rootfs = (si_item_t *)LI_ils_create("L4488sssss44", (unsigned long)si, CATEGORY_FS, 1, 0LL, 0LL, root_spec, root_path, rootfsinfo.f_fstypename, FSTAB_RW, FSTAB_RW, 0, 1);
+-	});
+-
++}
++
++static si_item_t *
++_fsi_fs_root(si_mod_t *si)
++{
++	if (!rootfs_once) { rootfs_once=1; _fsi_fs_root_initialize(si); }
+ 	return si_item_retain(rootfs);
+ }
+ 
+@@ -2300,45 +2269,7 @@
+ 
+ 		.sim_grouplist = &file_grouplist,
+ 
+-		.sim_netgroup_byname = &file_netgroup_byname,
+-		.sim_in_netgroup = &file_in_netgroup,
+-
+-		.sim_alias_byname = &file_alias_byname,
+-		.sim_alias_all = &file_alias_all,
+-
+-		.sim_host_byname = &file_host_byname,
+-		.sim_host_byaddr = &file_host_byaddr,
+-		.sim_host_all = &file_host_all,
+-
+-		.sim_network_byname = &file_network_byname,
+-		.sim_network_byaddr = &file_network_byaddr,
+-		.sim_network_all = &file_network_all,
+-
+-		.sim_service_byname = &file_service_byname,
+-		.sim_service_byport = &file_service_byport,
+-		.sim_service_all = &file_service_all,
+-
+-		.sim_protocol_byname = &file_protocol_byname,
+-		.sim_protocol_bynumber = &file_protocol_bynumber,
+-		.sim_protocol_all = &file_protocol_all,
+-
+-		.sim_rpc_byname = &file_rpc_byname,
+-		.sim_rpc_bynumber = &file_rpc_bynumber,
+-		.sim_rpc_all = &file_rpc_all,
+-
+-		.sim_fs_byspec = &file_fs_byspec,
+-		.sim_fs_byfile = &file_fs_byfile,
+-		.sim_fs_all = &file_fs_all,
+-
+-		.sim_mac_byname = &file_mac_byname,
+-		.sim_mac_bymac = &file_mac_bymac,
+-		.sim_mac_all = &file_mac_all,
+-
+-		.sim_wants_addrinfo = NULL,
+-		.sim_addrinfo = &file_addrinfo,
+-
+-		/* no nameinfo support */
+-		.sim_nameinfo = NULL,
++
+ 	};
+ 
+ 	static si_mod_t si =
+@@ -2351,9 +2282,7 @@
+ 		.vtable = &file_vtable,
+ 	};
+ 
+-	static dispatch_once_t once;
+-
+-	dispatch_once(&once, ^{
++	if (si.name == NULL) {
+ 		si.name = strdup("file");
+ 		file_si_private_t *pp = calloc(1, sizeof(file_si_private_t));
+ 		if (pp != NULL)
+@@ -2362,11 +2291,11 @@
+ 			for (i = 0; i < VALIDATION_COUNT; i++) pp->notify_token[i] = -1;
+ 
+ 			/* hardwired for now, but we may want to make this configurable someday */
+-			pp->validation_notify_mask = VALIDATION_MASK_HOSTS | VALIDATION_MASK_SERVICES | VALIDATION_MASK_PROTOCOLS;
++			pp->validation_notify_mask = 0;
+ 		}
+ 
+ 		si.private = pp;
+-	});
++	}
+ 
+ 	return (si_mod_t *)&si;
+ }

@@ -1,0 +1,11 @@
+--- a/gen/nanosleep.c
++++ b/gen/nanosleep.c
+@@ -249,7 +249,7 @@
+     static struct mach_timebase_info info = {0, 0};
+     static int unity;
+     
+-    if ((requested_time == NULL) || (requested_time->tv_sec < 0) || (requested_time->tv_nsec > NSEC_PER_SEC)) {
++    if ((requested_time == NULL) || (requested_time->tv_sec < 0) || (requested_time->tv_nsec < 0) || (requested_time->tv_nsec >= NSEC_PER_SEC)) {
+         errno = EINVAL;
+         return -1;
+     }

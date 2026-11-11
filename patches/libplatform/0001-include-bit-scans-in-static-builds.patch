@@ -1,0 +1,22 @@
+--- a/src/string/generic/ffsll.c
++++ b/src/string/generic/ffsll.c
+@@ -57,7 +57,7 @@
+ #endif
+ }
+ 
+-#if VARIANT_DYLD && TARGET_IPHONE_SIMULATOR
++#if VARIANT_STATIC || (VARIANT_DYLD && TARGET_IPHONE_SIMULATOR)
+ int
+ ffsl(long mask)
+ {
+--- a/src/string/generic/flsll.c
++++ b/src/string/generic/flsll.c
+@@ -57,7 +57,7 @@
+ #endif
+ }
+ 
+-#if VARIANT_DYLD && TARGET_IPHONE_SIMULATOR
++#if VARIANT_STATIC || (VARIANT_DYLD && TARGET_IPHONE_SIMULATOR)
+ int
+ flsl(long mask)
+ {

@@ -1,0 +1,23 @@
+--- a/sys/settimeofday.c
++++ b/sys/settimeofday.c
+@@ -22,8 +22,10 @@
+  */
+ 
+ #include <sys/time.h>
++#if !VARIANT_STATIC
+ #include <notify.h>
+ #include <notify_keys.h>
++#endif
+ 
+ #ifndef kNotifyClockSet
+ #define kNotifyClockSet "com.apple.system.clock_set"
+@@ -38,7 +40,9 @@
+ settimeofday(const struct timeval *tp, const struct timezone *tzp)
+ {
+ 	int ret = __settimeofday(tp, tzp);
++#if !VARIANT_STATIC
+ 	if (ret == 0) notify_post(kNotifyClockSet);
++#endif
+ 
+ 	return ret;
+ }

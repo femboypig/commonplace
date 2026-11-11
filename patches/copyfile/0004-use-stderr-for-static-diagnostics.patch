@@ -1,0 +1,22 @@
+--- a/copyfile.c
++++ b/copyfile.c
+@@ -305,7 +305,7 @@
+ #define COPYFILE_DEBUG (1<<31)
+ #define COPYFILE_DEBUG_VAR "COPYFILE_DEBUG"
+ 
+-#ifndef _COPYFILE_TEST
++#if !defined(_COPYFILE_TEST) && !VARIANT_STATIC
+ # define copyfile_warn(str, ...) syslog(LOG_WARNING, str ": %m", ## __VA_ARGS__)
+ # define copyfile_debug(d, str, ...) \
+    do { \
+@@ -313,6 +313,10 @@
+ 	syslog(LOG_DEBUG, "%s:%d:%s() " str "\n", __FILE__, __LINE__ , __FUNCTION__, ## __VA_ARGS__); \
+     } \
+    } while (0)
++#elif VARIANT_STATIC
++#define copyfile_warn(str, ...) warn(str, ## __VA_ARGS__)
++#define copyfile_debug(d, str, ...) \
++    do { if (s && (d <= s->debug)) warnx(str, ## __VA_ARGS__); } while (0)
+ #else
+ #define copyfile_warn(str, ...) \
+     fprintf(stderr, "%s:%d:%s() " str ": %s\n", __FILE__, __LINE__ , __FUNCTION__, ## __VA_ARGS__, (errno) ? strerror(errno) : "")

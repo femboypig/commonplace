@@ -1,0 +1,10 @@
+--- a/locale/FreeBSD/wcsftime.c
++++ b/locale/FreeBSD/wcsftime.c
+@@ -33,6 +33,7 @@
+ #include <limits.h>
+ #include <stdlib.h>
+ #include <time.h>
++#include <xlocale/_time.h>
+ #include <wchar.h>
+ 
+ /*

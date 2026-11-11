@@ -1,0 +1,12 @@
+--- a/membership.subproj/membership.c
++++ b/membership.subproj/membership.c
+@@ -28,7 +28,9 @@
+ #include <mach/mach.h>
+ #include "membership.h"
+ #include "membershipPriv.h"
++#ifdef DS_AVAILABLE
+ #include <servers/bootstrap.h>
++#endif
+ #include <libkern/OSByteOrder.h>
+ #ifdef DS_AVAILABLE
+ #include <xpc/xpc.h>

@@ -1,0 +1,40 @@
+--- a/locale/FreeBSD/rune.c
++++ b/locale/FreeBSD/rune.c
+@@ -73,7 +73,7 @@
+ #define BYTES32BITS		4
+ #define BYTES64BITS		8
+ /* whether to skip over a pointer or not (one-to-one with off64) */
+-int skip[] = {
++static const int skip[] = {
+ 	1,
+ 	1,
+ 	0,
+@@ -87,7 +87,7 @@
+ 	0
+ };
+ #endif /* !RUNEOFF32 */
+-int off64[] = {
++static const int off64[] = {
+ 	offsetof(_RuneLocale, __sgetrune),
+ 	offsetof(_RuneLocale, __sputrune),
+ 	offsetof(_RuneLocale, __runetype_ext),
+@@ -111,7 +111,7 @@
+ 	int i;
+ 	printf("#define SIZEOF32_RUNEENTRY %d\n", sizeof(_RuneEntry));
+ 	printf("#define SIZEOF32_RUNELOCALE %d\n", sizeof(_RuneLocale));
+-	printf("int off32[] = {\n");
++	printf("static const int off32[] = {\n");
+ 	for(i = 0; i < NOFF; i++)
+ 		printf("\t%d,\n", off64[i]);
+ 	printf("};\n");
+--- a/locale/FreeBSD/rune32.h
++++ b/locale/FreeBSD/rune32.h
+@@ -5,7 +5,7 @@
+ 
+ #define SIZEOF32_RUNEENTRY 16
+ #define SIZEOF32_RUNELOCALE 3164
+-int off32[] = {
++static const int off32[] = {
+ 	40,
+ 	44,
+ 	3124,

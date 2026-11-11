@@ -1,0 +1,29 @@
+--- a/xattr_flags.c
++++ b/xattr_flags.c
+@@ -29,8 +29,6 @@
+ #include <errno.h>
+ #include <sys/types.h>
+ #include <sys/xattr.h>
+-#include <dispatch/dispatch.h>
+-#include <xpc/private.h>
+ 
+ #include <xattr_flags.h>
+ 
+@@ -136,15 +134,8 @@
+ nameInDefaultList(const char *eaname)
+ {
+ 	const struct defaultList *retval;
+-	static dispatch_once_t onceToken;
+-    
+-	dispatch_once(&onceToken, ^{
+-		if (_xpc_runtime_is_app_sandboxed()) {
+-			defaultPropertyTable = defaultSandboxedPropertyTable;
+-		} else {
+-			defaultPropertyTable = defaultUnboxedPropertyTable;
+-		}
+-	});
++	/* Static bootstrap programs do not run inside an app sandbox. */
++	defaultPropertyTable = defaultUnboxedPropertyTable;
+ 
+ 	for (retval = defaultPropertyTable; retval->eaName; retval++) {
+ 		if ((retval->flags & propFlagsPrefix) != 0 &&

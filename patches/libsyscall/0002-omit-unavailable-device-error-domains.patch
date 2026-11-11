@@ -1,0 +1,38 @@
+--- a/mach/err_iokit.sub
++++ b/mach/err_iokit.sub
+@@ -29,7 +29,7 @@
+ 
+ #include <TargetConditionals.h>
+ #include <IOKit/IOReturn.h>
+-#if !TARGET_OS_EMBEDDED
++#if !TARGET_OS_EMBEDDED && !VARIANT_STATIC
+ #include <IOKit/usb/USB.h>
+ #include <IOKit/firewire/IOFireWireLib.h>
+ #endif
+@@ -97,7 +97,7 @@
+     "(iokit/common) data was not found",				// 0x2f0
+ };
+ 
+-#if !TARGET_OS_EMBEDDED
++#if !TARGET_OS_EMBEDDED && !VARIANT_STATIC
+ static const struct error_sparse_map err_codes_iokit_usb_map[] = {
+     err_code_map_entry(kIOUSBCRCErr, kIOUSBDataToggleErr),
+     err_code_map_entry(kIOUSBPIDCheckErr, kIOUSBWrongPIDErr),
+@@ -220,7 +220,7 @@
+ 	err_codes_iokit_common_map,
+ 	errlib_count(err_codes_iokit_common_map),
+     },
+-#if !TARGET_OS_EMBEDDED
++#if !TARGET_OS_EMBEDDED && !VARIANT_STATIC
+     /*  1 */ {
+ 	"(iokit/usb)",				// 0xe0004000
+ 	errlib_count(err_codes_iokit_usb),
+@@ -241,7 +241,7 @@
+     /*  5 */ { "(iokit/graphics)",   0 },	// 0xe0014000
+     /*  6 */ err_iokit_null_sub,		// 0xe0018000
+     /*  7 */ err_iokit_null_sub,		// 0xe001c000
+-#if !TARGET_OS_EMBEDDED
++#if !TARGET_OS_EMBEDDED && !VARIANT_STATIC
+     /*  8 */ {
+ 	"(iokit/bluetooth)",			// 0xe0020000
+ 	errlib_count(err_codes_iokit_bluetooth),

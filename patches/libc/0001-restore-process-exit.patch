@@ -1,0 +1,10 @@
+--- a/stdlib/FreeBSD/exit.c
++++ b/stdlib/FreeBSD/exit.c
+@@ -55,3 +55,7 @@
+ void
+ exit(int status)
+ {
++	__cxa_finalize(NULL);
++	if (__cleanup) (*__cleanup)();
++	__exit(status);
++}

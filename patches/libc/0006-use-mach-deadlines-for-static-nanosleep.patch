@@ -1,0 +1,11 @@
+--- a/gen/nanosleep.c
++++ b/gen/nanosleep.c
+@@ -30,7 +30,7 @@
+ #include <string.h>
+ #include <TargetConditionals.h>
+ 
+-#if __DARWIN_UNIX03
++#if __DARWIN_UNIX03 && !VARIANT_STATIC
+ #include <mach/clock.h>
+ #include <pthread.h>
+ #include <mach/mach.h>

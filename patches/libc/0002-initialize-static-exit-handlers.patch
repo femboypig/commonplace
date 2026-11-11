@@ -1,0 +1,27 @@
+--- a/stdlib/FreeBSD/atexit.c
++++ b/stdlib/FreeBSD/atexit.c
+@@ -54,7 +54,10 @@
+ #include <Block_private.h>
+ #endif /* __BLOCKS__ */
+ #include "libc_private.h"
++#include <stdbool.h>
++#if !VARIANT_STATIC
+ #include <os/alloc_once_private.h>
++#endif
+ 
+ #include <TargetConditionals.h>
+ 
+@@ -94,8 +96,13 @@
+ void
+ __atexit_init(void)
+ {
++#if VARIANT_STATIC
++	static struct atexit initial;
++	__atexit = &initial;
++#else
+ 	__atexit = os_alloc_once(OS_ALLOC_ONCE_KEY_LIBSYSTEM_C,
+ 			sizeof(struct atexit), NULL);
++#endif
+ }
+ 
+ /*

@@ -1,0 +1,13 @@
+--- a/lookup.subproj/ils.c
++++ b/lookup.subproj/ils.c
+@@ -25,10 +25,8 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <mach/mach.h>
+-#include <servers/bootstrap.h>
+ #include <pthread.h>
+ #include <errno.h>
+-#include <notify.h>
+ #include <syslog.h>
+ #include <unistd.h>
+ #ifdef DEBUG

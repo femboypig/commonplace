@@ -1,0 +1,11 @@
+--- a/copyfile.c
++++ b/copyfile.c
+@@ -53,7 +53,7 @@
+ #endif
+ 
+ #include <TargetConditionals.h>
+-#if !TARGET_OS_IPHONE
++#if !TARGET_OS_IPHONE && !VARIANT_STATIC
+ #include <quarantine.h>
+ 
+ #define	XATTR_QUARANTINE_NAME qtn_xattr_name
