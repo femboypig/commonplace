@@ -12,6 +12,7 @@ long sys_open_mode(const char *, int, unsigned);
 long sys_close(int fd);
 long sys_getpid(void);
 void sys_sleep(unsigned seconds);
+void sys_delay(unsigned milliseconds);
 void print(int fd, const char *text);
 void print_number(int fd, unsigned long value);
 int read_line(int fd, char *buffer, size_t capacity);

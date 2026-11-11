@@ -25,6 +25,7 @@ int main(void)
     print_number(1, (unsigned long)sys_getpid());
     print(1, "\n");
     init_system();
+    init_script();
     for (;;) {
         await_shutdown();
         long child = sys_fork();

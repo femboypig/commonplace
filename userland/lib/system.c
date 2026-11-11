@@ -75,3 +75,8 @@ long sys_handle_signal(int number, system_signal_handler handler)
 long sys_open_mode(const char *path, int flags, unsigned mode)
 { return system_call(SYS_open,(uintptr_t)path,flags,mode,0,0,0); }
 
+void sys_delay(unsigned milliseconds)
+{
+    struct system_time timeout={(int64_t)(milliseconds/1000),(int32_t)((milliseconds%1000)*1000),0};
+    system_call(SYS_select,0,0,0,0,(uintptr_t)&timeout,0);
+}
