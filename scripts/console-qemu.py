@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Attach the current terminal to the bootstrap console; Ctrl-A X exits QEMU."""
+"""Attach the terminal to commonplace; use poweroff for a clean exit."""
 import argparse
 import os
-from qemu_machine import KERNEL, LOADER, ROOT_IMAGE, command_for
+from qemu_machine import ROOT, KERNEL, LOADER, ROOT_IMAGE, DATA_DISK, command_for
 
 
 def main():
@@ -11,10 +11,12 @@ def main():
     options = parser.parse_args()
     if not 512 <= options.memory <= 8192:
         parser.error('memory must be 512..8192 MiB')
-    for path in (LOADER, KERNEL, ROOT_IMAGE):
+    for path in (LOADER, KERNEL, ROOT_IMAGE, DATA_DISK):
         if not path.is_file():
             parser.error('missing artifact: ' + str(path))
-    command = command_for([KERNEL, ROOT_IMAGE], options.memory) + ['-serial', 'mon:stdio']
+    os.chdir(ROOT)
+    command = command_for([KERNEL.relative_to(ROOT), ROOT_IMAGE.relative_to(ROOT)],
+                          options.memory, DATA_DISK.relative_to(ROOT), bounded=False) + ['-serial', 'mon:stdio']
     os.execvp(command[0], command)
 
 
