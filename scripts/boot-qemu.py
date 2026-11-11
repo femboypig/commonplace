@@ -40,7 +40,28 @@ def main():
     parser.add_argument('--root-image', type=Path, help='HFS+ root image passed as a second module')
     parser.add_argument('--require-init', action='store_true', help='require bootstrap PID 1 and console prompt')
     parser.add_argument('--check-console', action='store_true', help='exercise TTY input and commands')
+    parser.add_argument('--disk-image', type=Path, help='persistent raw HFS+ data disk')
+    parser.add_argument('--console-case-file',type=Path,help='JSON console scenario for integration checks')
+    parser.add_argument('--expect-shutdown', choices=('poweroff','reboot'), help='require guest shutdown after console checks')
     options = parser.parse_args()
+    if options.expect_shutdown and not options.check_console:
+        parser.error('--expect-shutdown needs --check-console')
+    probe_cases = None
+    if options.console_case_file:
+        if not options.check_console:
+            parser.error('--console-case-file needs --check-console')
+        entries=json.loads(options.console_case_file.read_text())
+        if not isinstance(entries,list) or not entries or len(entries)>1000:
+            parser.error('console scenario must contain 1..1000 cases')
+        probe_cases=[]
+        for case in entries:
+            if set(case)!={'name','send','expect'} or not all(isinstance(v,str) for v in case.values()):
+                parser.error('invalid console case')
+            probe_cases.append((case['name'],case['send'].encode(),case['expect'].encode()))
+    if options.disk_image:
+        options.disk_image = options.disk_image.resolve()
+        if not options.disk_image.is_file() or ',' in str(options.disk_image):
+            parser.error('invalid persistent disk path')
     options.require_init |= options.check_console
     if options.require_root_wait and options.root_image:
         parser.error('--require-root-wait cannot be used with --root-image')
@@ -64,7 +85,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='commonplace-qmp-') as directory:
         path = Path(directory) / 'monitor'
         serial_path = Path(directory) / 'serial'
-        command = command_for(modules, options.memory)
+        command = command_for(modules, options.memory, options.disk_image)
         if options.check_console:
             command += ['-S', '-chardev', f'socket,id=tty,path={serial_path},server=on,wait=off',
                         '-serial', 'chardev:tty']
@@ -75,10 +96,11 @@ def main():
             process = subprocess.Popen(command, cwd=ROOT, stderr=errors)
             monitor = None
             console = None
+            shutdown_sent = False
             try:
                 monitor = Monitor(path, process)
                 if options.check_console:
-                    console = SerialProbe(serial_path, serial)
+                    console = SerialProbe(serial_path, serial, probe_cases)
                     monitor.command('cont')
                 started = time.monotonic()
                 deadline = started + options.seconds
@@ -86,7 +108,14 @@ def main():
                     if console:
                         console.poll()
                         if console.done:
-                            break
+                            if console.error or not options.expect_shutdown:
+                                break
+                            if not shutdown_sent:
+                                console.socket.sendall((options.expect_shutdown+'\n').encode())
+                                shutdown_sent = True
+                            elif not monitor.command('query-status')['running']:
+                                console.poll()
+                                break
                     if serial.exists():
                         state = boot_state(serial.read_text(errors='replace'))
                         if (state['fatal'] or (options.require_root_wait and state['waiting_for_root']) or
@@ -102,6 +131,10 @@ def main():
                 if console:
                     diagnostics['console'] = {'passed': console.passed, 'total': len(console.cases),
                                               'error': console.error}
+                diagnostics['events'] = monitor.events.copy()
+                if options.expect_shutdown:
+                    diagnostics['shutdown'] = {'requested':options.expect_shutdown,'sent':shutdown_sent,
+                                               'stopped':not diagnostics['status']['running']}
                 monitor.command('stop')
                 diagnostics['boot'] = boot_state(serial.read_text(errors='replace'))
                 for name, request in {
@@ -143,6 +176,10 @@ def main():
         result = diagnostics['console']
         if result['error'] or result['passed'] != result['total']:
             raise SystemExit('boot failed: console checks incomplete: ' + str(result))
+    if options.expect_shutdown:
+        marker = 'commonplace: powering off q35' if options.expect_shutdown=='poweroff' else 'commonplace: restarting q35'
+        if not diagnostics['shutdown']['stopped'] or marker not in serial.read_text(errors='replace'):
+            raise SystemExit('boot failed: guest shutdown was not acknowledged')
     milestone = ('PID 1 and console' if options.require_init else
                  'BSD root device discovery' if options.require_root_wait else 'q35 platform')
     print('bootstrap milestones reached: darwin kernel and ' + milestone)

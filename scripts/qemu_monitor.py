@@ -19,6 +19,7 @@ class Monitor:
                     self.socket.close()
                     raise RuntimeError('QEMU monitor did not become available')
                 time.sleep(0.05)
+        self.events = []
         self.stream = self.socket.makefile('rwb', buffering=0)
         if 'QMP' not in self._read():
             raise RuntimeError('invalid QMP greeting')
@@ -34,6 +35,9 @@ class Monitor:
         self.stream.write((json.dumps({'execute': command, 'arguments': arguments}) + '\n').encode())
         while True:
             result = self._read()
+            if 'event' in result:
+                self.events.append(result)
+                self.events = self.events[-512:]
             if 'error' in result:
                 raise RuntimeError(result['error'])
             if 'return' in result:

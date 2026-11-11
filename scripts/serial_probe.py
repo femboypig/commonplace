@@ -52,7 +52,9 @@ class SerialProbe:
         ('second restart', b'echo shell-ready\n', rb'\nshell-ready\n'),
     )
 
-    def __init__(self, path, output):
+    def __init__(self, path, output, cases=None):
+        if cases is not None:
+            self.cases=cases
         self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.socket.connect(str(path))
         self.socket.setblocking(False)
