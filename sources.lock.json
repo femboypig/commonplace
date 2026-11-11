@@ -65,6 +65,108 @@
       "revision": "c3ea1b21ecd874021081ff1205351bde2db22a06",
       "url": "https://codeload.github.com/mozilla/libdmg-hfsplus/tar.gz/c3ea1b21ecd874021081ff1205351bde2db22a06",
       "sha256": "660b90065432ec0a427a055f3aeef87bf853607611ddbb9160ad0c369a6f8a01"
+    },
+    "availabilityversions": {
+      "repository": "apple-oss-distributions/AvailabilityVersions",
+      "revision": "5051ef367e6da732670133fab94348f11df9d675",
+      "url": "https://codeload.github.com/apple-oss-distributions/AvailabilityVersions/tar.gz/5051ef367e6da732670133fab94348f11df9d675",
+      "sha256": "73f63989321fa1531ec6ed7cf180d392b3d8621a65d791656cc67b2b6ec34337"
+    },
+    "libc": {
+      "repository": "apple-oss-distributions/Libc",
+      "revision": "4bcf1bd54078dcb5b30a3138e42a0210be6614f9",
+      "url": "https://codeload.github.com/apple-oss-distributions/Libc/tar.gz/4bcf1bd54078dcb5b30a3138e42a0210be6614f9",
+      "sha256": "836ff211aef8a83b7a4eb7e236464ca93bfeb48ff68a6dfaac795dbbcb185b28"
+    },
+    "libinfo": {
+      "repository": "apple-oss-distributions/Libinfo",
+      "revision": "a4f21cc50bf801a910117ed4213881e7f79d5e41",
+      "url": "https://codeload.github.com/apple-oss-distributions/Libinfo/tar.gz/a4f21cc50bf801a910117ed4213881e7f79d5e41",
+      "sha256": "037e57bc1530230a34fbf2f18c3edeef1ee1645b83a0ebad29476e4f28dec120"
+    },
+    "libsystem": {
+      "repository": "apple-oss-distributions/Libsystem",
+      "revision": "657f19dad1ca40fd618ab7b481fa19c0adda4ed8",
+      "url": "https://codeload.github.com/apple-oss-distributions/Libsystem/tar.gz/657f19dad1ca40fd618ab7b481fa19c0adda4ed8",
+      "sha256": "066c7c8f127266e0b9d9e79efd2bfe7c0f15836d6d0d9eb7bbb81d9afd63a39d"
+    },
+    "architecture": {
+      "repository": "apple-oss-distributions/architecture",
+      "revision": "804c6f6533a96f648df8b0e948600c79f3a9c596",
+      "url": "https://codeload.github.com/apple-oss-distributions/architecture/tar.gz/804c6f6533a96f648df8b0e948600c79f3a9c596",
+      "sha256": "edef0213690314141185983e217df99afa07700f6bfd948b8f424ff4efb6170b"
+    },
+    "bash": {
+      "repository": "apple-oss-distributions/bash",
+      "revision": "541307543c65de839fce47aebc299052fc159b54",
+      "url": "https://codeload.github.com/apple-oss-distributions/bash/tar.gz/541307543c65de839fce47aebc299052fc159b54",
+      "sha256": "7dee55aa580e420c26d33bfcc516220d55ee55d9d7173c01a22f11caf2910792"
+    },
+    "dyld": {
+      "repository": "apple-oss-distributions/dyld",
+      "revision": "880808ed2e950921bbd6a81bdb5a44ff5c850a99",
+      "url": "https://codeload.github.com/apple-oss-distributions/dyld/tar.gz/880808ed2e950921bbd6a81bdb5a44ff5c850a99",
+      "sha256": "d3eb0dca5b02f5bf2c252cd99950ee593e72ff99f3f64537cb0fb116b937e4e4"
+    },
+    "file_cmds": {
+      "repository": "apple-oss-distributions/file_cmds",
+      "revision": "95e9956fad60223864c7337ba09f11d7c6ab7c9b",
+      "url": "https://codeload.github.com/apple-oss-distributions/file_cmds/tar.gz/95e9956fad60223864c7337ba09f11d7c6ab7c9b",
+      "sha256": "756eb1e17784199f18f686e34258d44d265d4ebc39784e12152cf8483b47e2d4"
+    },
+    "libmalloc": {
+      "repository": "apple-oss-distributions/libmalloc",
+      "revision": "9bbe30fc4de717fdc1a0f71c32d35f54d6e9f31b",
+      "url": "https://codeload.github.com/apple-oss-distributions/libmalloc/tar.gz/9bbe30fc4de717fdc1a0f71c32d35f54d6e9f31b",
+      "sha256": "c7def512fba91e11cd77080ead1a33d3f4fa438a24c369a83ca986f7d190d65a"
+    },
+    "libutil": {
+      "repository": "apple-oss-distributions/libutil",
+      "revision": "05d2661d8d9b59147df2b2bd7a1c959f56749bb5",
+      "url": "https://codeload.github.com/apple-oss-distributions/libutil/tar.gz/05d2661d8d9b59147df2b2bd7a1c959f56749bb5",
+      "sha256": "d58cc9c2e2aca564b1944e92cf809027774f6b08fef1e0d64b0bcf22400a3aeb"
+    },
+    "shell_cmds": {
+      "repository": "apple-oss-distributions/shell_cmds",
+      "revision": "617dbb616db5d84422726adf605b9be28f0641b7",
+      "url": "https://codeload.github.com/apple-oss-distributions/shell_cmds/tar.gz/617dbb616db5d84422726adf605b9be28f0641b7",
+      "sha256": "564546bd13ef5ef0591b4c26af3a3d9c60cc0f514190d1a51d53eb93308e8663"
+    },
+    "text_cmds": {
+      "repository": "apple-oss-distributions/text_cmds",
+      "revision": "8bf56002282c935762897edd27cd39f88ecec735",
+      "url": "https://codeload.github.com/apple-oss-distributions/text_cmds/tar.gz/8bf56002282c935762897edd27cd39f88ecec735",
+      "sha256": "8c82181db2f74e2ac16a7315a940ca51d1bf5f726aa2f7518fabfd9d5b789806"
+    },
+    "libplatform": {
+      "repository": "apple-oss-distributions/libplatform",
+      "revision": "92f132b0bf9f95271a205258cbf2b09adc4f93ec",
+      "url": "https://codeload.github.com/apple-oss-distributions/libplatform/tar.gz/92f132b0bf9f95271a205258cbf2b09adc4f93ec",
+      "sha256": "8b9f421a3bcf181f3ee6619793a85d23dfb321413077e2bde8c97f2355bf55d9"
+    },
+    "libm": {
+      "repository": "apple-oss-distributions/Libm",
+      "revision": "17a5f9daa3f5679f7536b26f133b40cc078753c3",
+      "url": "https://codeload.github.com/apple-oss-distributions/Libm/tar.gz/17a5f9daa3f5679f7536b26f133b40cc078753c3",
+      "sha256": "382dc46aff5758b262770e599df37772898beca9543e3123039e8eaea9068b24"
+    },
+    "copyfile": {
+      "repository": "apple-oss-distributions/copyfile",
+      "revision": "a931609d532553fb9817b9ab5899c58348d6e720",
+      "url": "https://codeload.github.com/apple-oss-distributions/copyfile/tar.gz/a931609d532553fb9817b9ab5899c58348d6e720",
+      "sha256": "34e9ce79651fe5699786d7f69fe4661c7a67f85c8dda7e87219ca54789e676ab"
+    },
+    "removefile": {
+      "repository": "apple-oss-distributions/removefile",
+      "revision": "413ed94ae83e82edc5061f49ae4431e703a52a0f",
+      "url": "https://codeload.github.com/apple-oss-distributions/removefile/tar.gz/413ed94ae83e82edc5061f49ae4431e703a52a0f",
+      "sha256": "dd37a5405d0486d8a9d05337f00bbc07029f001a3cfc41a16af81a7e425c4ba0"
+    },
+    "system_cmds": {
+      "repository": "apple-oss-distributions/system_cmds",
+      "revision": "8e5a0ad74919061706afde79a141259a1c5a2c08",
+      "url": "https://codeload.github.com/apple-oss-distributions/system_cmds/tar.gz/8e5a0ad74919061706afde79a141259a1c5a2c08",
+      "sha256": "8d4e73dda2618e9b592d39f22da224b6e11172dbb179aad0fdb62afb92766261"
     }
   }
 }
