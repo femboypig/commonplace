@@ -101,6 +101,7 @@ def main():
             '__ZN19CommonplacePlatform9metaClassE',
             '_pthread_start', '_pthread_internal_functions', '__pthread_init',
             '_commonplace_crypto_init', '_cp_crypto_selftest', '_AES_encrypt',
+            '_commonplace_rtc_seconds', '_commonplace_rtc_decode',
             '_cp_openssl_SHA256_Transform', '_CRYPTO_gcm128_encrypt'} <= symbols:
         raise ValueError('required kernel entry points are missing')
     pthread_sysctls = check_pthread_sysctls(image, segments, nm, symbol_file)

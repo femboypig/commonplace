@@ -85,8 +85,8 @@ boot_args *arguments_build(uint32_t arena, const struct image *image,
     args->Version = kBootArgsVersion;
     args->efiMode = kBootArgsEfiMode64;
     const char *command_line = root_size ?
-        "-v serial=3 debug=0x108 keepsyms=1 cpus=1 rd=md0 vm_compressor=2" :
-        "-v serial=3 debug=0x108 keepsyms=1 cpus=1";
+        "-v serial=3 debug=0x108 keepsyms=1 cpus=1 commonplace_bootstrap=1 rd=md0 vm_compressor=2" :
+        "-v serial=3 debug=0x108 keepsyms=1 cpus=1 commonplace_bootstrap=1";
     size_t command_size = 0;
     while (command_line[command_size]) ++command_size;
     copy(args->CommandLine, command_line, command_size + 1);

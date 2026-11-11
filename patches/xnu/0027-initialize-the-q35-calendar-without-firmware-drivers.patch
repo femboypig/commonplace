@@ -1,0 +1,30 @@
+--- a/iokit/conf/files
++++ b/iokit/conf/files
+@@ -107,3 +107,6 @@
+ 
+ # System Management
+ iokit/Families/IOSystemManagement/IOWatchDogTimer.cpp	optional iokitcpp
++
++commonplace/platform/CommonplaceRTC.cpp standard
++commonplace/platform/CommonplaceCalendar.c standard
+--- a/iokit/Kernel/IOStartIOKit.cpp
++++ b/iokit/Kernel/IOStartIOKit.cpp
+@@ -58,10 +58,18 @@
+ void iokit_post_constructor_init(void);
+ 
+ #include <kern/clock.h>
++#include <pexpert/pexpert.h>
+ #include <sys/time.h>
+ 
+ void IOKitInitializeTime( void )
+ {
++    int bootstrap = 0;
++    if (PE_parse_boot_argn("commonplace_bootstrap", &bootstrap, sizeof(bootstrap)) && bootstrap) {
++        /* This board supplies its clock through IOPlatformExpert and has no EFI NVRAM. */
++        IOService::waitForService(IOService::serviceMatching("CommonplacePlatform"));
++        clock_initialize_calendar();
++        return;
++    }
+ 	mach_timespec_t		t;
+ 
+ 	t.tv_sec = 30;
