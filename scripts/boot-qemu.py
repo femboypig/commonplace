@@ -21,7 +21,7 @@ def boot_state(log):
         'kernel_entered': 'Darwin Kernel Version 15.6.0:' in log,
         'platform_started': 'commonplace: q35 bootstrap platform started' in log,
         'root_mounted': 'BSD root: md0,' in log and 'hfs: mounted ' in log,
-        'init_started': 'commonplace init: pid 1\n' in log.replace('\r', '') and 'commonplace> ' in log,
+        'init_started': 'commonplace init: pid 1\n' in log.replace('\r', '') and 'commonplace:/ root# ' in log,
         'crypto_started': 'commonplace: crypto provider started' in log,
         'waiting_for_root': 'Still waiting for root device' in log,
         'fatal': any(marker in log for marker in
