@@ -2,13 +2,18 @@
 
 void init_main(void)
 {
-    int fd = (int)sys_open("/dev/console", 2);
-    if (fd >= 0) {
+    for (;;) {
+        int fd = (int)sys_open("/dev/console", 2);
+        if (fd < 0) {
+            sys_sleep(1);
+            continue;
+        }
         print(fd, "\ncommonplace init: pid ");
         print_number(fd, (unsigned long)sys_getpid());
         print(fd, "\ncommonplace bootstrap console\n");
         console_run(fd);
+        print(fd, "reopening console\n");
+        sys_close(fd);
+        sys_sleep(1);
     }
-    /* PID 1 must remain alive even if opening or reading the console fails. */
-    for (;;) sys_sleep(60);
 }

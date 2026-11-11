@@ -9,6 +9,8 @@ class SerialProbe:
         (b'echo tty-round-trip-ok\n', b'\ntty-round-trip-ok\n'),
         (b'unknown\n', b'\nunknown command; type help\n'),
         (b'x' * 300 + b'\n', b'\ninput exceeds 255 bytes\n'),
+        (b'\x04', b'\ncommonplace bootstrap console\n'),
+        (b'echo console-recovered\n', b'\nconsole-recovered\n'),
     )
 
     def __init__(self, path, output):

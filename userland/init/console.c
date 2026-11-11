@@ -16,10 +16,7 @@ void console_run(int fd)
             print(fd, "input exceeds 255 bytes\n");
             continue;
         }
-        if (result < 0) {
-            print(fd, "console read failed\n");
-            return;
-        }
+        if (result < 0) return;
         if (equal(line, "help"))
             print(fd, "help  pid  echo <text>\n");
         else if (equal(line, "pid")) {
