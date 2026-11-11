@@ -70,7 +70,7 @@ boot-checks: loader check-kernel
 rootfs-tools: fetch
 	bash scripts/build-rootfs-tools.sh
 
-userland:
+userland: fetch
 	$(PYTHON) scripts/build-userland.py
 
 rootfs: userland rootfs-tools
