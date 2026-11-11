@@ -1,0 +1,50 @@
+"""Collect upstream license text and source notices for the userspace bundle."""
+
+import re
+
+PROJECTS = (
+    "bash",
+    "libc",
+    "libinfo",
+    "libplatform",
+    "libm",
+    "libutil",
+    "copyfile",
+    "removefile",
+    "file_cmds",
+    "text_cmds",
+    "shell_cmds",
+    "system_cmds",
+    "architecture",
+    "availabilityversions",
+    "dyld",
+    "libpthread",
+)
+
+
+def write_notices(root, destination):
+    sections = []
+    seen = set()
+    for project in PROJECTS:
+        for source in sorted((root / "sources" / project).rglob("*")):
+            if not source.is_file():
+                continue
+            if source.name in ("COPYING", "COPYRIGHT", "LICENSE", "APPLE_LICENSE"):
+                notice = source.read_text(errors="replace")
+            elif source.suffix in (".c", ".h", ".s", ".S"):
+                content = source.read_text(errors="replace")
+                match = re.match(
+                    r"\s*(?:(?:/\*.*?\*/|//[^\n]*(?:\n|$))\s*)+", content, re.S
+                )
+                if not match or "copyright" not in match[0].lower():
+                    continue
+                notice = match[0].strip()
+            else:
+                continue
+            if notice in seen:
+                continue
+            seen.add(notice)
+            sections.append(str(source.relative_to(root)) + "\n\n" + notice)
+    if not sections:
+        raise ValueError("upstream license sources are missing")
+    destination.write_text("\n\n".join(sections) + "\n")

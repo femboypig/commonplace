@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
+from release_notices import write_notices
 
 ROOT=Path(__file__).resolve().parent.parent
 
@@ -35,6 +36,9 @@ def main():
             'scripts/verify-release.py':'scripts/verify-release.py',
             'run.sh':'scripts/run-release.sh',
             'sources.lock.json':'sources.lock.json',
+            'build/rootfs/image.json':'build/rootfs/image.json',
+            'build/userland/build.json':'build/userland/build.json',
+            'licenses/bash.txt':'sources/bash/bash-3.2/COPYING',
             'licenses/APPLE_LICENSE':'sources/xnu/APPLE_LICENSE',
             'licenses/openssl.txt':'sources/openssl/LICENSE.txt',
             'licenses/compiler-rt.txt':'sources/compiler_rt/LICENSE.TXT',
@@ -44,10 +48,12 @@ def main():
             target.parent.mkdir(parents=True,exist_ok=True)
             shutil.copyfile(ROOT/source,target)
         (staging/'run.sh').chmod(0o755)
+        notices = 'licenses/userspace-notices.txt'
+        write_notices(ROOT, staging/notices)
         disk=staging/'build/disks/data.hfs'
         subprocess.run(['python3',str(ROOT/'scripts/create-disk.py'),'--path',str(disk)],check=True)
         manifest={'schema':1,'target':'qemu-q35-x86_64-kvm','revision':revision,
-                  'immutable':{name:digest(staging/name) for name in files},
+                  'immutable':{name:digest(staging/name) for name in (*files, notices)},
                   'mutable':{'build/disks/data.hfs':{'initial_sha256':digest(disk),'size':disk.stat().st_size}}}
         (staging/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
         archive=Path(temporary)/(name+'.tar.gz')
