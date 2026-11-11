@@ -79,3 +79,9 @@ long parse_unsigned(const char *text)
     return value;
 }
 
+int memcmp(const void *first,const void *second,size_t size)
+{
+    const unsigned char *a=first,*b=second;
+    for (size_t i=0;i<size;++i) if (a[i]!=b[i]) return (int)a[i]-(int)b[i];
+    return 0;
+}
