@@ -34,8 +34,7 @@ int main(void)
             sys_signal(SIGNAL_INT,0); sys_signal(SIGNAL_QUIT,0);
             if (init_console(1) < 0) { print(2, "init: cannot acquire console\n"); sys_exit(126); }
             char *arguments[] = {"/bin/sh", 0};
-            char *environment[] = {"PATH=/bin", "HOME=/", "TERM=vt100", 0};
-            long error = sys_execve(arguments[0], arguments, environment);
+            long error = sys_execve(arguments[0], arguments, init_environment());
             report_error("/bin/sh", error);
             sys_exit(127);
         }

@@ -20,8 +20,7 @@ void init_script(void)
         sys_signal(15,0); sys_signal(SIGNAL_INT,0); sys_signal(SIGNAL_QUIT,0);
         if (system_call(SYS_setsid,0,0,0,0,0,0)<0) sys_exit(126);
         char *arguments[]={"/bin/sh","/data/rc",0};
-        char *environment[]={"PATH=/bin","HOME=/","TERM=vt100",0};
-        sys_execve(arguments[0],arguments,environment);
+        sys_execve(arguments[0],arguments,init_environment());
         sys_exit(127);
     }
     if (child<0) { report_error("startup fork",child); return; }

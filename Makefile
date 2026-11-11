@@ -2,7 +2,7 @@
 PYTHON ?= python3
 JOBS ?= 2
 
-.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools userland rootfs boot-init boot-console disk-image check-storage package test
+.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin userland rootfs boot-init boot-console disk-image check-storage package test
 help:
 	@printf '%s\n' 'commonplace — darwin/x86_64' \
 	  'make doctor       check host tools and virtualization' \
@@ -19,7 +19,8 @@ help:
 	  'make boot         observe a bounded qemu boot and save diagnostics' \
 	  'make boot-bsd     require BSD to reach root device discovery' \
 	  'make boot-checks  repeat early boots with 512, 1024 and 2048 MiB' \
-	  'make rootfs       build the bootstrap init and HFS+ root image' \
+	  'make rootfs       build Darwin commands, bash and the HFS+ root image' \
+	  'make check-darwin validate the native C runtime and command suite in QEMU' \
 	  'make boot-init    require PID 1 and exercise the serial console' \
 	  'make boot-console attach this terminal to the guest (Ctrl-A X exits)' \
 	  'make disk-image   create the persistent data disk without replacing it' \
@@ -73,7 +74,21 @@ boot-checks: loader check-kernel
 rootfs-tools: fetch
 	bash scripts/build-rootfs-tools.sh
 
-userland: fetch
+darwin-sdk: fetch
+	$(PYTHON) scripts/build-xnu.py exporthdrs
+	$(PYTHON) scripts/build-darwin-sdk.py
+
+darwin-libraries: darwin-sdk
+	$(PYTHON) scripts/build-libsyscall.py
+	$(PYTHON) scripts/build-darwin-libc.py
+	$(PYTHON) scripts/build-darwin-libinfo.py
+	$(PYTHON) scripts/build-darwin-file-libraries.py
+
+darwin-userland: darwin-libraries
+	$(PYTHON) scripts/build-darwin-commands.py
+	$(PYTHON) scripts/build-darwin-bash.py
+
+userland: darwin-userland
 	$(PYTHON) scripts/build-userland.py
 
 rootfs: userland rootfs-tools
@@ -87,6 +102,9 @@ disk-image: rootfs-tools
 
 boot-console: loader check-kernel rootfs disk-image
 	$(PYTHON) scripts/console-qemu.py
+
+check-darwin: loader check-kernel rootfs
+	$(PYTHON) scripts/check-darwin.py
 
 check-storage: loader check-kernel rootfs
 	$(PYTHON) scripts/check-storage.py

@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Build static Darwin programs against XNU's syscall ABI."""
 import json
+import hashlib
 import re
+import shutil
 from pathlib import Path
 import subprocess
 
@@ -25,9 +27,10 @@ def main():
     (OUT / 'syscall-numbers.h').write_text(''.join(entries))
     library = ROOT / 'userland/lib'
     common = sorted(library.glob('*.c')) + sorted(library.glob('*.S'))
-    programs = {'init': sorted((ROOT / 'userland/init').glob('*.c')),
-                'sh': sorted((ROOT / 'userland/sh').glob('*.c'))}
-    programs.update({path.stem: [path] for path in sorted((ROOT / 'userland/bin').glob('*.c'))})
+    programs = {'init': sorted((ROOT / 'userland/init').glob('*.c'))}
+    # These programs implement commonplace's boot and platform policy.
+    for name in ('mount', 'umount', 'poweroff', 'reboot'):
+        programs[name] = [ROOT/'userland/bin'/f'{name}.c']
     objects = {}
     for source in sorted(set(common + [path for paths in programs.values() for path in paths])):
         output = OUT / 'obj' / source.relative_to(ROOT / 'userland').with_suffix('.o')
@@ -40,10 +43,26 @@ def main():
         objects[source] = output
     for name, sources in programs.items():
         subprocess.run([str(ROOT / 'toolchain/bin/x86_64-apple-darwin15-ld'),
-                        '-static', '-arch', 'x86_64', '-macosx_version_min', '10.11',
+                        '-Z', '-fatal_warnings', '-static', '-arch', 'x86_64', '-macosx_version_min', '10.11',
                         '-e', '_start', '-no_uuid', '-o', str(OUT / name),
                         *[str(objects[source]) for source in common + sources]], check=True)
-    (OUT / 'programs.json').write_text(json.dumps(list(programs), indent=2) + '\n')
+    native = json.loads((ROOT/'build/darwin/commands.json').read_text())
+    for name in (*native, 'bash'):
+        shutil.copyfile(ROOT/'build/darwin/bin'/name, OUT/name)
+    aliases = {'sh': 'bash', '[': 'test', 'whoami': 'id', 'groups': 'id', 'od': 'hexdump'}
+    for name, original in aliases.items():
+        shutil.copyfile(OUT/original, OUT/name)
+    names = [*programs, *native, 'bash', *aliases]
+    (OUT/'programs.json').write_text(json.dumps(names, indent=2)+'\n')
+    manifest = {
+        'schema': 1, 'profile': 'single-threaded-static',
+        'allocator': 'bash-3.2 bootstrap arena',
+        'native_commands': native, 'aliases': aliases,
+        'platform_commands': list(programs),
+        'sources': json.loads((ROOT/'sources.lock.json').read_text()),
+        'sha256': {name: hashlib.sha256((OUT/name).read_bytes()).hexdigest() for name in names},
+    }
+    (OUT/'build.json').write_text(json.dumps(manifest, indent=2)+'\n')
 
 
 if __name__ == '__main__':

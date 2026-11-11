@@ -8,25 +8,6 @@ void *memcpy(void *to, const void *from, size_t size)
 void *memset(void *to, int value, size_t size)
 { unsigned char *d = to; for (size_t i=0;i<size;++i) d[i]=(unsigned char)value; return to; }
 
-int path_join(char *out, size_t size, const char *a, const char *b)
-{
-    size_t first = strlen(a), second = strlen(b);
-    if (first + second + 2 > size) return -1;
-    memcpy(out, a, first); out[first++] = '/';
-    memcpy(out + first, b, second + 1);
-    return 0;
-}
-
-int get_directory(char *out, size_t size)
-{
-    if (size < 1024) return -1;
-    int fd = (int)sys_open(".", OPEN_READ | OPEN_DIRECTORY);
-    if (fd < 0) return fd;
-    long result = sys_fcntl(fd, 50, out); /* F_GETPATH in XNU sys/fcntl.h. */
-    sys_close(fd);
-    return (int)result;
-}
-
 int write_all(int fd, const void *buffer, size_t size)
 {
     const char *bytes = buffer;
@@ -66,17 +47,6 @@ void report_error(const char *name, long error)
     }
     print(2, name); print(2, ": "); print(2, message); print(2, " (");
     print_number(2, error < 0 ? (unsigned long)-error : (unsigned long)error); print(2, ")\n");
-}
-
-long parse_unsigned(const char *text)
-{
-    if (!*text) return -1;
-    long value = 0;
-    for (; *text; ++text) {
-        if (*text < '0' || *text > '9' || value > (0x7fffffffL - (*text - '0')) / 10) return -1;
-        value = value * 10 + (*text - '0');
-    }
-    return value;
 }
 
 int memcmp(const void *first,const void *second,size_t size)

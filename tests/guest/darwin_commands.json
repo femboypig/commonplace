@@ -1,0 +1,287 @@
+[
+  {
+    "name": "native runtime",
+    "send": "libc-check\n",
+    "expect": "darwin libc: .*spawn passed"
+  },
+  {
+    "name": "native shell",
+    "send": "echo \"$BASH_VERSION\"\n",
+    "expect": "\\n3\\.2\\.57"
+  },
+  {
+    "name": "external echo",
+    "send": "/bin/echo native-echo\n",
+    "expect": "\\nnative-echo\\n"
+  },
+  {
+    "name": "external printf",
+    "send": "/bin/printf '%s:%04d\\n' hello 7\n",
+    "expect": "\\nhello:0007\\n"
+  },
+  {
+    "name": "external true",
+    "send": "/bin/true; echo $?\n",
+    "expect": "\\n0\\n"
+  },
+  {
+    "name": "external false",
+    "send": "/bin/false; echo $?\n",
+    "expect": "\\n1\\n"
+  },
+  {
+    "name": "basename",
+    "send": "/bin/basename /tmp/example.txt .txt\n",
+    "expect": "\\nexample\\n"
+  },
+  {
+    "name": "dirname",
+    "send": "/bin/dirname /tmp/example.txt\n",
+    "expect": "\\n/tmp\\n"
+  },
+  {
+    "name": "environment",
+    "send": "/bin/env NATIVE_ENV=present /bin/sh -c 'echo $NATIVE_ENV'\n",
+    "expect": "\\npresent\\n"
+  },
+  {
+    "name": "printenv",
+    "send": "/bin/printenv SHELL\n",
+    "expect": "\\n/bin/sh\\n"
+  },
+  {
+    "name": "local account",
+    "send": "id root\n",
+    "expect": "uid=0\\(root\\) gid=0\\(wheel\\).*5\\(operator\\)"
+  },
+  {
+    "name": "whoami",
+    "send": "whoami\n",
+    "expect": "\\nroot\\n"
+  },
+  {
+    "name": "utc calendar",
+    "send": "date -u -r 0 +%Y-%m-%dT%H:%M:%SZ\n",
+    "expect": "\\n1970-01-01T00:00:00Z\\n"
+  },
+  {
+    "name": "date arithmetic",
+    "send": "date -u -r 0 -v+1d +%Y-%m-%d\n",
+    "expect": "\\n1970-01-02\\n"
+  },
+  {
+    "name": "directory",
+    "send": "mkdir /tmp/native; cd /tmp/native; /bin/pwd\n",
+    "expect": "\\n/tmp/native\\n"
+  },
+  {
+    "name": "text input",
+    "send": "printf 'first:1\\nsecond:2\\nthird:3\\n' > input; cat input\n",
+    "expect": "\\nfirst:1\\nsecond:2\\nthird:3\\n"
+  },
+  {
+    "name": "head",
+    "send": "head -n 1 input\n",
+    "expect": "\\nfirst:1\\n"
+  },
+  {
+    "name": "tail",
+    "send": "tail -n 1 input\n",
+    "expect": "\\nthird:3\\n"
+  },
+  {
+    "name": "wc",
+    "send": "wc -l < input\n",
+    "expect": "\\n[ \\t]*3\\n"
+  },
+  {
+    "name": "cut",
+    "send": "cut -d : -f 2 input\n",
+    "expect": "\\n1\\n2\\n3\\n"
+  },
+  {
+    "name": "translate",
+    "send": "/bin/echo lowercase | tr '[:lower:]' '[:upper:]'\n",
+    "expect": "\\nLOWERCASE\\n"
+  },
+  {
+    "name": "unique",
+    "send": "printf 'one\\none\\ntwo\\n' | uniq\n",
+    "expect": "\\none\\ntwo\\n"
+  },
+  {
+    "name": "unique fields",
+    "send": "printf 'a same\\nb same\\n' | uniq -f 1\n",
+    "expect": "\\na same\\n"
+  },
+  {
+    "name": "stream editor",
+    "send": "sed -n 's/second/changed/p' input\n",
+    "expect": "\\nchanged:2\\n"
+  },
+  {
+    "name": "regex editor",
+    "send": "printf 'a\\nfirst line\\nsecond line\\n.\\n1d\\nw note\\nq\\n' | ed -s; cat note\n",
+    "expect": "\\nsecond line\\n"
+  },
+  {
+    "name": "editor spawn",
+    "send": "printf '!echo ed-spawn-ok\\nq\\n' | ed -s\n",
+    "expect": "\\ned-spawn-ok\\n"
+  },
+  {
+    "name": "editor pipe",
+    "send": "printf 'r !echo ed-pipe-ok\\n1p\\nQ\\n' | ed -s\n",
+    "expect": "\\ned-pipe-ok\\n"
+  },
+  {
+    "name": "file copy",
+    "send": "chmod 640 input; cp -p input duplicate; echo copy-status:$?; stat -f %Lp duplicate; cat duplicate\n",
+    "expect": "\\ncopy-status:0\\n640\\nfirst:1\\nsecond:2\\nthird:3\\n"
+  },
+  {
+    "name": "copy self",
+    "send": "cp input ./input\n",
+    "expect": "identical|same file"
+  },
+  {
+    "name": "source intact",
+    "send": "wc -l < input\n",
+    "expect": "\\n[ \\t]*3\\n"
+  },
+  {
+    "name": "rename",
+    "send": "mv duplicate renamed; stat -f %N renamed\n",
+    "expect": "\\nrenamed\\n"
+  },
+  {
+    "name": "hard link",
+    "send": "ln renamed hardlink; /bin/test renamed -ef hardlink; echo $?\n",
+    "expect": "\\n0\\n"
+  },
+  {
+    "name": "symbolic link",
+    "send": "ln -s renamed symlink; stat -f %Y symlink\n",
+    "expect": "\\nrenamed\\n"
+  },
+  {
+    "name": "file mode",
+    "send": "chmod 600 renamed; stat -f %Lp renamed\n",
+    "expect": "\\n600\\n"
+  },
+  {
+    "name": "list long",
+    "send": "ls -l renamed\n",
+    "expect": "-rw-------.*root.*wheel.*renamed"
+  },
+  {
+    "name": "directory traversal",
+    "send": "mkdir -p sub/child; cp input sub/child/item; ls -R sub\n",
+    "expect": "sub/child:\\nitem\\n"
+  },
+  {
+    "name": "copy metadata",
+    "send": "cp -Rp sub clone; echo tree-status:$?; cat clone/child/item\n",
+    "expect": "\\ntree-status:0\\nfirst:1\\nsecond:2\\nthird:3\\n"
+  },
+  {
+    "name": "touch",
+    "send": "touch stamp; /bin/test -f stamp; echo $?\n",
+    "expect": "\\n0\\n"
+  },
+  {
+    "name": "fifo",
+    "send": "mkfifo fifo; /bin/test -p fifo; echo $?\n",
+    "expect": "\\n0\\n"
+  },
+  {
+    "name": "sequence",
+    "send": "seq 2 2 6\n",
+    "expect": "\\n2\\n4\\n6\\n"
+  },
+  {
+    "name": "jot",
+    "send": "jot 3 4\n",
+    "expect": "\\n4\\n5\\n6\\n"
+  },
+  {
+    "name": "hex output",
+    "send": "/bin/echo -n AB | hexdump -v -e '1/1 \"%02x\"' ; echo\n",
+    "expect": "\\n4142\\n"
+  },
+  {
+    "name": "xargs",
+    "send": "printf 'one\\ntwo\\n' | xargs /bin/echo\n",
+    "expect": "\\none two\\n"
+  },
+  {
+    "name": "tee",
+    "send": "/bin/echo saved | tee tee-file; cat tee-file\n",
+    "expect": "\\nsaved\\nsaved\\n"
+  },
+  {
+    "name": "paste",
+    "send": "paste note tee-file\n",
+    "expect": "\\nsecond line\\tsaved\\n"
+  },
+  {
+    "name": "pipeline pressure",
+    "send": "yes native | head -n 10000 | wc -l\n",
+    "expect": "\\n[ \\t]*10000\\n"
+  },
+  {
+    "name": "loop arithmetic",
+    "send": "for ((i=0;i<3;i++)); do echo $((i*2)); done\n",
+    "expect": "\\n0\\n2\\n4\\n"
+  },
+  {
+    "name": "shell function",
+    "send": "double() { echo $(($1*2)); }; double 21\n",
+    "expect": "\\n42\\n"
+  },
+  {
+    "name": "command substitution",
+    "send": "echo \"$(cat note)\"\n",
+    "expect": "\\nsecond line\\n"
+  },
+  {
+    "name": "signal handler",
+    "send": "trap 'echo trap-returned' USR1; kill -USR1 $$; trap - USR1\n",
+    "expect": "\\ntrap-returned\\n"
+  },
+  {
+    "name": "background job",
+    "send": "sleep 30 &\n",
+    "expect": "\\[[1-9][0-9]*\\] [1-9][0-9]*"
+  },
+  {
+    "name": "stop job",
+    "send": "kill -STOP %1; sleep 0.1; jobs\n",
+    "expect": "Stopped.*sleep 30"
+  },
+  {
+    "name": "interrupt child",
+    "send": "fg %1\n",
+    "expect": "fg %1"
+  },
+  {
+    "name": "foreground status",
+    "send": "echo $?\n",
+    "expect": "\\n130\\n"
+  },
+  {
+    "name": "delete tree",
+    "send": "rm -rf /tmp/native; cd /; /bin/test ! -e /tmp/native; echo $?\n",
+    "expect": "\\n0\\n"
+  },
+  {
+    "name": "external hostname",
+    "send": "hostname\n",
+    "expect": "\\ncommonplace\\n"
+  },
+  {
+    "name": "ready",
+    "send": "echo native-userspace-ready\n",
+    "expect": "\\nnative-userspace-ready\\n"
+  }
+]

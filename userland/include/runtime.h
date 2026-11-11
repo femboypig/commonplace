@@ -6,10 +6,6 @@ int strcmp(const char *, const char *);
 int memcmp(const void *,const void *,size_t);
 void *memcpy(void *, const void *, size_t);
 void *memset(void *, int, size_t);
-int path_join(char *, size_t, const char *, const char *);
-int get_directory(char *, size_t);
-int replace_file(const char *,const void *,size_t,unsigned);
-int copy_stream(int, int);
 int write_all(int, const void *, size_t);
 void report_error(const char *, long);
 long mount_hfs(const char *, const char *, unsigned);
@@ -29,5 +25,4 @@ _Static_assert(sizeof(struct system_stat)==144,"Darwin user64_stat64 size");
 _Static_assert(offsetof(struct system_stat,inode)==8,"Darwin inode field");
 _Static_assert(offsetof(struct system_stat,size)==96,"Darwin file size field");
 long file_status(int,struct system_stat *);
-long parse_unsigned(const char *);
 #endif

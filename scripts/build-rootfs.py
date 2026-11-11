@@ -28,7 +28,7 @@ def main():
             output.truncate(32 * 1024 * 1024)
         subprocess.run([str(formatter), '-v', 'commonplace', '-U', '0', '-G', '0',
                         '-M', '755', str(image)], check=True)
-        for directory in ('dev', 'sbin', 'bin', 'etc', 'tmp', 'root', 'data'):
+        for directory in ('dev', 'sbin', 'bin', 'etc', 'tmp', 'root', 'data', 'usr', 'usr/bin', 'usr/sbin'):
             subprocess.run([str(hfs), str(image), 'mkdir', '/' + directory], check=True)
         hashes = {}
         for destination, program in programs.items():
@@ -39,6 +39,13 @@ def main():
             if extracted.read_bytes() != program.read_bytes():
                 raise ValueError('HFS+ program round-trip verification failed: ' + destination)
             hashes[destination] = hashlib.sha256(program.read_bytes()).hexdigest()
+        for configuration in sorted((ROOT/'userland/darwin/etc').iterdir()):
+            destination = '/etc/'+configuration.name
+            subprocess.run([str(hfs), str(image), 'add', str(configuration), destination], check=True)
+            mode = '600' if configuration.name == 'master.passwd' else '644'
+            subprocess.run([str(hfs), str(image), 'chmod', mode, destination], check=True)
+            hashes[destination] = hashlib.sha256(configuration.read_bytes()).hexdigest()
+        subprocess.run([str(hfs), str(image), 'chmod', '1777', '/tmp'], check=True)
         motd = temporary / 'motd'
         motd.write_text('commonplace\nRAM root is temporary. Use mounted /data for persistent files.\n')
         subprocess.run([str(hfs), str(image), 'add', str(motd), '/etc/motd'], check=True)

@@ -15,7 +15,6 @@ void sys_sleep(unsigned seconds);
 void sys_delay(unsigned milliseconds);
 void print(int fd, const char *text);
 void print_number(int fd, unsigned long value);
-int read_line(int fd, char *buffer, size_t capacity);
 long sys_fork(void);
 struct system_time { int64_t seconds; int32_t microseconds, padding; };
 long sys_gettimeofday(struct system_time *);

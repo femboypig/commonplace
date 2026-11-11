@@ -24,21 +24,3 @@ void print_number(int fd, unsigned long value)
     } while (value);
     print(fd, end);
 }
-
-int read_line(int fd, char *buffer, size_t capacity)
-{
-    size_t used = 0;
-    int overflow = 0;
-    for (;;) {
-        char byte;
-        long result = sys_read(fd, &byte, 1);
-        if (result == -4) continue;
-        if (!result && used) break;
-        if (result <= 0) return -1;
-        if (byte == '\n' || byte == '\r') break;
-        if (used + 1 < capacity) buffer[used++] = byte;
-        else overflow = 1;
-    }
-    if (capacity) buffer[used] = 0;
-    return overflow ? -2 : 0;
-}
