@@ -2,7 +2,7 @@
 PYTHON ?= python3
 JOBS ?= 2
 
-.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools userland rootfs boot-init boot-console test
+.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools userland rootfs boot-init boot-console disk-image check-storage package test
 help:
 	@printf '%s\n' 'commonplace — darwin/x86_64' \
 	  'make doctor       check host tools and virtualization' \
@@ -22,6 +22,9 @@ help:
 	  'make rootfs       build the bootstrap init and HFS+ root image' \
 	  'make boot-init    require PID 1 and exercise the serial console' \
 	  'make boot-console attach this terminal to the guest (Ctrl-A X exits)' \
+	  'make disk-image   create the persistent data disk without replacing it' \
+	  'make check-storage verify persistence across poweroff and reboot' \
+	  'make package      package a ready-to-run QEMU system' \
 	  'make test         run targeted regression tests'
 
 fetch:
@@ -79,8 +82,17 @@ rootfs: userland rootfs-tools
 boot-init: loader check-kernel rootfs
 	$(PYTHON) scripts/boot-qemu.py --seconds 150 --root-image build/rootfs/root.hfs --check-console
 
-boot-console: loader check-kernel rootfs
+disk-image: rootfs-tools
+	$(PYTHON) scripts/create-disk.py
+
+boot-console: loader check-kernel rootfs disk-image
 	$(PYTHON) scripts/console-qemu.py
+
+check-storage: loader check-kernel rootfs
+	$(PYTHON) scripts/check-storage.py
+
+package: loader check-kernel rootfs
+	$(PYTHON) scripts/package-qemu.py
 
 test:
 	$(PYTHON) -m unittest discover -s tests -v
