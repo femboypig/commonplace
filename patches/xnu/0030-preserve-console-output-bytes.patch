@@ -1,0 +1,19 @@
+--- a/bsd/dev/i386/km.c
++++ b/bsd/dev/i386/km.c
+@@ -359,7 +359,7 @@
+ 		(void) q_to_b(&tp->t_outq, buf, cc);
+ 		for (cp = buf; cp < &buf[cc]; cp++) {
+ 			/* output the buffer one charatcer at a time */
+-			kmputc(tp->t_dev, *cp & 0x7f);
++			kmputc(tp->t_dev, *cp);
+ 		}
+ 	}
+ 	/*
+@@ -397,6 +397,6 @@
+ 	struct tty *tp = km_tty[0];	/* XXX */
+ 
+ 	tty_lock(tp);
+-	(*linesw[tp->t_line].l_rint) (ch, tp);
++	(*linesw[tp->t_line].l_rint) ((unsigned char)ch, tp);
+ 	tty_unlock(tp);
+ }
