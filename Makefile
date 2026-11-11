@@ -2,7 +2,7 @@
 PYTHON ?= python3
 JOBS ?= 2
 
-.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks test
+.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools userland rootfs boot-init boot-console test
 help:
 	@printf '%s\n' 'commonplace — darwin/x86_64' \
 	  'make doctor       check host tools and virtualization' \
@@ -19,6 +19,9 @@ help:
 	  'make boot         observe a bounded qemu boot and save diagnostics' \
 	  'make boot-bsd     require BSD to reach root device discovery' \
 	  'make boot-checks  repeat early boots with 512, 1024 and 2048 MiB' \
+	  'make rootfs       build the bootstrap init and HFS+ root image' \
+	  'make boot-init    require PID 1 and exercise the serial console' \
+	  'make boot-console attach this terminal to the guest (Ctrl-A X exits)' \
 	  'make test         run targeted regression tests'
 
 fetch:
@@ -63,6 +66,21 @@ boot-bsd: loader check-kernel
 
 boot-checks: loader check-kernel
 	$(PYTHON) scripts/check-boots.py
+
+rootfs-tools: fetch
+	bash scripts/build-rootfs-tools.sh
+
+userland:
+	$(PYTHON) scripts/build-userland.py
+
+rootfs: userland rootfs-tools
+	$(PYTHON) scripts/build-rootfs.py
+
+boot-init: loader check-kernel rootfs
+	$(PYTHON) scripts/boot-qemu.py --seconds 150 --root-image build/rootfs/root.hfs --check-console
+
+boot-console: loader check-kernel rootfs
+	$(PYTHON) scripts/console-qemu.py
 
 test:
 	$(PYTHON) -m unittest discover -s tests -v
