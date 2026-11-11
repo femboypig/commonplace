@@ -10,8 +10,8 @@ int shell_builtin(struct command *command, int *exit_requested)
 {
     const char *name = command->argv[0];
     if (!strcmp(name, "help")) {
-        print(1, "builtins: cd exit help pid\nprograms in /bin: cat date echo false kill ls mkdir pid pwd rm rmdir seq sh sleep sync true uname wc\n");
-        print(1, "syntax: quotes, escapes, $? $$, < > >> and pipelines; RAM files are lost after reboot\n");
+        print(1, "builtins: cd exit help pid\nprograms in /bin: cat chmod cp date echo edit false kill ls mkdir mount mv pid poweroff pwd reboot rm rmdir seq sh sleep sync touch true umount uname wc\n");
+        print(1, "syntax: quotes, escapes, $? $$, < > >> and pipelines; RAM root is temporary; files in mounted /data persist\n");
         return 0;
     }
     if (!strcmp(name, "pid")) { print_number(1, sys_getpid()); print(1, "\n"); return 0; }
