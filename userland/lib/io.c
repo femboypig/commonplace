@@ -33,6 +33,7 @@ int read_line(int fd, char *buffer, size_t capacity)
         char byte;
         long result = sys_read(fd, &byte, 1);
         if (result == -4) continue;
+        if (!result && used) break;
         if (result <= 0) return -1;
         if (byte == '\n' || byte == '\r') break;
         if (used + 1 < capacity) buffer[used++] = byte;
