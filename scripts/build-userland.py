@@ -10,7 +10,7 @@ OUT = ROOT / 'build/userland'
 SYSCALLS = ('exit', 'fork', 'read', 'write', 'open', 'close', 'wait4', 'unlink', 'chdir',
             'getpid', 'getuid', 'sync', 'kill', 'dup', 'pipe', 'sigaction', 'ioctl', 'execve',
             'dup2', 'fcntl', 'select', 'mkdir', 'rmdir', 'setsid', 'mount', 'sysctl',
-            'getdirentries64', 'gettimeofday')
+            'getdirentries64', 'gettimeofday', 'sigreturn')
 
 
 def main():

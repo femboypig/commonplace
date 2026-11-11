@@ -30,6 +30,8 @@ long sys_unlink(const char *);
 long sys_rmdir(const char *);
 long sys_getdirentries(int, void *, size_t, int64_t *);
 long sys_signal(int, int);
+typedef void (*system_signal_handler)(int, void *, void *);
+long sys_handle_signal(int, system_signal_handler);
 long sys_mount(const char *, const char *, unsigned, const void *);
 long sys_sysctl(const int *, unsigned, void *, size_t *, const void *, size_t);
 #define OPEN_READ 0

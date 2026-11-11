@@ -63,3 +63,11 @@ long sys_mount(const char *type, const char *path, unsigned flags, const void *a
 { return system_call(SYS_mount, (uintptr_t)type, (uintptr_t)path, flags, (uintptr_t)args, 0, 0); }
 long sys_sysctl(const int *name, unsigned count, void *out, size_t *size, const void *in, size_t length)
 { return system_call(SYS_sysctl, (uintptr_t)name, count, (uintptr_t)out, (uintptr_t)size, (uintptr_t)in, length); }
+
+extern void system_signal_trampoline(void);
+long sys_handle_signal(int number, system_signal_handler handler)
+{
+    struct { uintptr_t handler, trampoline; uint32_t mask; int flags; } action={
+        (uintptr_t)handler,(uintptr_t)system_signal_trampoline,0,0x40}; /* SA_SIGINFO */
+    return system_call(SYS_sigaction,number,(uintptr_t)&action,0,0,0,0);
+}
