@@ -45,7 +45,7 @@ bool CommonplacePlatform::getModelName(char *name, int capacity)
 
 bool CommonplacePlatform::getMachineName(char *name, int capacity)
 {
-    return capacity > 0 && strlcpy(name, "commonplace q35", capacity) < (size_t)capacity;
+    return capacity > 0 && strlcpy(name, "x86_64", capacity) < (size_t)capacity;
 }
 
 long CommonplacePlatform::getGMTTimeOfDay(void)
