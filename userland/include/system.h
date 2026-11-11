@@ -8,6 +8,7 @@ long system_call(unsigned long number, unsigned long a, unsigned long b,
 long sys_read(int fd, void *buffer, size_t size);
 long sys_write(int fd, const void *buffer, size_t size);
 long sys_open(const char *path, int flags);
+long sys_open_mode(const char *, int, unsigned);
 long sys_close(int fd);
 long sys_getpid(void);
 void sys_sleep(unsigned seconds);
@@ -40,6 +41,7 @@ long sys_sysctl(const int *, unsigned, void *, size_t *, const void *, size_t);
 #define OPEN_APPEND 0x8
 #define OPEN_CREATE 0x200
 #define OPEN_TRUNCATE 0x400
+#define OPEN_EXCLUSIVE 0x800
 #define OPEN_NOCTTY 0x20000
 #define OPEN_DIRECTORY 0x100000
 #define SIGNAL_INT 2

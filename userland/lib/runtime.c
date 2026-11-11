@@ -43,6 +43,17 @@ void report_error(const char *name, long error)
 {
     const char *message;
     switch (-error) {
+    case 1: message="operation not permitted"; break;
+    case 3: message="no such process"; break;
+    case 5: message="input/output error"; break;
+    case 9: message="bad file descriptor"; break;
+    case 12: message="out of memory"; break;
+    case 18: message="different filesystems"; break;
+    case 22: message="invalid argument"; break;
+    case 27: message="file too large"; break;
+    case 45: message="operation not supported"; break;
+    case 60: message="operation timed out"; break;
+    case 63: message="path too long"; break;
     case 2: message="no such file or directory"; break;
     case 13: message="permission denied"; break;
     case 17: message="file exists"; break;
@@ -67,3 +78,4 @@ long parse_unsigned(const char *text)
     }
     return value;
 }
+

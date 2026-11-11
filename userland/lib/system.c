@@ -11,7 +11,7 @@ long sys_write(int fd, const void *buffer, size_t size)
 }
 long sys_open(const char *path, int flags)
 {
-    return system_call(SYS_open, (uintptr_t)path, flags, 0644, 0, 0, 0);
+    return sys_open_mode(path, flags, 0644);
 }
 long sys_close(int fd)
 {
@@ -71,3 +71,7 @@ long sys_handle_signal(int number, system_signal_handler handler)
         (uintptr_t)handler,(uintptr_t)system_signal_trampoline,0,0x40}; /* SA_SIGINFO */
     return system_call(SYS_sigaction,number,(uintptr_t)&action,0,0,0,0);
 }
+
+long sys_open_mode(const char *path, int flags, unsigned mode)
+{ return system_call(SYS_open,(uintptr_t)path,flags,mode,0,0,0); }
+
