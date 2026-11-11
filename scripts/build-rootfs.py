@@ -15,7 +15,10 @@ def main():
     formatter = ROOT / 'toolchain/bin/newfs_hfs'
     hfs = ROOT / 'toolchain/bin/hfsplus'
     init = ROOT / 'build/userland/init'
-    for artifact in (formatter, hfs, init):
+    names = json.loads((ROOT / 'build/userland/programs.json').read_text())
+    programs = {('/sbin/launchd' if name == 'init' else '/bin/' + name): ROOT / 'build/userland' / name
+                for name in names}
+    for artifact in (formatter, hfs, *programs.values()):
         if not artifact.is_file():
             raise SystemExit('missing rootfs input: ' + str(artifact))
     with tempfile.TemporaryDirectory(dir=OUT, prefix='.image-') as temporary:
@@ -25,20 +28,26 @@ def main():
             output.truncate(32 * 1024 * 1024)
         subprocess.run([str(formatter), '-v', 'commonplace', '-U', '0', '-G', '0',
                         '-M', '755', str(image)], check=True)
-        for directory in ('dev', 'sbin'):
+        for directory in ('dev', 'sbin', 'bin', 'etc', 'tmp', 'root'):
             subprocess.run([str(hfs), str(image), 'mkdir', '/' + directory], check=True)
-        # XNU 15's primordial process searches this path for its first executable.
-        subprocess.run([str(hfs), str(image), 'add', str(init), '/sbin/launchd'], check=True)
-        subprocess.run([str(hfs), str(image), 'chmod', '755', '/sbin/launchd'], check=True)
-        extracted = temporary / 'init'
-        subprocess.run([str(hfs), str(image), 'extract', '/sbin/launchd', str(extracted)], check=True)
-        if extracted.read_bytes() != init.read_bytes():
-            raise ValueError('HFS+ init round-trip verification failed')
-        subprocess.run([str(hfs), str(image), 'ls', '/sbin'], check=True)
+        hashes = {}
+        for destination, program in programs.items():
+            subprocess.run([str(hfs), str(image), 'add', str(program), destination], check=True)
+            subprocess.run([str(hfs), str(image), 'chmod', '755', destination], check=True)
+            extracted = temporary / 'verify'
+            subprocess.run([str(hfs), str(image), 'extract', destination, str(extracted)], check=True)
+            if extracted.read_bytes() != program.read_bytes():
+                raise ValueError('HFS+ program round-trip verification failed: ' + destination)
+            hashes[destination] = hashlib.sha256(program.read_bytes()).hexdigest()
+        motd = temporary / 'motd'
+        motd.write_text('commonplace\nRAM root: file changes are lost when QEMU exits.\n')
+        subprocess.run([str(hfs), str(image), 'add', str(motd), '/etc/motd'], check=True)
+        subprocess.run([str(hfs), str(image), 'ls', '/bin'], check=True)
         image.replace(OUT / 'root.hfs')
     metadata = {'image': 'build/rootfs/root.hfs', 'size': (OUT / 'root.hfs').stat().st_size,
                 'sha256': hashlib.sha256((OUT / 'root.hfs').read_bytes()).hexdigest(),
-                'init_sha256': hashlib.sha256(init.read_bytes()).hexdigest()}
+                'init_sha256': hashlib.sha256(init.read_bytes()).hexdigest(),
+                'programs': hashes}
     (OUT / 'image.json').write_text(json.dumps(metadata, indent=2) + '\n')
 
 
