@@ -1,0 +1,29 @@
+--- a/bsd/conf/files
++++ b/bsd/conf/files
+@@ -566,3 +566,7 @@
+ commonplace/crypto/cp_crypto_runtime.c	standard
+ commonplace/crypto/cp_crypto_selftest.c	standard
+ commonplace/crypto/cp_crypto_xts.c	standard
++
++commonplace/storage/ata.c standard
++commonplace/storage/queue.c standard
++commonplace/storage/device.c standard
+--- a/bsd/kern/bsd_init.c
++++ b/bsd/kern/bsd_init.c
+@@ -1044,6 +1044,8 @@
+ 	lock_trace = 1;
+ }
+ 
++extern void commonplace_disk_init(void);
++
+ kern_return_t
+ bsd_autoconf(void)
+ {
+@@ -1060,6 +1062,7 @@
+ 		(*pi->ps_func) (pi->ps_count);
+ 	}
+ 
++	commonplace_disk_init();
+ 	return( IOKitBSDInit());
+ }
+ 
