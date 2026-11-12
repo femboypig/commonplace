@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Boot the packaged system, then verify a warm reboot and cold persistence."""
+
 import argparse
 from datetime import datetime, timezone
 import errno
@@ -14,53 +15,63 @@ import tarfile
 import time
 
 ROOT = Path(__file__).resolve().parent.parent
-PROMPT = rb'commonplace:/ root# '
+PROMPT = rb"[A-Za-z0-9][A-Za-z0-9.-]{0,254}:/ root# "
 
 
 class Console:
     def __init__(self, directory, memory, output):
         self.master, slave = pty.openpty()
-        self.process = subprocess.Popen([str(directory / 'run.sh'), '--memory', str(memory)],
-                                        stdin=slave, stdout=slave, stderr=slave,
-                                        start_new_session=True)
+        self.process = subprocess.Popen(
+            [str(directory / "run.sh"), "--memory", str(memory)],
+            stdin=slave,
+            stdout=slave,
+            stderr=slave,
+            start_new_session=True,
+        )
         os.close(slave)
-        self.log = output.open('wb')
-        self.pending = b''
+        self.log = output.open("wb")
+        self.pending = b""
 
     def expect(self, pattern, seconds=60):
         deadline = time.monotonic() + seconds
         while time.monotonic() < deadline:
             match = re.search(pattern, self.pending)
             if match:
-                response = self.pending[:match.end()]
-                self.pending = self.pending[match.end():]
+                response = self.pending[: match.end()]
+                self.pending = self.pending[match.end() :]
                 return response
-            if not select.select([self.master], [], [], max(0, min(0.25, deadline-time.monotonic())))[0]:
+            if not select.select(
+                [self.master], [], [], max(0, min(0.25, deadline - time.monotonic()))
+            )[0]:
                 continue
             try:
                 data = os.read(self.master, 65536)
             except OSError as error:
                 if error.errno != errno.EIO:
                     raise
-                data = b''
+                data = b""
             if not data:
-                raise RuntimeError('packaged console closed before the expected response')
+                raise RuntimeError(
+                    "packaged console closed before the expected response"
+                )
             self.log.write(data)
             self.log.flush()
-            self.pending += data.replace(b'\r', b'')
-        raise TimeoutError('packaged console timed out: ' + repr(self.pending[-512:]))
+            self.pending += data.replace(b"\r", b"")
+        raise TimeoutError("packaged console timed out: " + repr(self.pending[-512:]))
 
     def command(self, text, expected):
-        os.write(self.master, (text + '\n').encode())
+        os.write(self.master, (text + "\n").encode())
         response = self.expect(PROMPT)
         if not re.search(expected, response):
-            raise ValueError('unexpected packaged command output: ' + repr(response[-512:]))
+            raise ValueError(
+                "unexpected packaged command output: " + repr(response[-512:])
+            )
 
     def poweroff(self):
-        os.write(self.master, b'poweroff\n')
-        self.expect(rb'commonplace: powering off q35')
+        os.write(self.master, b"poweroff\n")
+        self.expect(rb"commonplace: powering off q35")
         if self.process.wait(timeout=10) != 0:
-            raise ValueError('packaged QEMU did not exit cleanly')
+            raise ValueError("packaged QEMU did not exit cleanly")
 
     def close(self):
         if self.process.poll() is None:
@@ -78,46 +89,76 @@ def boot(directory, memory, output, prepare=False):
     console = Console(directory, memory, output)
     try:
         started = time.monotonic()
-        console.expect(PROMPT)
+        first = console.expect(PROMPT)
+        if b"BSD root: cp1," not in first or b"Added memory device md0" in first:
+            raise ValueError("release did not boot directly from its persistent root")
         duration = round(time.monotonic() - started, 3)
         if prepare:
-            console.command('ls /data', rb'\Als /data\ncommonplace:/ root# ')
-            console.command('echo release-ok > /data/probe', rb'\Aecho release-ok > /data/probe\n')
-            console.command('cp /bin/pid /data/program', rb'\Acp /bin/pid /data/program\n')
-            os.write(console.master, b'reboot\n')
-            console.expect(rb'commonplace: restarting q35')
+            console.command("ls /data", rb"\Als /data\ncommonplace:/ root# ")
+            console.command(
+                "echo release-ok > /data/probe", rb"\Aecho release-ok > /data/probe\n"
+            )
+            console.command(
+                "cp /bin/echo /usr/bin/persisted",
+                rb"\Acp /bin/echo /usr/bin/persisted\n",
+            )
+            console.command(
+                "echo root-ok > /etc/probe; echo commonplace-test > /etc/hostname",
+                rb"\Aecho root-ok",
+            )
+            console.command(
+                "echo 'echo startup-ok > /root/startup-marker' > /etc/rc", rb"\Aecho"
+            )
+            os.write(console.master, b"reboot\n")
+            console.expect(rb"commonplace: restarting q35")
             console.expect(PROMPT)
-        console.command('cat /data/probe', rb'\nrelease-ok\n')
-        console.command('/data/program', rb'\n[1-9][0-9]*\n')
+        console.command("cat /data/probe", rb"\nrelease-ok\n")
+        console.command("/usr/bin/persisted executable-ok", rb"\nexecutable-ok\n")
+        console.command(
+            "cat /etc/probe /root/startup-marker; hostname",
+            rb"\nroot-ok\nstartup-ok\ncommonplace-test\n",
+        )
         console.poweroff()
-        return {'memory_mib': memory, 'prompt_seconds': duration, 'exit': console.process.returncode}
+        return {
+            "memory_mib": memory,
+            "prompt_seconds": duration,
+            "exit": console.process.returncode,
+        }
     finally:
         console.close()
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('archive', type=Path)
+    parser.add_argument("archive", type=Path)
     options = parser.parse_args()
-    stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ')
-    output = ROOT / 'build/release-checks' / stamp
-    extracted = output / 'path with spaces'
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+    output = ROOT / "build/release-checks" / stamp
+    extracted = output / "path with spaces"
     extracted.mkdir(parents=True)
     with tarfile.open(options.archive) as archive:
-        archive.extractall(extracted, filter='data')
+        archive.extractall(extracted, filter="data")
     directories = list(extracted.iterdir())
     if len(directories) != 1 or not directories[0].is_dir():
-        raise ValueError('unexpected release layout')
+        raise ValueError("unexpected release layout")
     directory = directories[0]
-    subprocess.run(['python3', str(directory/'scripts/verify-release.py'), str(directory)], check=True)
-    results = [boot(directory, 512, output/'warm.log', prepare=True),
-               boot(directory, 2048, output/'cold.log')]
-    subprocess.run(['python3', str(directory/'scripts/verify-release.py'), str(directory)], check=True)
-    manifest = json.loads((directory/'manifest.json').read_text())
-    summary = {'passed': True, 'revision': manifest['revision'], 'boots': results}
-    (output/'summary.json').write_text(json.dumps(summary, indent=2)+'\n')
-    print('packaged warm reboot and cold persistence passed; evidence: '+str(output))
+    subprocess.run(
+        ["python3", str(directory / "scripts/verify-release.py"), str(directory)],
+        check=True,
+    )
+    results = [
+        boot(directory, 512, output / "warm.log", prepare=True),
+        boot(directory, 2048, output / "cold.log"),
+    ]
+    subprocess.run(
+        ["python3", str(directory / "scripts/verify-release.py"), str(directory)],
+        check=True,
+    )
+    manifest = json.loads((directory / "manifest.json").read_text())
+    summary = {"passed": True, "revision": manifest["revision"], "boots": results}
+    (output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+    print("packaged warm reboot and cold persistence passed; evidence: " + str(output))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
