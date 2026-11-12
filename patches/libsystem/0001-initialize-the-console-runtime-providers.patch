@@ -1,0 +1,66 @@
+--- a/init.c
++++ b/init.c
+@@ -158,12 +158,7 @@
+ 	_dyld_initializer();
+ 
+ 
+-	libdispatch_init();
+-	_libxpc_initializer();
+-
+-#if !(TARGET_OS_EMBEDDED || TARGET_OS_SIMULATOR)
+-	_libsecinit_initializer();
+-#endif
++
+ 
+ 	__stack_logging_early_finished();
+ 
+@@ -171,7 +166,6 @@
+ 	_vminterpose_init();
+ #endif
+ 
+-	_libtrace_init(); // must be initialized after dispatch
+ 
+ #if !TARGET_OS_IPHONE
+     /* <rdar://problem/22139800> - Preserve the old behavior of apple[] for
+@@ -200,9 +194,6 @@
+ void
+ libSystem_atfork_prepare(void)
+ {
+-	_libSC_info_fork_prepare();
+-	xpc_atfork_prepare();
+-	dispatch_atfork_prepare();
+ 	_pthread_fork_prepare();
+ 	_malloc_fork_prepare();
+ }
+@@ -212,9 +203,6 @@
+ {
+ 	_malloc_fork_parent();
+ 	_pthread_fork_parent();
+-	dispatch_atfork_parent();
+-	xpc_atfork_parent();
+-	_libSC_info_fork_parent();
+ }
+ 
+ void
+@@ -223,7 +211,6 @@
+ 	_dyld_fork_child();
+ 	_pthread_fork_child();
+ 	_malloc_fork_child();
+-	dispatch_atfork_child();
+ 	
+ 	_mach_fork_child();
+ 	_libc_fork_child();
+@@ -232,13 +219,8 @@
+ 	_libcoreservices_fork_child();
+ #endif
+ 
+-	_asl_fork_child();
+-	_notify_fork_child();
+-	xpc_atfork_child();
+-	_libSC_info_fork_child();
+ 
+ 	_pthread_fork_child_postinit();
+-	_libtrace_fork_child(); // no prep work required for the fork
+ }
+ 
+ /*  

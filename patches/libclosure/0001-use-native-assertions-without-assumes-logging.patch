@@ -1,0 +1,15 @@
+--- a/runtime.c
++++ b/runtime.c
+@@ -14,10 +14,10 @@
+ #include <string.h>
+ #include <stdint.h>
+ #include <dlfcn.h>
+-#if TARGET_IPHONE_SIMULATOR
++#if TARGET_IPHONE_SIMULATOR || !__has_include(<os/assumes.h>)
+ // workaround: 10682842
+ #define os_assumes(_x) (_x)
+-#define os_assert(_x) if (!(_x)) abort()
++#define os_assert(_x) do { if (!(_x)) abort(); } while (0)
+ #else
+ #include <os/assumes.h>
+ #ifndef os_assumes
