@@ -1,0 +1,20 @@
+--- a/src/simple/asl.c
++++ b/src/simple/asl.c
+@@ -131,7 +131,7 @@
+ _simple_asl_connect(const char *log_path)
+ {
+ 	int fd = socket(AF_UNIX, SOCK_DGRAM, 0);
+-	if (fd == -1) return;
++	if (fd == -1) return -1;
+ 
+ 	fcntl(fd, F_SETFD, FD_CLOEXEC);
+ 
+@@ -313,7 +313,7 @@
+ static struct asl_context *
+ _simple_asl_get_context(void)
+ {
+-	return os_alloc_once(OS_ALLOC_ONCE_KEY_LIBSYSTEM_PLATFORM_ASL,
++	return os_alloc_once(OS_ALLOC_ONCE_KEY_LIBSYSTEM_PLATFORM,
+ 			sizeof(struct asl_context), _simple_asl_init_context);
+ }
+ 

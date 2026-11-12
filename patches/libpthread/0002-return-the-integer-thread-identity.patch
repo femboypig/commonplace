@@ -1,0 +1,11 @@
+--- a/src/internal.h
++++ b/src/internal.h
+@@ -338,7 +338,7 @@
+ }
+ #define pthread_self() _pthread_self_direct()
+ 
+-inline static pthread_t __attribute__((__pure__))
++inline static uint64_t __attribute__((__pure__))
+ _pthread_selfid_direct(void)
+ {
+ 	return (_pthread_self_direct())->thread_id;

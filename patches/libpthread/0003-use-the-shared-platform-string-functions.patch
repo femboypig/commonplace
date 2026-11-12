@@ -1,0 +1,22 @@
+--- a/src/thread_setup.c
++++ b/src/thread_setup.c
+@@ -137,19 +137,3 @@
+ 	}
+ }
+ 
+-// pthread_setup initializes large structures to 0, which the compiler turns into a library call to memset. To avoid linking against
+-// Libc, provide a simple wrapper that calls through to the libplatform primitives
+-
+-#undef memset
+-__attribute__((visibility("hidden"))) void *
+-memset(void *b, int c, size_t len)
+-{
+-	return _platform_memset(b, c, len);
+-}
+-
+-#undef bzero
+-__attribute__((visibility("hidden"))) void
+-bzero(void *s, size_t n)
+-{
+-	_platform_bzero(s, n);
+-}

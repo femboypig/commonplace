@@ -1,0 +1,19 @@
+--- a/src/os/lock.c
++++ b/src/os/lock.c
+@@ -373,6 +373,7 @@
+ }
+ 
+ #pragma mark -
++#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 101200
+ #pragma mark os_ulock_value_t
+ 
+ #include <sys/errno.h>
+@@ -1091,6 +1092,8 @@
+ 	}
+ }
+ 
++#endif /* deployment target has ulock */
++
+ #if !OS_VARIANT_ONLY
+ 
+ #pragma mark -
