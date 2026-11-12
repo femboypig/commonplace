@@ -167,6 +167,36 @@
       "revision": "8e5a0ad74919061706afde79a141259a1c5a2c08",
       "url": "https://codeload.github.com/apple-oss-distributions/system_cmds/tar.gz/8e5a0ad74919061706afde79a141259a1c5a2c08",
       "sha256": "8d4e73dda2618e9b592d39f22da224b6e11172dbb179aad0fdb62afb92766261"
+    },
+    "libcxx": {
+      "repository": "llvm-mirror/libcxx",
+      "revision": "de80a7d886d75188de210eb4d6f0768fdc4d4d0b",
+      "url": "https://codeload.github.com/llvm-mirror/libcxx/tar.gz/de80a7d886d75188de210eb4d6f0768fdc4d4d0b",
+      "sha256": "0d9572a25d0ab4889bd70d2e5b9f8bde1c539a0c23f1d16fa9e405f6f0166a8f"
+    },
+    "libcxxabi": {
+      "repository": "llvm-mirror/libcxxabi",
+      "revision": "8f53d45e9ac7d3c078ab3fe8f91c40a4cc6b579a",
+      "url": "https://codeload.github.com/llvm-mirror/libcxxabi/tar.gz/8f53d45e9ac7d3c078ab3fe8f91c40a4cc6b579a",
+      "sha256": "d636db577e92566d6911afca4d2673dbe3e044467363922d5ff50b19bfe50a18"
+    },
+    "libunwind": {
+      "repository": "apple-oss-distributions/libunwind",
+      "revision": "e2331e3a441494e1529566972638e74e139d127b",
+      "url": "https://codeload.github.com/apple-oss-distributions/libunwind/tar.gz/e2331e3a441494e1529566972638e74e139d127b",
+      "sha256": "e737a3eb2505c0674eb6ede82d394502c3eae5643dac3747a5bd863a3d28ee37"
+    },
+    "libclosure": {
+      "repository": "apple-oss-distributions/libclosure",
+      "revision": "6ef0a37e5dc92d8eb99621c0e1253e70ab33cafd",
+      "url": "https://codeload.github.com/apple-oss-distributions/libclosure/tar.gz/6ef0a37e5dc92d8eb99621c0e1253e70ab33cafd",
+      "sha256": "007d815157089f7158223cfba4cf0fd920ce50564d0adf7eb7616d95914f2fdc"
+    },
+    "keymgr": {
+      "repository": "apple-oss-distributions/keymgr",
+      "revision": "60198800ed5482f8182acaff9ed24c8d02e6576c",
+      "url": "https://codeload.github.com/apple-oss-distributions/keymgr/tar.gz/60198800ed5482f8182acaff9ed24c8d02e6576c",
+      "sha256": "db47224b9315a4f91330c0c324b81f017b940967c4eb00514644b4dc3145c2af"
     }
   }
 }
