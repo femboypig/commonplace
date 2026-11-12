@@ -53,7 +53,7 @@ void loader_main(uint32_t magic, const uint32_t *info)
     memset((void *)(uintptr_t)arena, 0, BOOT_ARENA_SIZE);
     if (boot.root_size)
         memcpy((void *)(uintptr_t)root, boot.root, boot.root_size);
-    boot_args *args = arguments_build(arena, &image, &boot.memory, loader, root, boot.root_size);
+    boot_args *args = arguments_build(arena, &image, &boot.memory, loader, root, boot.root_size, boot.disk_root);
     console_write("kernel entry ");
     console_hex(image.entry);
     console_write(", boot arguments ");

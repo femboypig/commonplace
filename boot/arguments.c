@@ -76,7 +76,7 @@ static size_t device_tree(void *buffer, size_t capacity, const char *command_lin
 
 boot_args *arguments_build(uint32_t arena, const struct image *image,
     const struct memory *memory, struct memory_reservation loader,
-    uint32_t root, uint32_t root_size)
+    uint32_t root, uint32_t root_size, int disk_root)
 {
     _Static_assert(sizeof(boot_args) == 4096, "Darwin boot argument ABI");
     _Static_assert(sizeof(EfiMemoryRange) == 40, "EFI memory descriptor ABI");
@@ -84,7 +84,8 @@ boot_args *arguments_build(uint32_t arena, const struct image *image,
     args->Revision = kBootArgsRevision;
     args->Version = kBootArgsVersion;
     args->efiMode = kBootArgsEfiMode64;
-    const char *command_line = root_size ?
+    const char *command_line = disk_root ?
+        "-v serial=3 debug=0x108 keepsyms=1 cpus=1 commonplace_bootstrap=1 rd=cp1 vm_compressor=2" : root_size ?
         "-v serial=3 debug=0x108 keepsyms=1 cpus=1 commonplace_bootstrap=1 rd=md0 vm_compressor=2" :
         "-v serial=3 debug=0x108 keepsyms=1 cpus=1 commonplace_bootstrap=1";
     size_t command_size = 0;

@@ -3,7 +3,7 @@ set -euo pipefail
 project_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$project_root"
 mkdir -p build/boot
-sources=(image tree memory multiboot arguments runtime main platform/serial platform/x86 platform/entry)
+sources=(image tree memory options multiboot arguments runtime main platform/serial platform/x86 platform/entry)
 objects=()
 for source in "${sources[@]}"; do
     extension=c

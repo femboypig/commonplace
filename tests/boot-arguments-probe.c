@@ -56,7 +56,7 @@ int main(void)
         memset(buffer, 0, BOOT_ARENA_SIZE);
         uint32_t root = with_root ? arena + BOOT_ARENA_SIZE : 0;
         uint32_t size = with_root ? 32 * 1024 * 1024 : 0;
-        boot_args *args = arguments_build(arena, &image, &memory, loader, root, size);
+        boot_args *args = arguments_build(arena, &image, &memory, loader, root, size, 0);
         assert(args->kaddr + args->ksize == arena + BOOT_ARENA_SIZE + size);
         assert((strstr(args->CommandLine, "rd=md0") != NULL) == with_root);
         unsigned found = 0;
@@ -74,6 +74,14 @@ int main(void)
             assert(protected);
         }
     }
+    memset(buffer, 0, BOOT_ARENA_SIZE);
+    boot_args *disk_args = arguments_build(arena, &image, &memory, loader, 0, 0, 1);
+    assert(strstr(disk_args->CommandLine, "rd=cp1"));
+    assert(!strstr(disk_args->CommandLine, "rd=md0"));
+    unsigned found = 0;
+    const unsigned char *tree = (const void *)(uintptr_t)disk_args->deviceTreeP;
+    inspect(tree, tree + disk_args->deviceTreeLength, 0, 0, &found);
+    assert(!found);
     assert(munmap(buffer, BOOT_ARENA_SIZE) == 0);
     return 0;
 }

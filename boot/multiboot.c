@@ -1,4 +1,5 @@
 #include "multiboot.h"
+#include "options.h"
 
 const char *multiboot_read(uint32_t magic, const uint32_t *info, struct multiboot *boot)
 {
@@ -6,6 +7,9 @@ const char *multiboot_read(uint32_t magic, const uint32_t *info, struct multiboo
         return "expected a multiboot v1 handoff";
     if ((info[0] & 0x48) != 0x48 || info[5] < 1 || info[5] > 2)
         return "pass a kernel, an optional root image and a firmware memory map";
+    boot->disk_root = boot_disk_root((info[0] & 4) ? (const void *)(uintptr_t)info[4] : 0);
+    if (boot->disk_root < 0 || (boot->disk_root && info[5] != 1))
+        return "use root=cp1 with only a kernel module for persistent boot";
     const uint32_t *module = (const void *)(uintptr_t)info[6];
     if (!module || info[6] > UINT32_MAX - info[5] * 16)
         return "invalid module table";

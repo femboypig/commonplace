@@ -8,6 +8,7 @@ struct multiboot {
     uint32_t kernel_size;
     const void *root;
     uint32_t root_size;
+    int disk_root;
     struct memory memory;
 };
 
