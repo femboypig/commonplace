@@ -19,6 +19,13 @@ PROJECTS = (
     "availabilityversions",
     "dyld",
     "libpthread",
+    "libsystem",
+    "libmalloc",
+    "libclosure",
+    "libcxx",
+    "libcxxabi",
+    "libunwind",
+    "keymgr",
 )
 
 
@@ -29,9 +36,17 @@ def write_notices(root, destination):
         for source in sorted((root / "sources" / project).rglob("*")):
             if not source.is_file():
                 continue
-            if source.name in ("COPYING", "COPYRIGHT", "LICENSE", "APPLE_LICENSE"):
+            if source.name in (
+                "COPYING",
+                "COPYRIGHT",
+                "LICENSE",
+                "LICENSE.TXT",
+                "LICENSE.txt",
+                "COPYING.TXT",
+                "APPLE_LICENSE",
+            ):
                 notice = source.read_text(errors="replace")
-            elif source.suffix in (".c", ".h", ".s", ".S"):
+            elif source.suffix in (".c", ".h", ".s", ".S", ".cpp", ".cxx", ".hpp"):
                 content = source.read_text(errors="replace")
                 match = re.match(
                     r"\s*(?:(?:/\*.*?\*/|//[^\n]*(?:\n|$))\s*)+", content, re.S
