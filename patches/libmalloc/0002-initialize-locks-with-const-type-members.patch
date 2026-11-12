@@ -1,0 +1,20 @@
+--- a/src/malloc_internal.h
++++ b/src/malloc_internal.h
+@@ -39,7 +39,7 @@
+ static inline void
+ _malloc_lock_init(_malloc_lock_s *lock) {
+ 	const os_lock_handoff_s _os_lock_handoff_init = OS_LOCK_HANDOFF_INIT;
+-	*lock = _os_lock_handoff_init;
++	__builtin_memcpy(lock, &_os_lock_handoff_init, sizeof(*lock));
+ }
+ 
+ #else /* !MALLOC_USE_OS_LOCK_HANDOFF */
+@@ -52,7 +52,7 @@
+ static inline void
+ _malloc_lock_init(_malloc_lock_s *lock) {
+ 	const os_lock_spin_s _os_lock_spin_init = OS_LOCK_SPIN_INIT;
+-	*lock = _os_lock_spin_init;
++	__builtin_memcpy(lock, &_os_lock_spin_init, sizeof(*lock));
+ }
+ 
+ #endif /* !MALLOC_USE_OS_LOCK_HANDOFF */

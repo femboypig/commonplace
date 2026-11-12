@@ -1,0 +1,121 @@
+--- a/src/magazine_malloc.c
++++ b/src/magazine_malloc.c
+@@ -96,7 +96,8 @@
+ 
+ #endif
+ 
+-#include <CrashReporterClient.h>
++#define __OS_EXPOSE_INTERNALS__ 1
++#include <os/internal/internal_shared.h>
+ 
+ /*********************	DEFINITIONS	************************/
+ 
+@@ -1025,7 +1026,7 @@
+ 	// corruption flag is set, or if any error should abort.
+ 	if ((is_corruption && (szone->debug_flags & SCALABLE_MALLOC_ABORT_ON_CORRUPTION)) ||
+ 		(szone->debug_flags & SCALABLE_MALLOC_ABORT_ON_ERROR)) {
+-		CRSetCrashLogMessage(b ? _simple_string(b) : msg);
++		_os_set_crash_log_message(b ? _simple_string(b) : msg);
+ 		abort();
+ 	} else if (b) {
+ 		_simple_sfree(b);
+--- a/src/malloc.c
++++ b/src/malloc.c
+@@ -57,7 +57,8 @@
+ #define ASL_LEVEL_INFO ASL_LEVEL_NOTICE
+ #endif
+ 
+-#include <CrashReporterClient.h>
++#define __OS_EXPOSE_INTERNALS__ 1
++#include <os/internal/internal_shared.h>
+ 
+ #ifdef __LP64__
+ #define CONFIG_NANOZONE 1
+@@ -787,7 +788,7 @@
+ 			malloc_printf("*** Recommend using 'setenv MallocCheckHeapStart %d; setenv MallocCheckHeapEach %d' to narrow down failure\n", recomm_start, recomm_each);
+ 		}
+ 		if (malloc_check_abort) {
+-			CRSetCrashLogMessage(b ? _simple_string(b) : "*** MallocCheckHeap: FAILED check");
++			_os_set_crash_log_message(b ? _simple_string(b) : "*** MallocCheckHeap: FAILED check");
+ 			abort();
+ 		} else if (b)
+ 			_simple_sfree(b);
+@@ -1084,9 +1085,9 @@
+ 			_SIMPLE_STRING b = _simple_salloc();
+ 			if (b) {
+ 				_simple_sprintf(b, "*** error for object %p: pointer being freed was not allocated\n", ptr);
+-				CRSetCrashLogMessage(_simple_string(b));
++				_os_set_crash_log_message(_simple_string(b));
+ 			} else {
+-				CRSetCrashLogMessage("*** error: pointer being freed was not allocated\n");
++				_os_set_crash_log_message("*** error: pointer being freed was not allocated\n");
+ 			}
+ 			abort();
+ 		}
+@@ -1123,9 +1124,9 @@
+ 				_SIMPLE_STRING b = _simple_salloc();
+ 				if (b) {
+ 					_simple_sprintf(b, "*** error for object %p: pointer being realloc'd was not allocated\n", old_ptr);
+-					CRSetCrashLogMessage(_simple_string(b));
++					_os_set_crash_log_message(_simple_string(b));
+ 				} else {
+-					CRSetCrashLogMessage("*** error: pointer being realloc'd was not allocated\n");
++					_os_set_crash_log_message("*** error: pointer being realloc'd was not allocated\n");
+ 				}
+ 				abort();
+ 			}
+@@ -1478,10 +1479,10 @@
+ 	if (b) {
+ 		_simple_sprintf(b, "*** error %d", x);
+ 		malloc_printf("%s\n", _simple_string(b));
+-		CRSetCrashLogMessage(_simple_string(b));
++		_os_set_crash_log_message(_simple_string(b));
+ 	} else {
+ 		_malloc_printf(MALLOC_PRINTF_NOLOG, "*** error %d", x);
+-		CRSetCrashLogMessage("*** DefaultMallocError called");
++		_os_set_crash_log_message("*** DefaultMallocError called");
+ 	}
+ 	abort();
+ #endif
+--- a/src/nano_malloc.c
++++ b/src/nano_malloc.c
+@@ -61,7 +61,8 @@
+ #include "malloc_internal.h"
+ #include "malloc_printf.h"
+ 
+-#include <CrashReporterClient.h>
++#define __OS_EXPOSE_INTERNALS__ 1
++#include <os/internal/internal_shared.h>
+ 
+ #include "bitarray.h"
+ 
+@@ -255,7 +256,7 @@
+ 	// corruption flag is set, or if any error should abort.
+ 	if ((is_corruption && (nanozone->debug_flags & SCALABLE_MALLOC_ABORT_ON_CORRUPTION)) ||
+ 		(nanozone->debug_flags & SCALABLE_MALLOC_ABORT_ON_ERROR)) {
+-		CRSetCrashLogMessage(b ? _simple_string(b) : msg);
++		_os_set_crash_log_message(b ? _simple_string(b) : msg);
+ 		abort();
+ 	} else if (b) {
+ 		_simple_sfree(b);
+--- a/src/stack_logging.c
++++ b/src/stack_logging.c
+@@ -36,7 +36,8 @@
+ #include <os/tsd.h>
+ #include <TargetConditionals.h>
+ 
+-#include <CrashReporterClient.h>
++#define __OS_EXPOSE_INTERNALS__ 1
++#include <os/internal/internal_shared.h>
+ 
+ extern void thread_stack_pcs(vm_address_t *, unsigned, unsigned *);
+ 
+@@ -46,7 +47,7 @@
+ 	if (vm_allocate(mach_task_self(), (vm_address_t *)&address, bytes,
+ 					VM_MAKE_TAG(VM_MEMORY_ANALYSIS_TOOL)| TRUE)) {
+ 		malloc_printf("*** out of memory while stack logging\n");
+-		CRSetCrashLogMessage("*** out of memory while stack logging\n");
++		_os_set_crash_log_message("*** out of memory while stack logging\n");
+ 		abort();
+ 	}
+ 	return (void *)address;
