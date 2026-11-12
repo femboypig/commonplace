@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Exercise Apple's static userspace in a disposable QEMU root image."""
+"""Exercise Apple's native userspace in a disposable QEMU root image."""
 
 from datetime import datetime, timezone
 import json
 import re
 import struct
-from collections import defaultdict
 import shutil
 import subprocess
 import sys
@@ -13,41 +12,52 @@ from darwin_build import ROOT, OUT, LD, compile_source
 
 
 def audit_libraries():
-    definitions = defaultdict(list)
     nm = ROOT / "toolchain/bin/x86_64-apple-darwin15-nm"
-    for library in sorted((OUT / "lib").glob("*.a")):
-        symbols = subprocess.check_output([str(nm), "-g", str(library)], text=True)
-        member = ""
-        for line in symbols.splitlines():
-            if line.endswith(":"):
-                member = line
-            match = re.match(r"^[0-9a-f]+ [TDBSC] (.+)$", line)
-            if match:
-                definitions[match[1]].append(f"{library.name}:{member}")
-    duplicates = {
-        name: locations for name, locations in definitions.items() if len(locations) > 1
-    }
-    if duplicates:
-        raise ValueError("conflicting library definitions: " + str(duplicates))
-    if "_main" in definitions:
-        raise ValueError("a library contains a program entry point")
+    for name in ("libSystem.B.dylib", "libsystem_kernel.dylib"):
+        symbols = subprocess.check_output(
+            [str(nm), "-g", str(OUT / "system" / name)], text=True
+        )
+        if re.search(r"^[0-9a-f]+ [TDBSC] _main$", symbols, re.M):
+            raise ValueError("a system library contains a program entry point")
 
 
 def audit_programs():
     directory = ROOT / "build/userland"
+    manifest = json.loads((directory / "build.json").read_text())
+    platform = set(manifest["platform_commands"])
     for name in json.loads((directory / "programs.json").read_text()):
         data = (directory / name).read_bytes()
         magic, cpu, _, kind, count, size, flags, _ = struct.unpack_from("<8I", data)
-        if (magic, cpu, kind) != (0xFEEDFACF, 0x01000007, 2) or flags & 4:
-            raise ValueError("expected a static x86_64 Mach-O program: " + name)
+        if (magic, cpu, kind) != (0xFEEDFACF, 0x01000007, 2):
+            raise ValueError("expected an x86_64 Mach-O program: " + name)
+        dynamic = name not in platform
+        if bool(flags & 4) != dynamic:
+            raise ValueError("unexpected Mach-O linkage: " + name)
         position = 32
+        dependencies = []
+        loader = None
         for _ in range(count):
             command, length = struct.unpack_from("<2I", data, position)
             if length < 8 or position + length > 32 + size:
                 raise ValueError("invalid Mach-O load command: " + name)
-            if command in (0xE, 0xC, 0x80000018, 0x8000001F, 0x80000023):
-                raise ValueError("unexpected dynamic loader dependency: " + name)
+            if command in (0xE, 0xC):
+                offset = struct.unpack_from("<I", data, position + 8)[0]
+                path = (
+                    data[position + offset : position + length]
+                    .split(b"\0", 1)[0]
+                    .decode()
+                )
+                if command == 0xE:
+                    loader = path
+                else:
+                    dependencies.append(path)
             position += length
+        if dynamic and (
+            loader != "/usr/lib/dyld" or dependencies != ["/usr/lib/libSystem.B.dylib"]
+        ):
+            raise ValueError("unexpected dynamic loader dependency: " + name)
+        if not dynamic and (loader or dependencies):
+            raise ValueError("unexpected platform program dependency: " + name)
 
 
 def main():
@@ -58,31 +68,23 @@ def main():
     directory.mkdir(parents=True)
     probe = directory / "libc-check"
     obj = compile_source(ROOT / "tests/guest/darwin_libc.c", OUT / "obj/tests/libc.o")
-    libraries = [
-        OUT / "lib" / name
-        for name in (
-            "libsystem_info_file.a",
-            "libsystem_c_bootstrap.a",
-            "libsystem_kernel.a",
-        )
-    ]
+    libraries = [OUT / "system/libSystem.B.dylib"]
     subprocess.run(
         [
             str(LD),
+            "-L" + str(OUT / "system"),
             "-Z",
             "-fatal_warnings",
-            "-static",
             "-arch",
             "x86_64",
             "-macosx_version_min",
             "10.11",
             "-e",
-            "_start",
+            "_main",
             "-dead_strip",
             "-no_uuid",
             "-o",
             str(probe),
-            str(OUT / "obj/runtime/start-asm.o"),
             str(obj),
             *map(str, libraries),
         ],

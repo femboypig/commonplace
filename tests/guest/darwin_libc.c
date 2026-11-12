@@ -15,16 +15,16 @@
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
+#include <wchar.h>
 
 extern int32_t getgrouplist_2(const char *, gid_t, gid_t **);
 static volatile sig_atomic_t received;
-static void handle(int signal)
-{
-    received = signal;
-}
+static void handle(int signal) { received = signal; }
 #define CHECK(condition)                                                                           \
-    do {                                                                                           \
-        if (!(condition)) {                                                                        \
+    do                                                                                             \
+    {                                                                                              \
+        if (!(condition))                                                                          \
+        {                                                                                          \
             fprintf(stderr, "libc check failed at line %d: %s (errno %d)\n", __LINE__, #condition, \
                     errno);                                                                        \
             return 1;                                                                              \
@@ -37,7 +37,8 @@ int main(void)
     errno = 0;
     CHECK(fstat(-1, &metadata) == -1 && errno == EBADF);
     CHECK(fstat(1, &metadata) == 0 && S_ISCHR(metadata.st_mode));
-    for (size_t size = 1; size <= 65536; size *= 2) {
+    for (size_t size = 1; size <= 65536; size *= 2)
+    {
         unsigned char *memory = calloc(size, 1);
         CHECK(memory && !((uintptr_t)memory & 15));
         for (size_t i = 0; i < size; ++i)
@@ -56,6 +57,9 @@ int main(void)
     char formatted[128], *end;
     CHECK(snprintf(formatted, sizeof(formatted), "%d %.2f %.2Lf", 42, 1.25, 2.5L) == 12);
     CHECK(!strcmp(formatted, "42 1.25 2.50"));
+    wchar_t wide[64];
+    CHECK(swprintf(wide, 64, L"%ls %d %.2f", L"darwin", 42, 1.25) == 14);
+    CHECK(wcscmp(wide, L"darwin 42 1.25") == 0);
     errno = 0;
     CHECK(strtol("9223372036854775808", &end, 10) == LONG_MAX && errno == ERANGE && !*end);
     CHECK(strtod("1.25", &end) == 1.25 && !*end);
@@ -99,7 +103,8 @@ int main(void)
     CHECK(waitpid(child, &status, 0) == child && WIFEXITED(status) && WEXITSTATUS(status) == 7);
     child = fork();
     CHECK(child >= 0);
-    if (!child) {
+    if (!child)
+    {
         struct rlimit core = {0, 0};
         setrlimit(RLIMIT_CORE, &core);
         signal(SIGABRT, SIG_IGN);
@@ -117,7 +122,8 @@ int main(void)
     int group_count = getgrouplist_2("root", 0, &membership);
     CHECK(group_count == 2 && membership[0] == 0 && membership[1] == 5);
     free(membership);
-    puts("darwin libc: errno, allocation, formatting, files, signals, clock, accounts, fifo, fork "
+    puts("darwin libc: errno, allocation, formatting, files, signals, clock, "
+         "accounts, fifo, fork "
          "and spawn passed");
     return 0;
 }
