@@ -13,6 +13,7 @@ from darwin_build import ROOT, OUT, LD, compile_source
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--memory", type=int, default=1024)
+    parser.add_argument("--disk-root", action="store_true")
     options = parser.parse_args()
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
     directory = ROOT / "build/runtime-checks" / stamp
@@ -55,7 +56,12 @@ def main():
             "/bin/runtime-check" if name == "runtime-check" else "/usr/lib/" + name
         ] = output
     image = directory / "root.hfs"
-    shutil.copyfile(ROOT / "build/rootfs/root.hfs", image)
+    if options.disk_root:
+        from rootfs_image import build_image
+
+        build_image(image, size_mib=64, persistent=True)
+    else:
+        shutil.copyfile(ROOT / "build/rootfs/root.hfs", image)
     hfs = ROOT / "toolchain/bin/hfsplus"
     # Keep the root and data disk of an interactive guest outside this test.
     for target, source in binaries.items():
@@ -83,8 +89,11 @@ def main():
             "180",
             "--memory",
             str(options.memory),
-            "--root-image",
-            str(image),
+            *(
+                ["--system-disk", str(image), "--disk-root"]
+                if options.disk_root
+                else ["--root-image", str(image)]
+            ),
             "--check-console",
             "--console-case-file",
             str(cases),

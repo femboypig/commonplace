@@ -2,6 +2,7 @@
 """Exercise Apple's native userspace in a disposable QEMU root image."""
 
 from datetime import datetime, timezone
+import argparse
 import json
 import re
 import struct
@@ -61,6 +62,9 @@ def audit_programs():
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--disk-root", action="store_true")
+    options = parser.parse_args()
     audit_libraries()
     audit_programs()
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
@@ -91,7 +95,12 @@ def main():
         check=True,
     )
     image = directory / "root.hfs"
-    shutil.copyfile(ROOT / "build/rootfs/root.hfs", image)
+    if options.disk_root:
+        from rootfs_image import build_image
+
+        build_image(image, size_mib=64, persistent=True)
+    else:
+        shutil.copyfile(ROOT / "build/rootfs/root.hfs", image)
     hfs = ROOT / "toolchain/bin/hfsplus"
     for operation in (
         ["add", str(probe), "/bin/libc-check"],
@@ -107,8 +116,11 @@ def main():
             str(ROOT / "scripts/boot-qemu.py"),
             "--seconds",
             "150",
-            "--root-image",
-            str(image),
+            *(
+                ["--system-disk", str(image), "--disk-root"]
+                if options.disk_root
+                else ["--root-image", str(image)]
+            ),
             "--check-console",
             "--console-case-file",
             str(scenario),
