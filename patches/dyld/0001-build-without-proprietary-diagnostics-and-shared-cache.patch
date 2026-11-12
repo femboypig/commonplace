@@ -1,0 +1,218 @@
+--- a/src/ImageLoader.h
++++ b/src/ImageLoader.h
+@@ -44,7 +44,7 @@
+  #include <mach/vm_page_size.h>
+ #endif
+ 
+-#if __x86_64__ || __i386__
++#if __has_include(<CrashReporterClient.h>)
+ 	#include <CrashReporterClient.h>
+ #else
+ 	// work around until iOS has CrashReporterClient.h
+@@ -114,7 +114,7 @@
+ 	#define SPLIT_SEG_DYLIB_SUPPORT			__i386__
+ 	#define PREBOUND_IMAGE_SUPPORT			__i386__
+ 	#define TEXT_RELOC_SUPPORT				__i386__
+-	#define DYLD_SHARED_CACHE_SUPPORT		1
++	#define DYLD_SHARED_CACHE_SUPPORT		0
+ 	#define SUPPORT_OLD_CRT_INITIALIZATION	__i386__
+ 	#define SUPPORT_LC_DYLD_ENVIRONMENT		(__i386__ || __x86_64__)
+ 	#define SUPPORT_VERSIONED_PATHS			1
+--- a/src/dyld.cpp
++++ b/src/dyld.cpp
+@@ -23,6 +23,7 @@
+  */
+ 
+ #include <stdint.h>
++#include <pthread.h>
+ #include <string.h>
+ #include <unistd.h>
+ #include <errno.h>
+@@ -49,8 +50,8 @@
+ #include <sys/dtrace.h>
+ #include <libkern/OSAtomic.h>
+ #include <Availability.h>
+-#include <System/sys/codesign.h>
+-#include <System/sys/csr.h>
++#include <sys/codesign.h>
++#include <sys/csr.h>
+ #include <_simple.h>
+ #include <os/lock_private.h>
+ 
+@@ -98,7 +99,12 @@
+ #if DYLD_SHARED_CACHE_SUPPORT
+ #include "dyld_cache_format.h"
+ #endif
++#if __has_include(<coreSymbolicationDyldSupport.h>)
+ #include <coreSymbolicationDyldSupport.h>
++#define HAVE_CORE_SYMBOLICATION 1
++#else
++#define HAVE_CORE_SYMBOLICATION 0
++#endif
+ #if TARGET_IPHONE_SIMULATOR
+ 	extern "C" void xcoresymbolication_load_notifier(void *connection, uint64_t load_timestamp, const char *image_path, const struct mach_header *mach_header);
+ 	extern "C" void xcoresymbolication_unload_notifier(void *connection, uint64_t unload_timestamp, const char *image_path, const struct mach_header *mach_header);
+@@ -711,7 +717,11 @@
+ 					  dyld::gProcessInfo->coreSymbolicationShmPage, loadTimestamp, image->machHeader(), image->getPath());
+ 		}
+ 		if ( dyld::gProcessInfo->coreSymbolicationShmPage != NULL) {
+-			coresymbolication_unload_notifier(dyld::gProcessInfo->coreSymbolicationShmPage, loadTimestamp, image->getPath(), image->machHeader());
++			
++#if HAVE_CORE_SYMBOLICATION
++coresymbolication_unload_notifier(dyld::gProcessInfo->coreSymbolicationShmPage, loadTimestamp, image->getPath(), image->machHeader());
++#endif
++
+ 		}
+ 	}
+ }
+@@ -829,7 +839,11 @@
+ 						dyld::log("dyld: coresymbolication_load_notifier(%p, 0x%016llX, %p, %s)\n",
+ 								  dyld::gProcessInfo->coreSymbolicationShmPage, loadTimestamp, infos[j].imageLoadAddress, infos[j].imageFilePath);
+ 					}
+-					coresymbolication_load_notifier(dyld::gProcessInfo->coreSymbolicationShmPage, loadTimestamp, infos[j].imageFilePath, infos[j].imageLoadAddress);
++					
++#if HAVE_CORE_SYMBOLICATION
++coresymbolication_load_notifier(dyld::gProcessInfo->coreSymbolicationShmPage, loadTimestamp, infos[j].imageFilePath, infos[j].imageLoadAddress);
++#endif
++
+ 				}
+ 			}
+ 		}
+@@ -4540,8 +4554,8 @@
+ 		&readdir_r,
+ 		&closedir,
+ 		// added in version 4
+-		&coresymbolication_load_notifier,
+-		&coresymbolication_unload_notifier
++		NULL,
++		NULL
+ };
+ 
+ __attribute__((noinline))
+--- a/src/dyldAPIsInLibSystem.cpp
++++ b/src/dyldAPIsInLibSystem.cpp
+@@ -29,7 +29,12 @@
+ 
+ #include <crt_externs.h>
+ #include <Availability.h>
++#if __has_include(<vproc_priv.h>)
+ #include <vproc_priv.h>
++#define HAVE_LAUNCHD 1
++#else
++#define HAVE_LAUNCHD 0
++#endif
+ 
+ #include "mach-o/dyld.h"
+ #include "mach-o/dyld_priv.h"
+@@ -1291,7 +1296,7 @@
+ #include <pthread.h>
+ #include <stdlib.h>
+ #include <mach-o/dyld.h>
+-#include <servers/bootstrap.h>
++
+ #include "dyldLibSystemInterface.h"
+ 
+ 
+@@ -1346,6 +1351,7 @@
+ 	return (pthread_getspecific(dlerrorPerThreadKey) != NULL);
+ }
+ 
++#if HAVE_LAUNCHD
+ // use non-lazy pointer to vproc_swap_integer so that lazy binding does not recurse
+ typedef vproc_err_t (*vswapproc)(vproc_t vp, vproc_gsk_t key,int64_t *inval, int64_t *outval);
+ static vswapproc swapProc = &vproc_swap_integer;
+@@ -1361,6 +1367,8 @@
+ 	}
+ 	return result;
+ }
++
++#endif
+ 
+ 
+ #if DYLD_SHARED_CACHE_SUPPORT
+@@ -1391,7 +1399,11 @@
+ 									&__cxa_finalize,
+ 									address_of_start,
+ 									&hasPerThreadBufferFor_dlerror,
+-									&isLaunchdOwned,
++									#if HAVE_LAUNCHD
++&isLaunchdOwned,
++#else
++NULL,
++#endif
+ 									&vm_allocate,
+ 									&mmap,
+ 									&__cxa_finalize_ranges};
+--- a/src/ImageLoaderMachO.cpp
++++ b/src/ImageLoaderMachO.cpp
+@@ -44,7 +44,7 @@
+ #include <libkern/OSAtomic.h>
+ #include <libkern/OSCacheControl.h>
+ #include <stdint.h>
+-#include <System/sys/codesign.h>
++#include <sys/codesign.h>
+ 
+ #include "ImageLoaderMachO.h"
+ #include "ImageLoaderMachOCompressed.h"
+--- a/src/ImageLoader.cpp
++++ b/src/ImageLoader.cpp
+@@ -1146,7 +1146,7 @@
+ 
+ 
+ VECTOR_NEVER_DESTRUCTED_IMPL(ImageLoader::InterposeTuple);
+-VECTOR_NEVER_DESTRUCTED_IMPL(ImagePair);
+-
+-
+-
++
++
++
++
+--- a/src/glue.c
++++ b/src/glue.c
+@@ -83,16 +83,10 @@
+ }
+ 
+ // std::terminate called by C++ unwinding code
+-void _ZSt9terminatev()
+-{
+-	_ZN4dyld4haltEPKc("dyld std::terminate()\n");
+-}
++extern void _ZSt9terminatev();
+ 
+ // std::unexpected called by C++ unwinding code
+-void _ZSt10unexpectedv()
+-{
+-	_ZN4dyld4haltEPKc("dyld std::unexpected()\n");
+-}
++extern void _ZSt10unexpectedv();
+ 
+ // __cxxabiv1::__terminate(void (*)()) called to terminate process
+ void _ZN10__cxxabiv111__terminateEPFvvE()
+@@ -237,10 +231,7 @@
+ 
+ 
+ // std::_throw_bad_alloc()
+-void _ZSt17__throw_bad_allocv()
+-{
+-	_ZN4dyld4haltEPKc("__throw_bad_alloc()");
+-}
++extern void _ZSt17__throw_bad_allocv();
+ 
+ // std::_throw_length_error(const char* x)
+ void _ZSt20__throw_length_errorPKc()
+@@ -302,13 +293,7 @@
+ 
+ // libc.a sometimes missing memset
+ #undef memset
+-void* memset(void* b, int c, size_t len)
+-{
+-	uint8_t* p = (uint8_t*)b;
+-	for(size_t i=len; i > 0; --i)
+-		*p++ = c;
+-	return b;
+-}
++extern void* memset(void* b, int c, size_t len);
+ 
+ 
+ // <rdar://problem/10111032> wrap calls to stat() with check for EAGAIN

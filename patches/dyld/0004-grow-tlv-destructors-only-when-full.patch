@@ -1,0 +1,11 @@
+--- a/src/threadLocalVariables.c
++++ b/src/threadLocalVariables.c
+@@ -398,7 +398,7 @@
+         pthread_setspecific(tlv_terminators_key, list);
+     }
+     else {
+-        if ( list->allocCount == list->allocCount ) {
++        if ( list->useCount == list->allocCount ) {
+             // handle resizing allocation 
+             uint32_t newAllocCount = list->allocCount * 2;
+             size_t newAllocSize = offsetof(struct TLVTerminatorList, entries[newAllocCount]);

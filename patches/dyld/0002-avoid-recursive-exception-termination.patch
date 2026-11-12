@@ -1,0 +1,19 @@
+--- a/src/glue.c
++++ b/src/glue.c
+@@ -268,9 +268,14 @@
+ FILE* __stderrp = NULL;
+ FILE* __stdoutp = NULL;
+ 
++static void dyld_terminate(void)
++{
++	_ZN4dyld4haltEPKc("dyld: unhandled C++ exception\n");
++}
++
+ // work with c++abi.a
+-void (*__cxa_terminate_handler)() = _ZSt9terminatev;
+-void (*__cxa_unexpected_handler)() = _ZSt10unexpectedv;
++void (*__cxa_terminate_handler)() = dyld_terminate;
++void (*__cxa_unexpected_handler)() = dyld_terminate;
+ 
+ void abort_message(const char* format, ...)
+ {

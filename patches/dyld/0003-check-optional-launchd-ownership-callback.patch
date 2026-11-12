@@ -1,0 +1,11 @@
+--- a/src/dyld.cpp
++++ b/src/dyld.cpp
+@@ -445,7 +445,7 @@
+ static bool useSyslog()
+ {
+ 	// Use syslog() for processes managed by launchd
+-	if ( (gLibSystemHelpers != NULL) && (gLibSystemHelpers->version >= 11) ) {
++	if ( (gLibSystemHelpers != NULL) && (gLibSystemHelpers->version >= 11) && (gLibSystemHelpers->isLaunchdOwned != NULL) ) {
+ 		if ( (*gLibSystemHelpers->isLaunchdOwned)() ) {
+ 			return true;
+ 		}
