@@ -2,7 +2,7 @@
 PYTHON ?= python3
 JOBS ?= 2
 
-.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime userland rootfs boot-init boot-console disk-image check-storage package test
+.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime userland rootfs boot-init boot-console boot-recovery system-disk check-system disk-image check-storage package test
 help:
 	@printf '%s\n' 'commonplace — darwin/x86_64' \
 	  'make doctor       check host tools and virtualization' \
@@ -24,6 +24,9 @@ help:
 	  'make check-darwin-runtime validate dyld, malloc and pthreads in QEMU' \
 	  'make boot-init    require PID 1 and exercise the serial console' \
 	  'make boot-console attach this terminal to the guest (Ctrl-A X exits)' \
+	  'make boot-recovery boot the RAM recovery root' \
+	  'make system-disk  install the persistent system disk once' \
+	  'make check-system verify persistent root and recovery boots' \
 	  'make disk-image   create the persistent data disk without replacing it' \
 	  'make check-storage verify persistence across poweroff and reboot' \
 	  'make package      package a ready-to-run QEMU system' \
@@ -109,7 +112,16 @@ boot-init: loader check-kernel rootfs
 disk-image: rootfs-tools
 	$(PYTHON) scripts/create-disk.py
 
-boot-console: loader check-kernel rootfs disk-image
+system-disk: userland rootfs-tools
+	$(PYTHON) scripts/create-system-disk.py
+
+boot-recovery: loader check-kernel rootfs disk-image
+	$(PYTHON) scripts/console-qemu.py --recovery
+
+check-system: loader check-kernel rootfs
+	$(PYTHON) scripts/check-system-disk.py
+
+boot-console: loader check-kernel rootfs disk-image system-disk
 	$(PYTHON) scripts/console-qemu.py
 
 check-darwin: loader check-kernel rootfs
