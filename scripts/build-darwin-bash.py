@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cross-build Apple's bash with the native static Darwin libraries."""
+"""Cross-build Apple's bash with the native Darwin LibSystem."""
 
 import os
 import json
@@ -23,12 +23,7 @@ def main():
         "-Wno-error=incompatible-pointer-types",
         "-fno-strict-aliasing",
     ]
-    libraries = [
-        OUT / "obj/runtime/start-asm.o",
-        OUT / "lib/libsystem_info_file.a",
-        OUT / "lib/libsystem_c_bootstrap.a",
-        OUT / "lib/libsystem_kernel.a",
-    ]
+    libraries = [OUT / "system/libSystem.B.dylib"]
     environment = {
         **os.environ,
         "CC": str(CC),
@@ -40,7 +35,6 @@ def main():
         "bash_cv_sys_named_pipes": "present",
         "CPPFLAGS": shlex.join(
             [
-                "-static",
                 "-fno-blocks",
                 "-D_FORTIFY_SOURCE=0",
                 "-nostdlibinc",
@@ -54,9 +48,9 @@ def main():
             [
                 "--ld-path=" + str(ROOT / "toolchain/bin/x86_64-apple-darwin15-ld"),
                 "-mno-outline",
-                "-static",
                 "-nostdlib",
-                "-Wl,-Z,-fatal_warnings,-e,_start,-dead_strip",
+                "-L" + str(OUT / "system"),
+                "-Wl,-Z,-fatal_warnings,-e,_main,-dead_strip",
             ]
         ),
         "LIBS": shlex.join(map(str, libraries)),
@@ -100,12 +94,18 @@ def main():
         headers.update(str(header.relative_to(SDK)).encode())
         headers.update(header.read_bytes())
     signature.update(headers.digest())
+    compile_stamp = directory / "compile.sha256"
+    compile_signature = hashlib.sha256(
+        environment["CFLAGS"].encode()
+        + (project / ".commonplace-patches.sha256").read_bytes()
+    ).hexdigest()
     header_stamp = directory / "sdk.sha256"
     if (directory / "Makefile").exists() and (
         not header_stamp.exists() or header_stamp.read_text() != headers.hexdigest()
     ):
         subprocess.run(["make", "clean"], cwd=directory, env=environment, check=True)
     header_stamp.write_text(headers.hexdigest())
+    compile_stamp.write_text(compile_signature)
     stamp = directory / "configure.sha256"
     if not stamp.exists() or stamp.read_text() != signature.hexdigest():
         shutil.rmtree(directory / "conftest.dSYM", ignore_errors=True)

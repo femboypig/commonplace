@@ -6,6 +6,7 @@ import hashlib
 import json
 import shlex
 import shutil
+import fcntl
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "build/darwin"
@@ -17,7 +18,6 @@ RESOURCE = Path(
     subprocess.check_output([str(CC), "-print-resource-dir"], text=True).strip()
 )
 CFLAGS = [
-    "-static",
     "-fno-blocks",
     "-std=gnu11",
     "-D_FORTIFY_SOURCE=0",
@@ -25,9 +25,9 @@ CFLAGS = [
     "-g",
     "-ffreestanding",
     "-fno-builtin",
+    "-funwind-tables",
     "-fno-stack-protector",
-    "-fno-pic",
-    "-fno-pie",
+    "-fPIC",
     "-fno-common",
     "-nostdlibinc",
     "-isystem",
@@ -93,6 +93,14 @@ def archive(output, objects):
 
 
 def prepare_source(name, subdirectory=None, patch_name=None):
+    locks = OUT / "locks"
+    locks.mkdir(parents=True, exist_ok=True)
+    with (locks / (name + ".lock")).open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        return _prepare_source(name, subdirectory, patch_name)
+
+
+def _prepare_source(name, subdirectory=None, patch_name=None):
     upstream = ROOT / "sources" / name
     destination = OUT / "source" / name
     if subdirectory:

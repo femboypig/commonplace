@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build pinned Apple command sources against the native Darwin bootstrap libraries."""
+"""Build pinned Apple command sources against the native Darwin LibSystem."""
 
 import hashlib
 import json
@@ -12,12 +12,7 @@ def main():
     registry = json.loads((ROOT / "userland/darwin/commands.json").read_text())
     if registry["schema"] != 1:
         raise ValueError("unsupported command registry")
-    libraries = [
-        OUT / "lib/libsystem_file.a",
-        OUT / "lib/libsystem_info_file.a",
-        OUT / "lib/libsystem_c_bootstrap.a",
-        OUT / "lib/libsystem_kernel.a",
-    ]
+    libraries = [OUT / "lib/libsystem_file.a", OUT / "system/libSystem.B.dylib"]
     binaries = OUT / "bin"
     binaries.mkdir(parents=True, exist_ok=True)
     manifest = {}
@@ -48,20 +43,19 @@ def main():
         subprocess.run(
             [
                 str(LD),
+                "-L" + str(OUT / "system"),
                 "-Z",
                 "-fatal_warnings",
-                "-static",
                 "-arch",
                 "x86_64",
                 "-macosx_version_min",
                 "10.11",
                 "-e",
-                "_start",
+                "_main",
                 "-dead_strip",
                 "-no_uuid",
                 "-o",
                 str(output),
-                str(OUT / "obj/runtime/start-asm.o"),
                 *map(str, objects),
                 *map(str, libraries),
             ],

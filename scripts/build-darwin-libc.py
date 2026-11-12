@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build Apple's C library for the single-threaded static bootstrap profile."""
+"""Build Apple's C library for the native Darwin LibSystem."""
 
 from concurrent.futures import ThreadPoolExecutor
 import json
@@ -8,16 +8,13 @@ from darwin_build import ROOT, OUT, compile_source, archive, prepare_source
 
 # These facilities need the dynamic libSystem runtime or other frameworks.
 EXCLUDED = {
-    "stdlib/FreeBSD/abort.c",
     "stdlib/FreeBSD/psort.c",
     "stdlib/FreeBSD/psort_b.c",
     "stdlib/FreeBSD/psort_r.c",
-    "gen/FreeBSD/assert.c",
     "gen/FreeBSD/daemon.c",
     "gen/FreeBSD/timezone.c",
     "gen/FreeBSD/readpassphrase.c",
     "gen/FreeBSD/scandir_b.c",
-    "stdio/FreeBSD/vfwprintf.c",
     "gdtoa/FreeBSD/gdtoa-strtoIg.c",
     "gdtoa/FreeBSD/machdep_ldisQ.c",
     "gdtoa/FreeBSD/machdep_ldisd.c",
@@ -44,7 +41,6 @@ PATTERNS = (
 def main():
     source = prepare_source("libc")
     platform = prepare_source("libplatform")
-    bash = prepare_source("bash")
     directories = (
         "fbsdcompat",
         "locale",
@@ -68,12 +64,10 @@ def main():
         "-include",
         str(source / "fbsdcompat/_fbsd_compat_.h"),
         "-include",
-        str(ROOT / "userland/darwin/runtime/profile.h"),
-        "-include",
         str(source / "gen/__dirent.h"),
         "-D_LIBC_NO_FEATURE_VERIFICATION",
         "-DVARIANT_CANCELABLE",
-        "-DVARIANT_STATIC=1",
+        "-DVARIANT_STATIC=0",
         "-DOSATOMIC_USE_INLINED=1",
         "-D__DARWIN_NON_CANCELABLE=0",
         "-DPRIVATE",
@@ -82,6 +76,12 @@ def main():
         "-Wno-deprecated-declarations",
         "-Wno-deprecated-non-prototype",
         "-Wno-incompatible-library-redeclaration",
+    ]
+    flags += [
+        "-D__DYNAMIC__=1",
+        "-DLIBC_NO_NOTIFY=1",
+        "-I" + str(ROOT / "sources/libmalloc/src"),
+        "-I" + str(ROOT / "sources/libpthread/private"),
     ]
     paths = sorted(
         {
@@ -124,12 +124,28 @@ def main():
         )
     ]
 
+    paths += [
+        source / p
+        for p in (
+            "compat-43/sigaltstk.c",
+            "gen/getttyent.c",
+            "gen/thread_stack_pcs.c",
+            "sys/_libc_init.c",
+            "sys/_libc_fork_child.c",
+            "gen/confstr.c",
+            "sys/OpenBSD/stack_protector.c",
+        )
+    ]
+    flags += ["-I" + str(ROOT / "sources/xnu/libsyscall/wrappers/libproc")]
+    paths += sorted((source / "db").glob("**/*.c"))
+    flags += ["-I" + str(p) for p in sorted((source / "db").glob("*/FreeBSD"))]
+
     def compile(path):
-        output = OUT / "obj/libc" / path.relative_to(source).with_suffix(".o")
+        output = OUT / "obj/libc-native" / path.relative_to(source).with_suffix(".o")
         relative = str(path.relative_to(source))
         extra = ["-DHAVE_CONFIG_H"] if "regex/TRE/" in relative else []
-        if relative == "stdlib/FreeBSD/system.c":
-            extra.append("-UVARIANT_CANCELABLE")
+        if relative.startswith("db/"):
+            extra.append("-D__DBINTERFACE_PRIVATE")
         return compile_source(path, output, [*flags, *extra])
 
     with ThreadPoolExecutor(max_workers=2) as pool:
@@ -204,49 +220,14 @@ def main():
             ["-DPRIVATE"],
         )
     )
-    for path in sorted((ROOT / "userland/darwin/runtime").glob("*.c")):
-        if path.name == "accounts.c":
-            continue
-        objects.append(
-            compile_source(
-                path,
-                OUT / "obj/runtime" / path.with_suffix(".o").name,
-                [
-                    "-I" + str(source / "darwin"),
-                    "-DOSATOMIC_USE_INLINED=1",
-                    "-Wno-deprecated-declarations",
-                ],
-            )
-        )
-    allocator = bash / "bash-3.2/lib/malloc/malloc.c"
-    objects.append(
-        compile_source(
-            allocator,
-            OUT / "obj/runtime/bash-malloc.o",
-            [
-                "-I" + str(ROOT / "sources/bash/bash-3.2"),
-                "-include",
-                str(ROOT / "sources/bash/config.h"),
-                "-include",
-                "stdlib.h",
-                "-DHAVE_DECL_SBRK=1",
-                "-Wno-deprecated-non-prototype",
-                "-Wno-deprecated-declarations",
-            ],
-        )
-    )
-    objects.append(
-        compile_source(
-            ROOT / "userland/darwin/runtime/start.S", OUT / "obj/runtime/start-asm.o"
-        )
-    )
-    archive(OUT / "lib/libsystem_c_bootstrap.a", objects)
+    library = OUT / "lib" / "libsystem_c.a"
+    archive(library, objects)
     manifest = {
-        "profile": "single-threaded-static",
+        "profile": "native-dynamic",
         "source_files": [str(p.relative_to(source)) for p in paths],
     }
     (OUT / "libc-build.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    print("Darwin static C library: " + str(OUT / "lib/libsystem_c_bootstrap.a"))
+    print("Darwin C library: " + str(library))
 
 
 if __name__ == "__main__":

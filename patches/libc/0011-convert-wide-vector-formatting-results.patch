@@ -1,0 +1,40 @@
+--- a/stdio/FreeBSD/vfwprintf.c
++++ b/stdio/FreeBSD/vfwprintf.c
+@@ -1255,9 +1255,15 @@
+ 		vlen = asprintf_l(&vstr, loc, vfmt , ## args, vval.vdoublearg[ind]); \
+ 		break;							\
+ 	}								\
+-	ret += vlen;							\
+-	PRINT(vstr, vlen);						\
+-	free(vstr);							\
++	convbuf = __mbsconv(vstr, -1, loc); \
++	free(vstr); \
++	if (!convbuf) goto error; \
++	vlen = wcslen(convbuf); \
++	ret += vlen; \
++	PRINT(convbuf, vlen); \
++	FLUSH(); \
++	free(convbuf); \
++	convbuf = NULL; \
+ } while (0)
+ #else /* !V64TYPE */
+ #define VPRINT(type, ind, args...) do {					\
+@@ -1284,9 +1290,15 @@
+ 		vlen = asprintf_l(&vstr, loc, vfmt , ## args, vval.vfloatarg[ind]); \
+ 		break;							\
+ 	}								\
+-	ret += vlen;							\
+-	PRINT(vstr, vlen);						\
+-	free(vstr);							\
++	convbuf = __mbsconv(vstr, -1, loc); \
++	free(vstr); \
++	if (!convbuf) goto error; \
++	vlen = wcslen(convbuf); \
++	ret += vlen; \
++	PRINT(convbuf, vlen); \
++	FLUSH(); \
++	free(convbuf); \
++	convbuf = NULL; \
+ } while (0)
+ #endif /* V64TYPE */
+ 

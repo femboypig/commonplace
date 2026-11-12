@@ -36,8 +36,23 @@ def prepare(sdk):
         ROOT / "sources/xnu/osfmk/i386/cpu_capabilities.h",
         include / "System/i386/cpu_capabilities.h",
     )
-    for name in ("aio.h", "times.h", "utsname.h", "timeb.h", "process_policy.h"):
+    for name in (
+        "aio.h",
+        "times.h",
+        "utsname.h",
+        "timeb.h",
+        "process_policy.h",
+        "dtrace.h",
+        "dtrace_glue.h",
+        "csr.h",
+        "codesign.h",
+    ):
         shutil.copyfile(ROOT / "sources/xnu/bsd/sys" / name, include / "sys" / name)
+    (include / "System/machine").mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(
+        ROOT / "sources/xnu/osfmk/machine/cpu_capabilities.h",
+        include / "System/machine/cpu_capabilities.h",
+    )
     headers(ROOT / "sources/xnu/libsyscall/mach/mach", include / "mach")
     headers(ROOT / "sources/xnu/libsyscall/wrappers", include)
     headers(ROOT / "sources/xnu/libsyscall/wrappers/spawn", include)
@@ -47,6 +62,7 @@ def prepare(sdk):
     ):
         (include / directory).mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / "sources/xnu/bsd/sys" / name, include / directory / name)
+    headers(ROOT / "sources/cctools/cctools/include/mach-o", include / "mach-o")
     headers(ROOT / "sources/dyld/include", include)
     for name in ("pwd.h", "grp.h", "netdb.h", "aliasdb.h"):
         shutil.copyfile(ROOT / "sources/libinfo/lookup.subproj" / name, include / name)
@@ -62,9 +78,17 @@ def prepare(sdk):
     headers(ROOT / "sources/architecture", include / "architecture")
     headers(ROOT / "sources/libpthread/sys", include / "sys")
     headers(ROOT / "sources/libpthread/pthread", include / "pthread")
+    headers(ROOT / "sources/libpthread/private", include / "pthread", ("qos.h",))
     for name in ("pthread.h", "pthread_impl.h", "sched.h"):
         shutil.copyfile(include / "pthread" / name, include / name)
+    for name in ("Block.h", "Block_private.h"):
+        shutil.copyfile(ROOT / "sources/libclosure" / name, include / name)
+    headers(ROOT / "sources/libmalloc/include", include)
     headers(ROOT / "sources/libplatform/include", include)
+    shutil.copyfile(
+        ROOT / "sources/libsystem/alloc_once_private.h",
+        include / "os/alloc_once_private.h",
+    )
     headers(ROOT / "sources/libm/Source/Intel", include)
     shutil.copyfile(
         ROOT / "sources/libpthread/private/spinlock_private.h",

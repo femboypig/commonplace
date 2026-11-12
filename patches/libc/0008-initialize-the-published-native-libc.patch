@@ -1,0 +1,67 @@
+--- a/sys/_libc_init.c
++++ b/sys/_libc_init.c
+@@ -37,7 +37,6 @@
+ extern void __atexit_init(void);
+ extern void __confstr_init(const struct _libc_functions *funcs);
+ extern void _init_clock_port(void);
+-extern void __chk_init(void);
+ extern void __xlocale_init(void);
+ extern void __guard_setup(const char *apple[]);
+ 
+@@ -52,7 +51,6 @@
+ 	__confstr_init(funcs);
+ 	__atexit_init();
+ 	_init_clock_port();
+-	__chk_init();
+ 	__xlocale_init();
+ 	__guard_setup(apple);
+ }
+--- a/sys/_libc_fork_child.c
++++ b/sys/_libc_fork_child.c
+@@ -24,7 +24,8 @@
+  * _libc_fork_child() is called from Libsystem's libSystem_atfork_child()
+  */
+ #include <TargetConditionals.h>
+-#include <CrashReporterClient.h>
++#define __OS_EXPOSE_INTERNALS__ 1
++#include <os/internal/internal_shared.h>
+ 
+ extern void _arc4_fork_child();
+ extern void _init_clock_port(void);
+@@ -33,7 +34,7 @@
+ void
+ _libc_fork_child(void)
+ {
+-	CRSetCrashLogMessage("crashed on child side of fork pre-exec");
++	_os_set_crash_log_message("crashed on child side of fork pre-exec");
+ 
+ 	_arc4_fork_child();
+ 	_init_clock_port();
+--- a/sys/OpenBSD/stack_protector.c
++++ b/sys/OpenBSD/stack_protector.c
+@@ -31,11 +31,12 @@
+ #include <signal.h>
+ #include <string.h>
+ #include <stdlib.h>
+-#include <asl.h>
++#include <sys/syslog.h>
+ #include <unistd.h>
+ #include <sys/types.h>
+ #include <fcntl.h>
+-#include <CrashReporterClient.h>
++#define __OS_EXPOSE_INTERNALS__ 1
++#include <os/internal/internal_shared.h>
+ #include "libproc.h"
+ #include "_simple.h"
+ 
+@@ -134,8 +135,8 @@
+ 	strlcat(message, np, sizeof(message));
+ 	strlcat(message, STACKOVERFLOW, sizeof(message));
+ 	/* This may fail on a chroot jail... */
+-	_simple_asl_log_prog(ASL_LEVEL_CRIT, "user", message, prog);
++	_simple_asl_log_prog(LOG_CRIT, "user", message, prog);
+ 
+-	CRSetCrashLogMessage(message);
++	_os_set_crash_log_message(message);
+ 	__abort();
+ }

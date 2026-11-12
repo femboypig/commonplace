@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build XNU's native syscall stubs for static, non-cancelable bootstrap programs."""
+"""Build XNU's syscall stubs and wrappers with native cancellation support."""
 
 from concurrent.futures import ThreadPoolExecutor
 import os
@@ -10,6 +10,7 @@ from darwin_build import ROOT, OUT, compile_source, archive, prepare_source
 
 
 def main():
+    objdir = "obj/libsyscall-native"
     source = prepare_source("xnu", "libsyscall", "libsyscall").parent
     generated = OUT / "syscalls"
     generated.mkdir(parents=True, exist_ok=True)
@@ -48,14 +49,12 @@ def main():
     def assemble(path):
         return compile_source(
             path,
-            OUT / "obj/libsyscall" / path.with_suffix(".o").name,
+            OUT / objdir / path.with_suffix(".o").name,
             [
                 "-x",
                 "assembler-with-cpp",
                 "-DPRIVATE",
                 "-D__DYNAMIC__=1",
-                "-Dcerror=cerror_nocancel",
-                "-D_cerror=_cerror_nocancel",
             ],
         )
 
@@ -64,8 +63,8 @@ def main():
     objects.append(
         compile_source(
             source / "libsyscall/custom/errno.c",
-            OUT / "obj/libsyscall/errno.o",
-            ["-I" + str(source / "libsyscall/os")],
+            OUT / (objdir + "/errno.o"),
+            ["-fPIC", "-I" + str(source / "libsyscall/os")],
         )
     )
     for name in (
@@ -92,12 +91,11 @@ def main():
         objects.append(
             compile_source(
                 source / "libsyscall/wrappers" / name,
-                OUT
-                / "obj/libsyscall/wrappers"
-                / name.replace("/", "-").replace(".c", ".o"),
+                OUT / objdir / "wrappers" / name.replace("/", "-").replace(".c", ".o"),
                 [
                     "-DPRIVATE",
                     "-D__APPLE_API_PRIVATE",
+                    "-fPIC",
                     "-iquote" + str(source / "libsyscall/mach"),
                 ],
             )
@@ -105,7 +103,7 @@ def main():
     objects.append(
         compile_source(
             source / "libsyscall/mach/mach_init.c",
-            OUT / "obj/libsyscall/mach_init.o",
+            OUT / (objdir + "/mach_init.o"),
             ["-DPRIVATE"],
         )
     )
@@ -117,7 +115,7 @@ def main():
         objects.append(
             compile_source(
                 source / "libsyscall" / name,
-                OUT / "obj/libsyscall" / Path(name).with_suffix(".o"),
+                OUT / objdir / Path(name).with_suffix(".o"),
                 ["-x", "assembler-with-cpp", "-DPRIVATE", "-D__DYNAMIC__=1"],
             )
         )
@@ -125,12 +123,14 @@ def main():
         objects.append(
             compile_source(
                 source / "libsyscall/mach" / name,
-                OUT / "obj/libsyscall" / Path(name).with_suffix(".o"),
+                OUT / objdir / Path(name).with_suffix(".o"),
                 ["-DVARIANT_STATIC=1"],
             )
         )
-    archive(OUT / "lib/libsystem_kernel.a", objects)
-    print("native Darwin syscall library: " + str(OUT / "lib/libsystem_kernel.a"))
+    archive(OUT / "lib/libsystem_kernel_native.a", objects)
+    print(
+        "native Darwin syscall library: " + str(OUT / "lib/libsystem_kernel_native.a")
+    )
 
 
 if __name__ == "__main__":

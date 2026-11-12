@@ -9,8 +9,8 @@ def main():
     directory = source / "lookup.subproj"
     flags = [
         "-I" + str(directory),
-        "-include",
-        str(ROOT / "userland/darwin/runtime/profile.h"),
+        "-fPIC",
+        "-D__DYNAMIC__=1",
         "-include",
         "stdbool.h",
         "-DOSATOMIC_USE_INLINED=1",
@@ -31,7 +31,7 @@ def main():
     )
     objects.append(
         compile_source(
-            ROOT / "userland/darwin/runtime/accounts.c",
+            ROOT / "userland/darwin/libinfo/accounts.c",
             OUT / "obj/libinfo/accounts.o",
             flags,
         )
@@ -61,19 +61,14 @@ def main():
 #include <stdlib.h>
 #include <limits.h>
 extern si_mod_t *si_module_static_file(void);
-static si_item_t *previous_groups;
-static void retain_groups(si_item_t *item)
-{
-    si_item_release(previous_groups);
-    previous_groups = item;
-}
+extern si_item_t *commonplace_retain_groups(si_item_t *item);
 static si_item_t *file_grouplist(si_mod_t *module, const char *name, uint32_t count)
 {
     return module->vtable->sim_grouplist(module, name, count);
 }
 #define si_grouplist file_grouplist
 #define si_search si_module_static_file
-#define LI_set_thread_item(category, item) retain_groups(item)
+#define LI_set_thread_item(category, item) ((item) = commonplace_retain_groups(item))
 static int
 getgrouplist_internal"""
     )
