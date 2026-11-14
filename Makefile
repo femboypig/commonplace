@@ -2,7 +2,7 @@
 PYTHON ?= python3
 JOBS ?= 2
 
-.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime userland rootfs boot-init boot-console boot-recovery system-disk check-system check-hfs disk-image check-storage package test
+.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime userland rootfs boot-init boot-console boot-recovery system-disk check-system check-hfs update-system check-update disk-image check-storage package test
 help:
 	@printf '%s\n' 'commonplace — darwin/x86_64' \
 	  'make doctor       check host tools and virtualization' \
@@ -27,6 +27,8 @@ help:
 	  'make boot-recovery boot the RAM recovery root' \
 	  'make system-disk  install the persistent system disk once' \
 	  'make check-system verify persistent root and recovery boots' \
+	  'make update-system update the offline system and keep a rollback image' \
+	  'make check-update verify updates and rollback in QEMU' \
 	  'make check-hfs    verify native HFS checking and repair' \
 	  'make disk-image   create the persistent data disk without replacing it' \
 	  'make check-storage verify persistence across poweroff and reboot' \
@@ -118,6 +120,12 @@ system-disk: userland rootfs-tools
 
 boot-recovery: loader check-kernel rootfs disk-image
 	$(PYTHON) scripts/console-qemu.py --recovery
+
+update-system: loader check-kernel rootfs
+	$(PYTHON) scripts/update-system.py
+
+check-update: loader check-kernel rootfs
+	$(PYTHON) scripts/check-update.py
 
 check-hfs: loader check-kernel rootfs
 	$(PYTHON) scripts/check-hfs.py
