@@ -125,9 +125,17 @@ void commonplace_disk_init(void)
         printf("commonplace: no block device slot\n");
         return;
     }
+    int raw_major = commonplace_disk_raw_register(major_number, &disk_switch);
+    if (raw_major < 0)
+    {
+        bdevsw_remove(major_number, &disk_switch);
+        printf("commonplace: no raw disk device slot\n");
+        return;
+    }
     int error = commonplace_disk_queue_start();
     if (error)
     {
+        commonplace_disk_raw_unregister(raw_major);
         bdevsw_remove(major_number, &disk_switch);
         printf("commonplace: disk queue initialization failed: %d\n", error);
         return;
@@ -139,10 +147,14 @@ void commonplace_disk_init(void)
             continue;
         void *node = devfs_make_node(makedev(major_number, unit), DEVFS_BLOCK, UID_ROOT,
                                      GID_OPERATOR, 0600, "cp%u", unit);
-        if (!node || commonplace_disk_publish(unit, major_number))
+        void *raw_node = devfs_make_node(makedev(raw_major, unit), DEVFS_CHAR, UID_ROOT,
+                                         GID_OPERATOR, 0600, "rcp%u", unit);
+        if (!node || !raw_node || commonplace_disk_publish(unit, major_number))
         {
             if (node)
                 devfs_remove(node);
+            if (raw_node)
+                devfs_remove(raw_node);
             commonplace_disk_sectors[unit] = 0;
             printf("commonplace: cannot publish cp%u\n", unit);
             continue;

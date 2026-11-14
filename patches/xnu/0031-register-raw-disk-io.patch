@@ -1,0 +1,8 @@
+--- a/bsd/conf/files
++++ b/bsd/conf/files
+@@ -571,3 +571,5 @@
+ commonplace/storage/queue.c standard
+ commonplace/storage/device.c standard
+ commonplace/storage/registry.cpp optional iokitcpp
++commonplace/storage/raw.c standard
++commonplace/storage/raw_buffer.cpp optional iokitcpp
