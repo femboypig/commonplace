@@ -104,6 +104,11 @@ def main():
             "emulated/lutimes.c",
             "gen/devname.c",
             "gen/getvfsbyname.c",
+            "gen/getloadavg.c",
+            "net/inet_pton.c",
+            "net/inet_ntop.c",
+            "net/FreeBSD/inet_ntoa.c",
+            "net/FreeBSD/send.c",
             "gen/uname.c",
             "gen/get_compat.c",
             "sys/gettimeofday.c",
@@ -227,6 +232,13 @@ def main():
             platform / "src/setjmp/generic/sigtramp.c",
             OUT / "obj/platform/sigtramp.o",
             ["-DPRIVATE"],
+        )
+    )
+    objects.append(
+        compile_source(
+            prepare_source("xnu", "libkern/net", "xnu-userland") / "inet_aton.c",
+            OUT / "obj/net/inet_aton.o",
+            ["-include", "stdlib.h"],
         )
     )
     library = OUT / "lib" / "libsystem_c.a"

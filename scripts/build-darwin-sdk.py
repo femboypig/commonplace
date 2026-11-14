@@ -67,12 +67,16 @@ def prepare(sdk):
     for name in ("pwd.h", "grp.h", "netdb.h", "aliasdb.h"):
         shutil.copyfile(ROOT / "sources/libinfo/lookup.subproj" / name, include / name)
     headers(ROOT / "sources/libinfo/membership.subproj", include)
+    shutil.copyfile(
+        ROOT / "sources/libinfo/gen.subproj/ifaddrs.h", include / "ifaddrs.h"
+    )
     for name in ("copyfile.h", "xattr_flags.h"):
         shutil.copyfile(ROOT / "sources/copyfile" / name, include / name)
     shutil.copyfile(ROOT / "sources/removefile/removefile.h", include / "removefile.h")
     shutil.copyfile(ROOT / "sources/libutil/libutil.h", include / "libutil.h")
     shutil.copyfile(ROOT / "sources/libc/gen/get_compat.h", include / "get_compat.h")
     headers(ROOT / "sources/libc/include", include, ("sys/cdefs.h",))
+    shutil.copyfile(ROOT / "sources/libresolv/nameser.h", include / "arpa/nameser.h")
     headers(ROOT / "sources/libc/include/FreeBSD", include)
     headers(ROOT / "sources/libc/include/NetBSD", include)
     headers(ROOT / "sources/architecture", include / "architecture")

@@ -1,0 +1,10 @@
+--- a/lookup.subproj/file_module.c
++++ b/lookup.subproj/file_module.c
+@@ -2271,6 +2271,7 @@
+ 		.sim_fs_byspec = &file_fs_byspec,
+ 		.sim_fs_byfile = &file_fs_byfile,
+ 		.sim_fs_all = &file_fs_all,
++		.sim_host_byname = &file_host_byname,
+ 
+ 
+ 	};

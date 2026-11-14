@@ -1,0 +1,41 @@
+--- a/lookup.subproj/file_module.c
++++ b/lookup.subproj/file_module.c
+@@ -47,6 +47,7 @@
+ #define _PATH_ETHERS "/etc/ethers"
+ #define _PATH_NETGROUP "/etc/netgroup"
+ 
++static pthread_mutex_t rootfs_lock = PTHREAD_MUTEX_INITIALIZER;
+ static int rootfs_once;
+ static si_item_t *rootfs = NULL;
+ 
+@@ -1833,7 +1834,13 @@
+ static si_item_t *
+ _fsi_fs_root(si_mod_t *si)
+ {
+-	if (!rootfs_once) { rootfs_once=1; _fsi_fs_root_initialize(si); }
++	pthread_mutex_lock(&rootfs_lock);
++	if (!rootfs_once)
++	{
++		_fsi_fs_root_initialize(si);
++		rootfs_once = 1;
++	}
++	pthread_mutex_unlock(&rootfs_lock);
+ 	return si_item_retain(rootfs);
+ }
+ 
+@@ -2286,6 +2293,8 @@
+ 		.vtable = &file_vtable,
+ 	};
+ 
++	static pthread_mutex_t initialize_lock = PTHREAD_MUTEX_INITIALIZER;
++	pthread_mutex_lock(&initialize_lock);
+ 	if (si.name == NULL) {
+ 		si.name = strdup("file");
+ 		file_si_private_t *pp = calloc(1, sizeof(file_si_private_t));
+@@ -2301,5 +2310,6 @@
+ 		si.private = pp;
+ 	}
+ 
++	pthread_mutex_unlock(&initialize_lock);
+ 	return (si_mod_t *)&si;
+ }

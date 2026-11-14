@@ -1,0 +1,13 @@
+--- a/inet_aton.c
++++ b/inet_aton.c
+@@ -24,7 +24,11 @@
+  * SUCH DAMAGE.
+  */
+ #include <sys/param.h>
++#ifdef KERNEL
+ #include <sys/systm.h>
++#else
++#include <stdlib.h>
++#endif
+ 
+ #include <netinet/in.h>
