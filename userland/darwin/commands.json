@@ -253,6 +253,91 @@
       "sources": [
         "shell_cmds/id/id.c"
       ]
+    },
+    "fsck_hfs": {
+      "sources": [
+        "hfs/fsck_hfs/fsck_hfs.c",
+        "hfs/fsck_hfs/utilities.c",
+        "hfs/fsck_hfs/cache.c",
+        "hfs/fsck_hfs/fsck_debug.c",
+        "hfs/fsck_hfs/fsck_messages.c",
+        "hfs/fsck_hfs/fsck_strings.c",
+        "hfs/fsck_hfs/fsck_hfs_strings.c",
+        "hfs/fsck_hfs/dfalib/hfs_endian.c",
+        "hfs/fsck_hfs/dfalib/BlockCache.c",
+        "hfs/fsck_hfs/dfalib/BTree.c",
+        "hfs/fsck_hfs/dfalib/BTreeAllocate.c",
+        "hfs/fsck_hfs/dfalib/BTreeMiscOps.c",
+        "hfs/fsck_hfs/dfalib/BTreeNodeOps.c",
+        "hfs/fsck_hfs/dfalib/BTreeScanner.c",
+        "hfs/fsck_hfs/dfalib/BTreeTreeOps.c",
+        "hfs/fsck_hfs/dfalib/CatalogCheck.c",
+        "hfs/fsck_hfs/dfalib/HardLinkCheck.c",
+        "hfs/fsck_hfs/dfalib/dirhardlink.c",
+        "hfs/fsck_hfs/dfalib/SBTree.c",
+        "hfs/fsck_hfs/dfalib/SControl.c",
+        "hfs/fsck_hfs/dfalib/SVerify1.c",
+        "hfs/fsck_hfs/dfalib/SVerify2.c",
+        "hfs/fsck_hfs/dfalib/SRepair.c",
+        "hfs/fsck_hfs/dfalib/SRebuildBTree.c",
+        "hfs/fsck_hfs/dfalib/SUtils.c",
+        "hfs/fsck_hfs/dfalib/SKeyCompare.c",
+        "hfs/fsck_hfs/dfalib/SDevice.c",
+        "hfs/fsck_hfs/dfalib/SExtents.c",
+        "hfs/fsck_hfs/dfalib/SAllocate.c",
+        "hfs/fsck_hfs/dfalib/SCatalog.c",
+        "hfs/fsck_hfs/dfalib/SStubs.c",
+        "hfs/fsck_hfs/dfalib/VolumeBitmapCheck.c",
+        "hfs/fsck_hfs/dfalib/fsck_journal.c"
+      ],
+      "flags": [
+        "-DBSD=1",
+        "-DCONFIG_HFS_TRIM=1",
+        "-DDEBUG_BUILD=0",
+        "-DVERSION=\"hfs-305.10.1\"",
+        "-fblocks"
+      ],
+      "version_symbol": "fsck_hfsVersionString"
+    },
+    "fstyp_hfs": {
+      "sources": [
+        "hfs/fstyp_hfs/fstyp_hfs.c"
+      ]
+    },
+    "dd": {
+      "sources": [
+        "file_cmds/dd/args.c",
+        "file_cmds/dd/conv.c",
+        "file_cmds/dd/conv_tab.c",
+        "file_cmds/dd/dd.c",
+        "file_cmds/dd/misc.c",
+        "file_cmds/dd/position.c"
+      ]
+    },
+    "df": {
+      "sources": [
+        "file_cmds/df/df.c",
+        "file_cmds/df/vfslist.c"
+      ]
+    },
+    "du": {
+      "sources": [
+        "file_cmds/du/du.c"
+      ],
+      "flags": [
+        "-fhosted",
+        "-fbuiltin"
+      ]
+    },
+    "cksum": {
+      "sources": [
+        "file_cmds/cksum/cksum.c",
+        "file_cmds/cksum/crc.c",
+        "file_cmds/cksum/crc32.c",
+        "file_cmds/cksum/print.c",
+        "file_cmds/cksum/sum1.c",
+        "file_cmds/cksum/sum2.c"
+      ]
     }
   }
 }

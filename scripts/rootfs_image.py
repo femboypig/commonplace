@@ -16,10 +16,17 @@ def build_image(image, size_mib=32, persistent=False):
     formatter = ROOT / "toolchain/bin/newfs_hfs"
     hfs = ROOT / "toolchain/bin/hfsplus"
     names = json.loads((ROOT / "build/userland/programs.json").read_text())
+    system_programs = {
+        "init": "launchd",
+        "fsck_hfs": "fsck_hfs",
+        "fstyp_hfs": "fstyp_hfs",
+    }
     programs = {
-        ("/sbin/launchd" if name == "init" else "/bin/" + name): ROOT
-        / "build/userland"
-        / name
+        (
+            "/sbin/" + system_programs[name]
+            if name in system_programs
+            else "/bin/" + name
+        ): ROOT / "build/userland" / name
         for name in names
     }
     programs.update(
@@ -69,6 +76,9 @@ def build_image(image, size_mib=32, persistent=False):
             "usr/sbin",
             "usr/lib",
             "usr/lib/system",
+            "var",
+            "var/log",
+            "var/run",
         ):
             subprocess.run([str(hfs), str(image), "mkdir", "/" + directory], check=True)
         hashes = {}

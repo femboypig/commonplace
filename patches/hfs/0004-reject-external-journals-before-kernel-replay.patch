@@ -1,0 +1,57 @@
+--- a/fsck_hfs/fsck_hfs.c
++++ b/fsck_hfs/fsck_hfs.c
+@@ -31,6 +31,8 @@
+ #include <setjmp.h>
+ 
+ #include <hfs/hfs_mount.h>
++#include <hfs/hfs_format.h>
++#include <libkern/OSByteOrder.h>
+ 
+ #include <errno.h>
+ #include <fcntl.h>
+@@ -634,6 +636,34 @@
+  * Return 1 if successful, 0 if unsuccessful.
+  * canWrite - 1 if we can safely write to the raw device or 0 if not.
+  */
++/* Reject unsupported external journals before the kernel replay request. */
++static int
++has_external_journal(const char *dev)
++{
++    unsigned char block[512];
++    HFSPlusVolumeHeader header;
++    int fd = open(dev, O_RDONLY);
++    int external = 0;
++    if (fd < 0)
++        return 0;
++    if (pread(fd, block, sizeof(block), 1024) == sizeof(block)) {
++        memcpy(&header, block, sizeof(header));
++        unsigned signature = OSSwapBigToHostInt16(header.signature);
++        if ((signature == kHFSPlusSigWord || signature == kHFSXSigWord) &&
++            (OSSwapBigToHostInt32(header.attributes) & kHFSVolumeJournaledMask)) {
++            off_t offset = (uint64_t)OSSwapBigToHostInt32(header.journalInfoBlock) *
++                          OSSwapBigToHostInt32(header.blockSize);
++            if (offset > 0 && pread(fd, block, sizeof(block), offset) == sizeof(block)) {
++                uint32_t flags;
++                memcpy(&flags, block, sizeof(flags));
++                external = !!(OSSwapBigToHostInt32(flags) & kJIJournalOnOtherDeviceMask);
++            }
++        }
++    }
++    close(fd);
++    return external;
++}
++
+ static int
+ setup( char *dev, int *canWritePtr )
+ {
+@@ -655,6 +685,10 @@
+ 		if (reply("CONTINUE") == 0)
+ 			return (0);
+ 	}
++    if (has_external_journal(dev)) {
++        plog("External HFS journals require IOMedia UUID services; no checking performed.\n");
++        return 0;
++    }
+ 	/* Always attempt to replay the journal */
+ 	if (!nflag && !quick) {
+ 		// We know we have a character device by now.

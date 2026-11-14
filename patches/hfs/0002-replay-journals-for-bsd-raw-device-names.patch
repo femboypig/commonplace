@@ -1,0 +1,11 @@
+--- a/fsck_hfs/fsck_hfs.c
++++ b/fsck_hfs/fsck_hfs.c
+@@ -658,7 +658,7 @@
+ 	/* Always attempt to replay the journal */
+ 	if (!nflag && !quick) {
+ 		// We know we have a character device by now.
+-		if (strncmp(dev, "/dev/rdisk", 10) == 0) {
++		if (strncmp(dev, "/dev/r", 6) == 0) {
+ 			char block_device[MAXPATHLEN+1];
+ 			int rv;
+ 			snprintf(block_device, sizeof(block_device), "/dev/%s", dev + 6);

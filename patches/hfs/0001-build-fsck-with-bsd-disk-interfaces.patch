@@ -1,0 +1,11 @@
+--- a/fsck_hfs/dfalib/SDevice.c
++++ b/fsck_hfs/dfalib/SDevice.c
+@@ -29,7 +29,7 @@
+ #include <errno.h>
+ #include <sys/ioctl.h>
+ 
+-#include <IOKit/storage/IOMediaBSDClient.h>
++#include <sys/disk.h>
+ 
+ #else
+ 

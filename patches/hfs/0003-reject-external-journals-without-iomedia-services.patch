@@ -1,0 +1,61 @@
+--- a/fsck_hfs/dfalib/SControl.c
++++ b/fsck_hfs/dfalib/SControl.c
+@@ -60,6 +60,7 @@
+  * TODO: Get this building properly within Xcode, without need for the version.pl script!
+  */
+ extern const unsigned char fsck_hfsVersionString[];
++extern OSErr GetJournalInfoBlock(SGlobPtr, JournalInfoBlock *, UInt32 *);
+ 
+ int gGUIControl;
+ extern char lflag;
+@@ -335,6 +336,18 @@
+ 	//	Initialize the scavenger
+ 	//
+ 	ScavCtrl( &dataArea, scavInitialize, &scavError );
++	/* The BSD storage profile has no IOMedia UUID discovery. Refuse external
++	 * journals before verification or repair can modify their volume. */
++	if (scavError == noErr && CheckIfJournaled(&dataArea, true) == 1) {
++		JournalInfoBlock journal;
++		UInt32 blockSize;
++		if (GetJournalInfoBlock(&dataArea, &journal, &blockSize) == 0 &&
++		    !(SWAP_BE32(journal.flags) & kJIJournalInFSMask)) {
++			plog("External HFS journals require IOMedia UUID services; no checking performed.\n");
++			scavError = R_VFail;
++			goto termScav;
++		}
++	}
+ 	if ( checkLevel == kNeverCheck || (checkLevel == kDirtyCheck && dataArea.cleanUnmount) ||
+ 						scavError == R_NoMem || scavError == R_BadSig) {
+ 		// also need to bail when allocate fails in ScavSetUp or we bus error!
+--- a/fsck_hfs/dfalib/SVerify1.c
++++ b/fsck_hfs/dfalib/SVerify1.c
+@@ -45,7 +45,6 @@
+ #define	SW32(x)	OSSwapBigToHostInt32(x)
+ #define	SW64(x)	OSSwapBigToHostInt64(x)
+ 
+-extern int OpenDeviceByUUID(void *uuidp, char **nameptr);
+ 
+ //	internal routine prototypes
+ 
+@@ -180,7 +179,7 @@
+  * the cache code.  This simplifies getting the JIB.
+  */
+ 
+-static OSErr
++OSErr
+ GetJournalInfoBlock(SGlobPtr GPtr, JournalInfoBlock *jibp, UInt32 *bsizep)
+ {
+ #define kIDSector 2
+@@ -352,10 +351,10 @@
+ 				jfd = dup(GPtr->DrvNum);
+ 				jp->name = strdup(GPtr->deviceNode);
+ 			} else {
+-				char **namePtr = jp ? &jp->name : NULL;
+ 				if (debug)
+ 					plog("External Journal device\n");
+-				jfd = OpenDeviceByUUID(&jib.ext_jnl_uuid, namePtr);
++				/* External journals are rejected by the front-end preflight. */
++				goto out;
+ 			}
+ 			if (jfd == -1) {
+ 				if (debug) {

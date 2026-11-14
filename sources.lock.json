@@ -197,6 +197,13 @@
       "revision": "60198800ed5482f8182acaff9ed24c8d02e6576c",
       "url": "https://codeload.github.com/apple-oss-distributions/keymgr/tar.gz/60198800ed5482f8182acaff9ed24c8d02e6576c",
       "sha256": "db47224b9315a4f91330c0c324b81f017b940967c4eb00514644b4dc3145c2af"
+    },
+    "hfs": {
+      "repository": "apple-oss-distributions/hfs",
+      "tag": "hfs-305.10.1",
+      "revision": "271982a8c222b33e4dae0c2894f1c27703c65f28",
+      "url": "https://codeload.github.com/apple-oss-distributions/hfs/tar.gz/271982a8c222b33e4dae0c2894f1c27703c65f28",
+      "sha256": "2cdccc6b793234e99d574809aa4690b4cfb41bbad52508b0d082b02313454dba"
     }
   }
 }

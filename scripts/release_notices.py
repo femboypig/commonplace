@@ -4,6 +4,7 @@ import re
 
 PROJECTS = (
     "bash",
+    "hfs",
     "libc",
     "libinfo",
     "libplatform",
