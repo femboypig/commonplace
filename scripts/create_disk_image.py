@@ -16,6 +16,14 @@ def validate_image(path):
             raise ValueError("existing image is not HFS+: " + str(path))
 
 
+def sync_directory(path):
+    descriptor = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
 def publish_image(image, path):
     with image.open("rb") as stream:
         os.fsync(stream.fileno())
@@ -23,8 +31,4 @@ def publish_image(image, path):
         os.link(image, path)
     except FileExistsError:
         validate_image(path)
-    directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
-    try:
-        os.fsync(directory)
-    finally:
-        os.close(directory)
+    sync_directory(path.parent)
