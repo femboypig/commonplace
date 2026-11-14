@@ -86,6 +86,17 @@ def main():
     build_image(system, size_mib=64, persistent=True)
     hfs = str(ROOT / "toolchain/bin/hfsplus")
     subprocess.run([hfs, str(system), "rm", "/sbin/fsck_hfs"], check=True)
+    for path in (
+        "/usr/lib/libicucore.A.dylib",
+        "/usr/share/icu/icudt55l.dat",
+        "/usr/share/icu",
+        "/usr/share",
+    ):
+        subprocess.run([hfs, str(system), "rm", path], check=True)
+    checksum = subprocess.check_output(
+        ["cksum", str(ROOT / "build/darwin/resources/icu/icudt55l.dat")], text=True
+    ).split()
+    data_checksum = " ".join(checksum[:2])
     subprocess.run(
         [hfs, str(system), "add", str(ROOT / "build/userland/false"), "/bin/echo"],
         check=True,
@@ -118,6 +129,14 @@ def main():
         [
             case("updated program", "/bin/echo updated-ok", r"\nupdated-ok\n"),
             case("new recovery utility", "test -x /sbin/fsck_hfs; echo $?", r"\n0\n"),
+            case(
+                "new unicode library and resources",
+                "test -x /usr/lib/libicucore.A.dylib && "
+                "test -r /usr/share/icu/icudt55l.dat && "
+                "test ! -x /usr/share/icu/icudt55l.dat; echo unicode-status:$?; "
+                "cksum < /usr/share/icu/icudt55l.dat",
+                r"\nunicode-status:0\n" + data_checksum + r"\n",
+            ),
             case("preserved hostname", "hostname", r"\ncommonplace-test\n"),
             case(
                 "preserved files and startup",

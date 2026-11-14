@@ -12,6 +12,7 @@ PROJECTS = (
     "libresolv",
     "libc",
     "libc_directories",
+    "icu",
     "libinfo",
     "libplatform",
     "libdispatch",
@@ -45,6 +46,7 @@ def write_notices(root, destination):
             if not source.is_file():
                 continue
             if source.name in (
+                "license.html",
                 "COPYING",
                 "COPYRIGHT",
                 "LICENSE",

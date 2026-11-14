@@ -147,7 +147,13 @@ def main():
                 "libSystem.B.dylib",
                 "libsystem_kernel.dylib",
                 "libpam.2.dylib",
+                "libicucore.A.dylib",
             )
+        },
+        "resources": {
+            "icu/icudt55l.dat": hashlib.sha256(
+                (ROOT / "build/darwin/resources/icu/icudt55l.dat").read_bytes()
+            ).hexdigest(),
         },
         "pam_modules": {
             path.name: hashlib.sha256(path.read_bytes()).hexdigest()

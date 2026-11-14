@@ -102,6 +102,18 @@ def prepare(sdk):
         ROOT / "sources/libc_directories/include/NSSystemDirectories.h",
         include / "NSSystemDirectories.h",
     )
+    shutil.copyfile(
+        ROOT / "sources/libc/stdtime/FreeBSD/tzfile.h", include / "tzfile.h"
+    )
+    icu = ROOT / "sources/icu/icuSources"
+    for component in ("common", "i18n"):
+        headers(icu / component / "unicode", include / "unicode")
+    # ICU's configure.ac prescribes prepending its public ABI configuration.
+    config = include / "unicode/uconfig.h"
+    config.write_text(
+        "#ifndef U_DISABLE_RENAMING\n#define U_DISABLE_RENAMING 1\n#endif\n"
+        + config.read_text()
+    )
     for header in prepare_source("cf").glob("*.h"):
         destination = include / "CoreFoundation" / header.name
         destination.parent.mkdir(exist_ok=True)

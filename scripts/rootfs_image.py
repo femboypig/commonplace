@@ -41,10 +41,16 @@ def system_files():
         programs["/usr/lib/pam/" + name + ".so"] = (
             ROOT / "build/darwin/pam" / (name + ".so")
         )
+    programs["/usr/lib/libicucore.A.dylib"] = (
+        ROOT / "build/darwin/system/libicucore.A.dylib"
+    )
+    programs["/usr/share/icu/icudt55l.dat"] = (
+        ROOT / "build/darwin/resources/icu/icudt55l.dat"
+    )
     return programs
 
 
-def build_image(image, size_mib=32, persistent=False):
+def build_image(image, size_mib=64, persistent=False):
     image = Path(image)
     image.parent.mkdir(parents=True, exist_ok=True)
     formatter = ROOT / "toolchain/bin/newfs_hfs"
@@ -75,33 +81,39 @@ def build_image(image, size_mib=32, persistent=False):
             ],
             check=True,
         )
-        for directory in (
-            "dev",
-            "sbin",
-            "bin",
-            "etc",
-            "etc/pam.d",
-            "tmp",
-            "root",
-            "data",
-            "usr",
-            "usr/bin",
-            "usr/sbin",
-            "usr/lib",
-            "usr/lib/system",
-            "usr/lib/pam",
-            "var",
-            "var/log",
-            "var/run",
+        directories = {
+            "/dev",
+            "/etc/pam.d",
+            "/tmp",
+            "/root",
+            "/data",
+            "/usr/bin",
+            "/usr/sbin",
+            "/var/log",
+            "/var/run",
+        }
+        for path in (*programs, *directories):
+            directories.update(
+                str(parent) for parent in Path(path).parents if str(parent) != "/"
+            )
+        for directory in sorted(
+            directories, key=lambda path: (len(Path(path).parts), path)
         ):
-            subprocess.run([str(hfs), str(image), "mkdir", "/" + directory], check=True)
+            subprocess.run([str(hfs), str(image), "mkdir", directory], check=True)
         hashes = {}
         for destination, program in programs.items():
             subprocess.run(
                 [str(hfs), str(image), "add", str(program), destination], check=True
             )
             subprocess.run(
-                [str(hfs), str(image), "chmod", "755", destination], check=True
+                [
+                    str(hfs),
+                    str(image),
+                    "chmod",
+                    "644" if destination.endswith(".dat") else "755",
+                    destination,
+                ],
+                check=True,
             )
             extracted = temporary / "verify"
             subprocess.run(
