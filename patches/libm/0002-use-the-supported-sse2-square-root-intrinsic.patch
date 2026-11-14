@@ -1,0 +1,11 @@
+--- a/Source/Intel/xmmLibm_prefix.h
++++ b/Source/Intel/xmmLibm_prefix.h
+@@ -126,7 +126,7 @@
+     #define twoToTheM( _i )         ({ xDouble _xi = (xDouble) _mm_slli_epi64( _mm_cvtsi32_si128( (_i) + 1023 ), 52 );  /*return*/ _xi; })
+ 
+     //work around for broken _mm_sqrt_sd intrinsic in gcc-4.0
+-    #define _MM_SQRT_SD( x )              __builtin_ia32_sqrtsd( x )
++    #define _MM_SQRT_SD( x )              _mm_sqrt_sd((x), (x))
+ 
+     #define _mm_cvtsi64_si128( x )      ({ int64_t _x = x; xSInt64 _r; asm volatile( "movq %1, %0" : "=x" (_r) : "m" (*&_x)); _r })
+ 

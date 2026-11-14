@@ -216,30 +216,6 @@ def main():
             OUT / "obj/libutil/humanize_number.o",
         )
     )
-    for name in (
-        "xmm_misc.c",
-        "nan.c",
-        "nanl.c",
-        "floor.s",
-        "trunc.s",
-        "ilogb.s",
-        "fenv.c",
-    ):
-        extra = ["-x", "assembler-with-cpp"] if name.endswith(".s") else []
-        objects.append(
-            compile_source(
-                ROOT / "sources/libm/Source/Intel" / name,
-                OUT / "obj/math" / Path(name).with_suffix(".o"),
-                extra,
-            )
-        )
-    objects.append(
-        compile_source(
-            ROOT / "sources/libm/Source/Intel/fenv.c",
-            OUT / "obj/math/fenv_legacy.o",
-            ["-DBUILDING_FOR_CARBONCORE_LEGACY"],
-        )
-    )
     for name in ("_sigtramp.s", "_setjmp.s", "setjmp.s"):
         objects.append(
             compile_source(

@@ -97,6 +97,7 @@ darwin-libraries: darwin-sdk
 	$(PYTHON) scripts/build-darwin-pthread.py
 	$(PYTHON) scripts/build-darwin-malloc.py
 	$(PYTHON) scripts/build-darwin-cxx.py
+	$(PYTHON) scripts/build-darwin-math.py
 	$(PYTHON) scripts/build-darwin-libc.py
 	$(PYTHON) scripts/build-darwin-libinfo.py
 	$(PYTHON) scripts/build-darwin-file-libraries.py

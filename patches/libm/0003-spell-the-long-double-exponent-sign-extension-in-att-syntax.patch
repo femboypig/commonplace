@@ -1,0 +1,29 @@
+--- a/Source/Intel/frexp.s
++++ b/Source/Intel/frexp.s
+@@ -163,7 +163,7 @@
+     fstpt   (STACKP)                        //  save out in 80-bit format (normalizes denorms), and empty stack
+     je      2b
+ 
+-    movsxw  8(STACKP),      %eax            //  load sign + exponent
++    movswl  8(STACKP),      %eax            //  load sign + exponent
+     movl    %eax,           %ecx            //  copy to ecx
+     andl    $0x7fff,        %eax            //  extract exponent
+     andl    $0x8000,        %ecx            //  extract sign
+@@ -236,7 +236,7 @@
+     SUBP    $LOCAL_STACK_SIZE,  STACKP
+     
+     //Load the sign + exponent
+-    movsxw  8+FIRST_ARG_OFFSET(STACKP),     %eax
++    movswl  8+FIRST_ARG_OFFSET(STACKP),     %eax
+     movl    %eax,                           %ecx
+ 
+     //Load result pointer if necessary
+@@ -288,7 +288,7 @@
+     
+ //repeat frexpl with new bias
+     //Load the sign + exponent
+-    movsxw  8(STACKP),                      %eax
++    movswl  8(STACKP),                      %eax
+     movl    %eax,                           %ecx
+     
+     //extract exponent
