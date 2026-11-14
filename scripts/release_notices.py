@@ -13,6 +13,7 @@ PROJECTS = (
     "libc",
     "libinfo",
     "libplatform",
+    "libdispatch",
     "libm",
     "libutil",
     "copyfile",

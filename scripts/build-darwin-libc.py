@@ -156,6 +156,27 @@ def main():
 
     with ThreadPoolExecutor(max_workers=2) as pool:
         objects = list(pool.map(compile, paths))
+    for name in ("gen/FreeBSD/sleep.c", "gen/nanosleep.c"):
+        objects.append(
+            compile_source(
+                source / name,
+                OUT / "obj/libc-nocancel" / name.replace(".c", ".o"),
+                [
+                    *flags,
+                    "-UVARIANT_CANCELABLE",
+                    "-U__DARWIN_NON_CANCELABLE",
+                    "-D__DARWIN_NON_CANCELABLE=1",
+                    "-DBUILDING_VARIANT=1",
+                ],
+            )
+        )
+    for name in ("udivti3", "udivmodti4", "umodti3"):
+        objects.append(
+            compile_source(
+                ROOT / "sources/compiler_rt/lib/builtins" / (name + ".c"),
+                OUT / "obj/compiler-rt" / (name + ".o"),
+            )
+        )
     for name in ("qsort_b-fbsd.c", "FreeBSD/heapsort_b.c"):
         objects.append(
             compile_source(

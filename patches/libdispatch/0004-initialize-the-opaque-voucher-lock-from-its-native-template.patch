@@ -1,0 +1,11 @@
+--- a/src/voucher.c
++++ b/src/voucher.c
+@@ -967,7 +967,7 @@
+ static inline void
+ _voucher_activity_lock_init(_voucher_activity_lock_s *lock) {
+     static const os_lock_handoff_s _os_lock_handoff_init = OS_LOCK_HANDOFF_INIT;
+-    *lock = _os_lock_handoff_init;
++    memcpy(lock, &_os_lock_handoff_init, sizeof(*lock));
+ }
+ 
+ DISPATCH_ALWAYS_INLINE

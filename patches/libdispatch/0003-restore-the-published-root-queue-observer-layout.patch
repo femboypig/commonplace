@@ -1,0 +1,17 @@
+--- a/src/queue_internal.h
++++ b/src/queue_internal.h
+@@ -44,6 +44,14 @@
+ #define DISPATCH_CACHELINE_ALIGN \
+ 		__attribute__((__aligned__(DISPATCH_CACHELINE_SIZE)))
+ 
++
++/* Observer layout from Apple's libdispatch-703.1.4/src/queue_internal.h. */
++typedef struct dispatch_pthread_root_queue_observer_hooks_s {
++    void (*queue_will_execute)(dispatch_queue_t queue);
++    void (*queue_did_execute)(dispatch_queue_t queue);
++} dispatch_pthread_root_queue_observer_hooks_s;
++typedef dispatch_pthread_root_queue_observer_hooks_s
++        *dispatch_pthread_root_queue_observer_hooks_t;
+ 
+ #pragma mark -
+ #pragma mark dispatch_queue_t

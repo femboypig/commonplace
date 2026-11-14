@@ -2,7 +2,7 @@
 PYTHON ?= python3
 JOBS ?= 2
 
-.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime userland rootfs boot-init boot-console boot-recovery system-disk check-system check-hfs check-mount check-newfs check-admin-runtime update-system check-update disk-image check-storage check-storage-reliability package test
+.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime check-dispatch userland rootfs boot-init boot-console boot-recovery system-disk check-system check-hfs check-mount check-newfs check-admin-runtime update-system check-update disk-image check-storage check-storage-reliability package test
 help:
 	@printf '%s\n' 'commonplace — darwin/x86_64' \
 	  'make doctor       check host tools and virtualization' \
@@ -22,6 +22,7 @@ help:
 	  'make rootfs       build Darwin commands, bash and the HFS+ root image' \
 	  'make check-darwin validate the native C runtime and command suite in QEMU' \
 	  'make check-darwin-runtime validate dyld, malloc and pthreads in QEMU' \
+	  'make check-dispatch verify native queues, timers and asynchronous IO' \
 	  'make boot-init    require PID 1 and exercise the serial console' \
 	  'make boot-console attach this terminal to the guest (Ctrl-A X exits)' \
 	  'make boot-recovery boot the RAM recovery root' \
@@ -101,6 +102,7 @@ darwin-libraries: darwin-sdk
 	$(PYTHON) scripts/build-darwin-file-libraries.py
 	$(PYTHON) scripts/build-darwin-dyld.py
 	$(PYTHON) scripts/build-darwin-kernel-library.py
+	$(PYTHON) scripts/build-darwin-dispatch.py
 	$(PYTHON) scripts/build-darwin-system.py
 
 darwin-userland: darwin-libraries
@@ -156,6 +158,9 @@ check-darwin: loader check-kernel rootfs
 
 check-darwin-runtime: loader check-kernel rootfs
 	$(PYTHON) scripts/check-darwin-runtime.py
+
+check-dispatch: loader check-kernel rootfs
+	$(PYTHON) scripts/check-dispatch.py
 
 check-storage: loader check-kernel rootfs
 	$(PYTHON) scripts/check-storage.py

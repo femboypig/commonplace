@@ -239,6 +239,13 @@
       "revision": "1fdeeea58999169ad3a14b4c88985d3924f5f38e",
       "url": "https://codeload.github.com/apple-oss-distributions/pam_modules/tar.gz/1fdeeea58999169ad3a14b4c88985d3924f5f38e",
       "sha256": "8d0f4ec8046cbd39379ad84765c6ad2abf6313143531c02a2204e8584f01b354"
+    },
+    "libdispatch": {
+      "repository": "apple-oss-distributions/libdispatch",
+      "tag": "libdispatch-501.40.12",
+      "revision": "38e53cd29df2b3d05a408f67c03c7e047c4b3e74",
+      "url": "https://codeload.github.com/apple-oss-distributions/libdispatch/tar.gz/38e53cd29df2b3d05a408f67c03c7e047c4b3e74",
+      "sha256": "03267af9135753b27e54802aa6988465e9055e26a6bdaddcb36a7a7387ba7422"
     }
   }
 }

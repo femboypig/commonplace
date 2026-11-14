@@ -1,0 +1,67 @@
+--- a/src/internal.h
++++ b/src/internal.h
+@@ -295,8 +295,8 @@
+ 
+ /* I wish we had __builtin_expect_range() */
+ #if __GNUC__
+-#define fastpath(x) ((typeof(x))__builtin_expect((long)(x), ~0l))
+-#define slowpath(x) ((typeof(x))__builtin_expect((long)(x), 0l))
++#define fastpath(x) ((typeof(((void)0, (x))))__builtin_expect((long)(x), ~0l))
++#define slowpath(x) ((typeof(((void)0, (x))))__builtin_expect((long)(x), 0l))
+ #else
+ #define fastpath(x) (x)
+ #define slowpath(x) (x)
+@@ -377,7 +377,7 @@
+ 		if (__builtin_constant_p(e)) { \
+ 			dispatch_static_assert(e); \
+ 		} else { \
+-			typeof(e) _e = fastpath(e); /* always eval 'e' */ \
++			typeof(((void)0, (e))) _e = fastpath(e); /* always eval 'e' */ \
+ 			if (DISPATCH_DEBUG && !_e) { \
+ 				_dispatch_abort(__LINE__, (long)_e); \
+ 			} \
+@@ -399,7 +399,7 @@
+ 		if (__builtin_constant_p(e)) { \
+ 			dispatch_static_assert(e); \
+ 		} else { \
+-			typeof(e) _e = slowpath(e); /* always eval 'e' */ \
++			typeof(((void)0, (e))) _e = slowpath(e); /* always eval 'e' */ \
+ 			if (DISPATCH_DEBUG && _e) { \
+ 				_dispatch_abort(__LINE__, (long)_e); \
+ 			} \
+@@ -420,7 +420,7 @@
+  */
+ #if __GNUC__
+ #define dispatch_assume(e) ({ \
+-		typeof(e) _e = fastpath(e); /* always eval 'e' */ \
++		typeof(((void)0, (e))) _e = fastpath(e); /* always eval 'e' */ \
+ 		if (!_e) { \
+ 			if (__builtin_constant_p(e)) { \
+ 				dispatch_static_assert(e); \
+@@ -443,7 +443,7 @@
+  */
+ #if __GNUC__
+ #define dispatch_assume_zero(e) ({ \
+-		typeof(e) _e = slowpath(e); /* always eval 'e' */ \
++		typeof(((void)0, (e))) _e = slowpath(e); /* always eval 'e' */ \
+ 		if (_e) { \
+ 			if (__builtin_constant_p(e)) { \
+ 				dispatch_static_assert(e); \
+@@ -468,7 +468,7 @@
+ 		if (__builtin_constant_p(e)) { \
+ 			dispatch_static_assert(e); \
+ 		} else { \
+-			typeof(e) _e = fastpath(e); /* always eval 'e' */ \
++			typeof(((void)0, (e))) _e = fastpath(e); /* always eval 'e' */ \
+ 			if (DISPATCH_DEBUG && !_e) { \
+ 				_dispatch_log("%s() 0x%lx: " msg, __func__, (long)_e, ##args); \
+ 				abort(); \
+@@ -515,7 +515,7 @@
+ 		((dispatch_function_t)((struct Block_layout *)bb)->invoke)
+ #if __GNUC__
+ dispatch_block_t _dispatch_Block_copy(dispatch_block_t block);
+-#define _dispatch_Block_copy(x) ((typeof(x))_dispatch_Block_copy(x))
++#define _dispatch_Block_copy(x) ((typeof(((void)0, (x))))_dispatch_Block_copy(x))
+ #else
+ dispatch_block_t _dispatch_Block_copy(const void *block);
+ #endif

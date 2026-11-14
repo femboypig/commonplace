@@ -47,6 +47,7 @@ def prepare(sdk):
         "dtrace_glue.h",
         "csr.h",
         "codesign.h",
+        "guarded.h",
     ):
         shutil.copyfile(ROOT / "sources/xnu/bsd/sys" / name, include / "sys" / name)
     (include / "System/machine").mkdir(parents=True, exist_ok=True)
@@ -68,6 +69,21 @@ def prepare(sdk):
     for name in ("pwd.h", "grp.h", "netdb.h", "aliasdb.h"):
         shutil.copyfile(ROOT / "sources/libinfo/lookup.subproj" / name, include / name)
     headers(ROOT / "sources/libinfo/membership.subproj", include)
+    dispatch = ROOT / "sources/libdispatch"
+    headers(dispatch / "dispatch", include / "dispatch")
+    headers(
+        dispatch / "private",
+        include / "dispatch",
+        ("voucher_private.h", "voucher_activity_private.h"),
+    )
+    headers(dispatch / "os", include / "os")
+    for name in ("voucher_private.h", "voucher_activity_private.h"):
+        shutil.copyfile(dispatch / "private" / name, include / "os" / name)
+    shutil.copyfile(ROOT / "sources/xnu/libsyscall/os/tsd.h", include / "os/tsd.h")
+    shutil.copyfile(
+        ROOT / "sources/xnu/libkern/libkern/OSCrossEndian.h",
+        include / "libkern/OSCrossEndian.h",
+    )
     headers(ROOT / "sources/openpam/openpam/include/security", include / "security")
     shutil.copyfile(
         ROOT / "sources/libinfo/gen.subproj/ifaddrs.h", include / "ifaddrs.h"

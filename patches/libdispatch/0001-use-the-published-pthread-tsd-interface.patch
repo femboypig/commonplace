@@ -1,0 +1,22 @@
+--- a/config/config.h
++++ b/config/config.h
+@@ -98,7 +98,7 @@
+ #define HAVE_PTHREAD_KEY_INIT_NP 1
+ 
+ /* Define to 1 if you have the <pthread_machdep.h> header file. */
+-#define HAVE_PTHREAD_MACHDEP_H 1
++#define HAVE_PTHREAD_MACHDEP_H 0
+ 
+ /* Define to 1 if you have the `pthread_main_np' function. */
+ #define HAVE_PTHREAD_MAIN_NP 1
+--- a/src/shims/tsd.h
++++ b/src/shims/tsd.h
+@@ -29,6 +29,8 @@
+ 
+ #if HAVE_PTHREAD_MACHDEP_H
+ #include <pthread_machdep.h>
++#else
++#include <pthread/tsd_private.h>
+ #endif
+ 
+ #define DISPATCH_TSD_INLINE DISPATCH_ALWAYS_INLINE_NDEBUG
