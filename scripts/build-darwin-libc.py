@@ -103,6 +103,7 @@ def main():
             "util/mkpath_np.c",
             "emulated/lutimes.c",
             "gen/devname.c",
+            "gen/getvfsbyname.c",
             "gen/uname.c",
             "gen/get_compat.c",
             "sys/gettimeofday.c",
@@ -189,7 +190,15 @@ def main():
             OUT / "obj/libutil/humanize_number.o",
         )
     )
-    for name in ("xmm_misc.c", "nan.c", "nanl.c", "floor.s", "fenv.c"):
+    for name in (
+        "xmm_misc.c",
+        "nan.c",
+        "nanl.c",
+        "floor.s",
+        "trunc.s",
+        "ilogb.s",
+        "fenv.c",
+    ):
         extra = ["-x", "assembler-with-cpp"] if name.endswith(".s") else []
         objects.append(
             compile_source(
