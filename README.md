@@ -21,3 +21,14 @@ commonplace is in early development. current work focuses on the toolchain, xnu 
 commonplace uses open-source components published by apple and other upstream projects. source revisions are recorded in `sources.lock.json`.
 
 commonplace is not affiliated with apple inc.
+
+## credits
+
+- apple for xnu, the darwin libraries and utilities, and the mach interface generator.
+- the gnu bash contributors for the shell, built from apple's bash 3.2 sources.
+- the llvm project for clang, compiler-rt, libc++, and libc++abi.
+- tpoechtrager and the cctools-port contributors for the mach-o tools and linker used on linux.
+- markmentovai for the mig compatibility headers used on linux.
+- the openssl contributors for the cryptographic primitives used by the kernel.
+- the hfsprogs and libdmg-hfsplus contributors for the tools used to build hfs+ disk images.
+- the qemu contributors for the emulator used to boot and test the system.
