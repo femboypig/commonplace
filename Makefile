@@ -100,6 +100,7 @@ darwin-libraries: darwin-sdk
 	$(PYTHON) scripts/build-darwin-system.py
 
 darwin-userland: darwin-libraries
+	$(PYTHON) scripts/build-darwin-newfs.py
 	$(PYTHON) scripts/build-darwin-commands.py
 	$(PYTHON) scripts/build-darwin-bash.py
 

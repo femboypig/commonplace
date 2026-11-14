@@ -1,0 +1,27 @@
+--- a/vfs_utfconv.c
++++ b/vfs_utfconv.c
+@@ -33,7 +33,14 @@
+ #include <sys/param.h>
+ #include <sys/utfconv.h>
+ #include <sys/errno.h>
++#ifdef KERNEL
+ #include <sys/malloc.h>
++#else
++#include <stdlib.h>
++#include <string.h>
++#define MALLOC(p, type, size, zone, flags) ((p) = (type)malloc(size))
++#define FREE(p, zone) free(p)
++#endif
+ #include <libkern/OSByteOrder.h>
+ 
+ /*
+@@ -810,6 +817,9 @@
+ 		unistr = &unicodebuf[0];
+ 	else
+ 		MALLOC(unistr, uint16_t *, unicode_bytes, M_TEMP, M_WAITOK);
++#ifndef KERNEL
++	if (unistr == NULL) { result = ENOMEM; goto exit; }
++#endif
+ 
+ 	/* Normalize the string. */
+ 	result = utf8_decodestr(inbufstart, inbuflen, unistr, &unicode_bytes,

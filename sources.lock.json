@@ -218,6 +218,13 @@
       "revision": "f26c8e1ddbe9983f3538f5060b0b405f06bdba26",
       "url": "https://codeload.github.com/apple-oss-distributions/diskdev_cmds/tar.gz/f26c8e1ddbe9983f3538f5060b0b405f06bdba26",
       "sha256": "dc00d311d5364e489aec0570266ec8199d89fcd0f4f4db0a2e97b694ea8ed3d8"
+    },
+    "cf": {
+      "repository": "apple-oss-distributions/CF",
+      "tag": "CF-1153.18",
+      "revision": "dc54c6bb1c1e5e0b9486c1d26dd5bef110b20bf3",
+      "url": "https://codeload.github.com/apple-oss-distributions/CF/tar.gz/dc54c6bb1c1e5e0b9486c1d26dd5bef110b20bf3",
+      "sha256": "233e123902341ef0fe97a7deeae33b0b71814d3f53180b9d6eb67449d3804d4e"
     }
   }
 }

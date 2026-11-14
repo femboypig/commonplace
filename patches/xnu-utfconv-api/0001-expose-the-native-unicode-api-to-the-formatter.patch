@@ -1,0 +1,11 @@
+--- a/utfconv.h
++++ b/utfconv.h
+@@ -32,7 +32,7 @@
+ #include <sys/appleapiopts.h>
+ #include <sys/cdefs.h> 
+ 
+-#ifdef KERNEL
++#if defined(KERNEL) || defined(COMMONPLACE_UTFCONV_USERLAND)
+ #ifdef __APPLE_API_UNSTABLE
+ 
+ /*

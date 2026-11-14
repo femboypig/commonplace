@@ -118,6 +118,7 @@ def main():
             check=True,
         )
     native = json.loads((ROOT / "build/darwin/commands.json").read_text())
+    native["newfs_hfs"] = json.loads((ROOT / "build/darwin/newfs.json").read_text())
     for name in (*native, "bash"):
         shutil.copyfile(ROOT / "build/darwin/bin" / name, OUT / name)
     aliases = {

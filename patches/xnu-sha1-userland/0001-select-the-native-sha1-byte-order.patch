@@ -1,0 +1,11 @@
+--- a/sha1mod.c
++++ b/sha1mod.c
+@@ -42,7 +42,7 @@
+ /*
+  * Apple change...
+  */
+-#if	defined(macintosh) || defined (__APPLE__)
++#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+ #undef LITTLE_ENDIAN
+ #endif
+ 

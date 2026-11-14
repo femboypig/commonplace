@@ -17,6 +17,7 @@ def system_files():
         "fsck_hfs": "fsck_hfs",
         "fstyp_hfs": "fstyp_hfs",
         "mount_hfs": "mount_hfs",
+        "newfs_hfs": "newfs_hfs",
     }
     programs = {
         (

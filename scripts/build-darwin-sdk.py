@@ -6,6 +6,7 @@ import shutil
 import re
 import subprocess
 import tempfile
+from darwin_build import prepare_source
 
 ROOT = Path(__file__).resolve().parent.parent
 SDK = ROOT / "build/darwin-sdk"
@@ -80,6 +81,14 @@ def prepare(sdk):
         ROOT / "sources/xnu/bsd/sys/fsctl.h", include / "System/sys/fsctl.h"
     )
     shutil.copyfile(ROOT / "sources/libc/gen/get_compat.h", include / "get_compat.h")
+    for header in prepare_source("cf").glob("*.h"):
+        destination = include / "CoreFoundation" / header.name
+        destination.parent.mkdir(exist_ok=True)
+        shutil.copyfile(header, destination)
+    shutil.copyfile(
+        prepare_source("xnu", "bsd/sys", "xnu-utfconv-api") / "utfconv.h",
+        include / "sys/utfconv.h",
+    )
     headers(ROOT / "sources/libc/include", include, ("sys/cdefs.h",))
     shutil.copyfile(ROOT / "sources/libresolv/nameser.h", include / "arpa/nameser.h")
     headers(ROOT / "sources/libc/include/FreeBSD", include)

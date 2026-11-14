@@ -1,0 +1,13 @@
+--- a/CFBase.h
++++ b/CFBase.h
+@@ -87,7 +87,9 @@
+ #endif
+ 
+   #if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)) || (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)
+-    #include <libkern/OSTypes.h>
++    #if __has_include(<MacTypes.h>)
++      #include <libkern/OSTypes.h>
++    #endif
+   #endif
+ 
+ #if !defined(__MACTYPES__)
