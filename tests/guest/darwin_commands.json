@@ -270,6 +270,36 @@
     "expect": "\\n130\\n"
   },
   {
+    "name": "native disk capacity",
+    "send": "df -k /\n",
+    "expect": "Filesystem[\\s\\S]*root_device[^\\n]* /\\n"
+  },
+  {
+    "name": "native readable disk capacity",
+    "send": "df -h /\n",
+    "expect": "Filesystem[\\s\\S]*root_device[^\\n]* /\\n"
+  },
+  {
+    "name": "native directory usage",
+    "send": "du -sk /tmp/native\n",
+    "expect": "\\n[0-9]+\\s+/tmp/native\\n"
+  },
+  {
+    "name": "native block copy conversion",
+    "send": "printf abcdEFGH | dd bs=2 skip=1 count=2 conv=ucase 2>/tmp/dd-log | cksum\n",
+    "expect": "\\n1220612619 4\\n"
+  },
+  {
+    "name": "native block copy seek",
+    "send": "printf abcdefgh > /tmp/dd-probe; printf XY | dd of=/tmp/dd-probe bs=1 seek=2 conv=notrunc 2>/tmp/dd-log; cat /tmp/dd-probe; echo\n",
+    "expect": "\\nabXYefgh\\n"
+  },
+  {
+    "name": "native empty checksum",
+    "send": "printf '' | cksum\n",
+    "expect": "\\n4294967295 0\\n"
+  },
+  {
     "name": "delete tree",
     "send": "rm -rf /tmp/native; cd /; /bin/test ! -e /tmp/native; echo $?\n",
     "expect": "\\n0\\n"
