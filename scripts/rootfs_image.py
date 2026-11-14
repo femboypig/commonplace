@@ -10,11 +10,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def build_image(image, size_mib=32, persistent=False):
-    image = Path(image)
-    image.parent.mkdir(parents=True, exist_ok=True)
-    formatter = ROOT / "toolchain/bin/newfs_hfs"
-    hfs = ROOT / "toolchain/bin/hfsplus"
+def system_files():
     names = json.loads((ROOT / "build/userland/programs.json").read_text())
     system_programs = {
         "init": "launchd",
@@ -38,6 +34,15 @@ def build_image(image, size_mib=32, persistent=False):
             / "build/darwin/system/libsystem_kernel.dylib",
         }
     )
+    return programs
+
+
+def build_image(image, size_mib=32, persistent=False):
+    image = Path(image)
+    image.parent.mkdir(parents=True, exist_ok=True)
+    formatter = ROOT / "toolchain/bin/newfs_hfs"
+    hfs = ROOT / "toolchain/bin/hfsplus"
+    programs = system_files()
     for artifact in (formatter, hfs, *programs.values()):
         if not artifact.is_file():
             raise SystemExit("missing rootfs input: " + str(artifact))
