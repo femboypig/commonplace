@@ -246,6 +246,13 @@
       "revision": "38e53cd29df2b3d05a408f67c03c7e047c4b3e74",
       "url": "https://codeload.github.com/apple-oss-distributions/libdispatch/tar.gz/38e53cd29df2b3d05a408f67c03c7e047c4b3e74",
       "sha256": "03267af9135753b27e54802aa6988465e9055e26a6bdaddcb36a7a7387ba7422"
+    },
+    "libc_directories": {
+      "repository": "apple-oss-distributions/Libc",
+      "tag": "Libc-997.90.3",
+      "revision": "423cd697a0961a8eb8eccb38a6d60bf6dfd4f50f",
+      "url": "https://codeload.github.com/apple-oss-distributions/Libc/tar.gz/423cd697a0961a8eb8eccb38a6d60bf6dfd4f50f",
+      "sha256": "582d962a21ee6e81dcf0dcc87eb24fd7134074e679698f6324f8baf74644301f"
     }
   }
 }

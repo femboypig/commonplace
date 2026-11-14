@@ -244,6 +244,13 @@ def main():
     ]
     objects.append(
         compile_source(
+            prepare_source("libc_directories", "gen") / "NSSystemDirectories.c",
+            OUT / "obj/directories/NSSystemDirectories.o",
+            flags,
+        )
+    )
+    objects.append(
+        compile_source(
             source / "gen/oldsyslog.c",
             OUT / "obj/syslog/bsd.o",
             [*renames, "-fvisibility=hidden", "-Wno-deprecated-non-prototype"],

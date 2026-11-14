@@ -11,6 +11,7 @@ PROJECTS = (
     "diskdev_cmds",
     "libresolv",
     "libc",
+    "libc_directories",
     "libinfo",
     "libplatform",
     "libdispatch",

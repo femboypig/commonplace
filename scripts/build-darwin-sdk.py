@@ -98,6 +98,10 @@ def prepare(sdk):
         ROOT / "sources/xnu/bsd/sys/fsctl.h", include / "System/sys/fsctl.h"
     )
     shutil.copyfile(ROOT / "sources/libc/gen/get_compat.h", include / "get_compat.h")
+    shutil.copyfile(
+        ROOT / "sources/libc_directories/include/NSSystemDirectories.h",
+        include / "NSSystemDirectories.h",
+    )
     for header in prepare_source("cf").glob("*.h"):
         destination = include / "CoreFoundation" / header.name
         destination.parent.mkdir(exist_ok=True)
