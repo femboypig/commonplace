@@ -74,6 +74,11 @@ def prepare(sdk):
         shutil.copyfile(ROOT / "sources/copyfile" / name, include / name)
     shutil.copyfile(ROOT / "sources/removefile/removefile.h", include / "removefile.h")
     shutil.copyfile(ROOT / "sources/libutil/libutil.h", include / "libutil.h")
+    shutil.copyfile(ROOT / "sources/libutil/mntopts.h", include / "mntopts.h")
+    (include / "System/sys").mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(
+        ROOT / "sources/xnu/bsd/sys/fsctl.h", include / "System/sys/fsctl.h"
+    )
     shutil.copyfile(ROOT / "sources/libc/gen/get_compat.h", include / "get_compat.h")
     headers(ROOT / "sources/libc/include", include, ("sys/cdefs.h",))
     shutil.copyfile(ROOT / "sources/libresolv/nameser.h", include / "arpa/nameser.h")

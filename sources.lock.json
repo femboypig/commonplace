@@ -211,6 +211,13 @@
       "revision": "821e5067aa5393c61a2fb5cc2b68c6c82b2304cb",
       "url": "https://codeload.github.com/apple-oss-distributions/libresolv/tar.gz/821e5067aa5393c61a2fb5cc2b68c6c82b2304cb",
       "sha256": "c0c29486097686b968a399f5325082785bc7baf7b6402c51a1aee2a21db9f837"
+    },
+    "diskdev_cmds": {
+      "repository": "apple-oss-distributions/diskdev_cmds",
+      "tag": "diskdev_cmds-582",
+      "revision": "f26c8e1ddbe9983f3538f5060b0b405f06bdba26",
+      "url": "https://codeload.github.com/apple-oss-distributions/diskdev_cmds/tar.gz/f26c8e1ddbe9983f3538f5060b0b405f06bdba26",
+      "sha256": "dc00d311d5364e489aec0570266ec8199d89fcd0f4f4db0a2e97b694ea8ed3d8"
     }
   }
 }

@@ -1,0 +1,20 @@
+--- a/mount_hfs/mount_hfs.c
++++ b/mount_hfs/mount_hfs.c
+@@ -54,7 +54,7 @@
+ 
+ /* Sensible wrappers over the byte-swapping routines */
+ #include "hfs_endian.h"
+-#if !TARGET_OS_EMBEDDED
++#if !TARGET_OS_EMBEDDED && !defined(COMMONPLACE_NO_OPTICAL)
+ #include "optical.h"
+ #endif
+ 
+@@ -648,7 +648,7 @@
+ 
+ #endif
+ 
+-#if !TARGET_OS_EMBEDDED
++#if !TARGET_OS_EMBEDDED && !defined(COMMONPLACE_NO_OPTICAL)
+     /*
+      * We shouldn't really be calling up to other layers, but
+      * an exception was made in this case to fix the situation

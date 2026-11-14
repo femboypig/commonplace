@@ -65,7 +65,7 @@ def main():
     common = sorted(library.glob("*.c")) + sorted(library.glob("*.S"))
     programs = {"init": sorted((ROOT / "userland/init").glob("*.c"))}
     # These programs implement commonplace's boot and platform policy.
-    for name in ("mount", "umount", "poweroff", "reboot"):
+    for name in ("poweroff", "reboot"):
         programs[name] = [ROOT / "userland/bin" / f"{name}.c"]
     objects = {}
     for source in sorted(

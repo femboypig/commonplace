@@ -5,6 +5,7 @@ import re
 PROJECTS = (
     "bash",
     "hfs",
+    "diskdev_cmds",
     "libresolv",
     "libc",
     "libinfo",

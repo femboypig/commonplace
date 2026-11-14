@@ -338,6 +338,28 @@
         "file_cmds/cksum/sum1.c",
         "file_cmds/cksum/sum2.c"
       ]
+    },
+    "mount_hfs": {
+      "sources": [
+        "hfs/mount_hfs/mount_hfs.c",
+        "hfs/newfs_hfs/hfs_endian.c",
+        "libutil/getmntopts.c"
+      ],
+      "flags": [
+        "-DCOMMONPLACE_NO_OPTICAL=1"
+      ]
+    },
+    "mount": {
+      "sources": [
+        "diskdev_cmds/mount.tproj/mount.c",
+        "diskdev_cmds/disklib/vfslist.c"
+      ]
+    },
+    "umount": {
+      "sources": [
+        "diskdev_cmds/umount.tproj/umount.c",
+        "diskdev_cmds/disklib/vfslist.c"
+      ]
     }
   }
 }

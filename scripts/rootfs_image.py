@@ -16,6 +16,7 @@ def system_files():
         "init": "launchd",
         "fsck_hfs": "fsck_hfs",
         "fstyp_hfs": "fstyp_hfs",
+        "mount_hfs": "mount_hfs",
     }
     programs = {
         (
