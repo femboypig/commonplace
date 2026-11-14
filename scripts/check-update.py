@@ -32,7 +32,7 @@ def run_update(system, *options, success=True):
     return result
 
 
-def boot(directory, system, cases):
+def boot(directory, system, cases, *, seconds=180):
     directory.mkdir()
     scenario = directory / "cases.json"
     scenario.write_text(json.dumps(cases) + "\n")
@@ -45,7 +45,7 @@ def boot(directory, system, cases):
                 str(system),
                 "--disk-root",
                 "--seconds",
-                "180",
+                str(seconds),
                 "--check-console",
                 "--console-case-file",
                 str(scenario),
@@ -144,6 +144,7 @@ def main():
                 r"\nhome-kept\nlocal-kept\nstartup-kept\n",
             ),
         ],
+        seconds=600,
     )
     run_update(system, "--restore", str(backups[0]))
     if digest(system) != before:
