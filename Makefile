@@ -2,7 +2,7 @@
 PYTHON ?= python3
 JOBS ?= 2
 
-.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime userland rootfs boot-init boot-console boot-recovery system-disk check-system check-hfs update-system check-update disk-image check-storage package test
+.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime userland rootfs boot-init boot-console boot-recovery system-disk check-system check-hfs check-mount check-newfs check-admin-runtime update-system check-update disk-image check-storage check-storage-reliability package test
 help:
 	@printf '%s\n' 'commonplace — darwin/x86_64' \
 	  'make doctor       check host tools and virtualization' \
@@ -30,8 +30,12 @@ help:
 	  'make update-system update the offline system and keep a rollback image' \
 	  'make check-update verify updates and rollback in QEMU' \
 	  'make check-hfs    verify native HFS checking and repair' \
+	  'make check-mount  verify native Apple mount and unmount commands' \
+	  'make check-newfs  verify native HFS formatting and normalization' \
+	  'make check-admin-runtime verify local accounts, PAM and syslog APIs' \
 	  'make disk-image   create the persistent data disk without replacing it' \
 	  'make check-storage verify persistence across poweroff and reboot' \
+	  'make check-storage-reliability verify crash recovery and full disks' \
 	  'make package      package a ready-to-run QEMU system' \
 	  'make test         run targeted regression tests'
 
@@ -132,6 +136,15 @@ check-update: loader check-kernel rootfs
 check-hfs: loader check-kernel rootfs
 	$(PYTHON) scripts/check-hfs.py
 
+check-mount: loader check-kernel rootfs
+	$(PYTHON) scripts/check-mount.py
+
+check-newfs: loader check-kernel rootfs
+	$(PYTHON) scripts/check-newfs.py
+
+check-admin-runtime: loader check-kernel rootfs
+	$(PYTHON) scripts/check-admin-runtime.py
+
 check-system: loader check-kernel rootfs
 	$(PYTHON) scripts/check-system-disk.py
 
@@ -146,6 +159,9 @@ check-darwin-runtime: loader check-kernel rootfs
 
 check-storage: loader check-kernel rootfs
 	$(PYTHON) scripts/check-storage.py
+
+check-storage-reliability: loader check-kernel rootfs
+	$(PYTHON) scripts/check-storage-reliability.py
 
 package: loader check-kernel rootfs
 	$(PYTHON) scripts/package-qemu.py
