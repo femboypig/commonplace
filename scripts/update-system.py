@@ -53,9 +53,19 @@ def recovery_check(directory, image, update):
     commands = ["set -eu", "fsck_hfs -fn -c 16m /dev/rcp1"]
     if update:
         commands += ["mkdir /tmp/system", "mount -t hfs /dev/cp1 /tmp/system"]
-        for path in ("/bin", "/sbin", "/usr", "/usr/lib", "/usr/lib/system"):
+        parents = {
+            str(parent)
+            for path in system_files()
+            for parent in Path(path).parents
+            if str(parent) != "/"
+        }
+        for path in sorted(parents, key=lambda path: len(Path(path).parts)):
             target = shlex.quote("/tmp/system" + path)
-            commands.append(f"test -d {target} && test ! -L {target}")
+            commands += [
+                f"test ! -L {target}",
+                f"test ! -e {target} || test -d {target}",
+                f"mkdir -p {target}",
+            ]
         for path in ("/var", "/var/log", "/var/run"):
             target = shlex.quote("/tmp/system" + path)
             commands += [f"test ! -L {target}", f"mkdir -p {target}"]

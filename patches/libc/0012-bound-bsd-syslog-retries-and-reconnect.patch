@@ -1,0 +1,32 @@
+--- a/gen/oldsyslog.c
++++ b/gen/oldsyslog.c
+@@ -126,7 +126,7 @@
+ 	register int cnt;
+ 	register char ch, *p, *t;
+ 	time_t now;
+-	int fd, saved_errno;
++	int fd, saved_errno, attempt;
+ #define	TBUF_LEN	2048
+ #define	FMT_LEN		1024
+ 	char *stdp, tbuf[TBUF_LEN], fmt_cpy[FMT_LEN];
+@@ -242,8 +242,18 @@
+ 	/* Get connected, output the message to the local logger. */
+ 	if (!_sl_connected)
+ 		openlog(_sl_LogTag, _sl_LogStat | LOG_NDELAY, 0);
+-	if (send(_sl_LogFile, tbuf, cnt, 0) >= 0)
+-		return;
++	for (attempt = 0; attempt < 8; attempt++) {
++		if (send(_sl_LogFile, tbuf, cnt, 0) >= 0)
++			return;
++		if (errno == ECONNREFUSED || errno == ECONNRESET || errno == ENOTCONN) {
++			closelog();
++			openlog(_sl_LogTag, _sl_LogStat | LOG_NDELAY, 0);
++		} else if (errno != ENOBUFS && errno != EINTR) {
++			break;
++		}
++		if (attempt < 7)
++			usleep(1000);
++	}
+ 
+ 	/*
+ 	 * Output the message to the console; don't worry about blocking,

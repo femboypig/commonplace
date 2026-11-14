@@ -6,6 +6,8 @@ PROJECTS = (
     "bash",
     "hfs",
     "cf",
+    "openpam",
+    "pam_modules",
     "diskdev_cmds",
     "libresolv",
     "libc",

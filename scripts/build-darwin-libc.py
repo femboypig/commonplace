@@ -241,6 +241,22 @@ def main():
             ["-include", "stdlib.h"],
         )
     )
+    renames = [
+        "-D" + name + "=commonplace_bsd_" + name
+        for name in ("syslog", "vsyslog", "openlog", "closelog", "setlogmask")
+    ]
+    objects.append(
+        compile_source(
+            source / "gen/oldsyslog.c",
+            OUT / "obj/syslog/bsd.o",
+            [*renames, "-fvisibility=hidden", "-Wno-deprecated-non-prototype"],
+        )
+    )
+    objects.append(
+        compile_source(
+            ROOT / "userland/darwin/syslog/locking.c", OUT / "obj/syslog/locking.o"
+        )
+    )
     library = OUT / "lib" / "libsystem_c.a"
     archive(library, objects)
     manifest = {

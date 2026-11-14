@@ -36,6 +36,11 @@ def system_files():
             / "build/darwin/system/libsystem_kernel.dylib",
         }
     )
+    programs["/usr/lib/libpam.2.dylib"] = ROOT / "build/darwin/system/libpam.2.dylib"
+    for name in ("pam_deny", "pam_rootok", "pam_self"):
+        programs["/usr/lib/pam/" + name + ".so"] = (
+            ROOT / "build/darwin/pam" / (name + ".so")
+        )
     return programs
 
 
@@ -75,6 +80,7 @@ def build_image(image, size_mib=32, persistent=False):
             "sbin",
             "bin",
             "etc",
+            "etc/pam.d",
             "tmp",
             "root",
             "data",
@@ -83,6 +89,7 @@ def build_image(image, size_mib=32, persistent=False):
             "usr/sbin",
             "usr/lib",
             "usr/lib/system",
+            "usr/lib/pam",
             "var",
             "var/log",
             "var/run",
@@ -106,8 +113,12 @@ def build_image(image, size_mib=32, persistent=False):
                     "HFS+ program round-trip verification failed: " + destination
                 )
             hashes[destination] = hashlib.sha256(program.read_bytes()).hexdigest()
-        for configuration in sorted((ROOT / "userland/darwin/etc").iterdir()):
-            destination = "/etc/" + configuration.name
+        for configuration in sorted((ROOT / "userland/darwin/etc").rglob("*")):
+            if not configuration.is_file():
+                continue
+            destination = "/etc/" + str(
+                configuration.relative_to(ROOT / "userland/darwin/etc")
+            )
             subprocess.run(
                 [str(hfs), str(image), "add", str(configuration), destination],
                 check=True,

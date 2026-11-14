@@ -225,6 +225,20 @@
       "revision": "dc54c6bb1c1e5e0b9486c1d26dd5bef110b20bf3",
       "url": "https://codeload.github.com/apple-oss-distributions/CF/tar.gz/dc54c6bb1c1e5e0b9486c1d26dd5bef110b20bf3",
       "sha256": "233e123902341ef0fe97a7deeae33b0b71814d3f53180b9d6eb67449d3804d4e"
+    },
+    "openpam": {
+      "repository": "apple-oss-distributions/OpenPAM",
+      "tag": "OpenPAM-20",
+      "revision": "ba3e0053175ce63e7810c150d442e6dbfdc6cd20",
+      "url": "https://codeload.github.com/apple-oss-distributions/OpenPAM/tar.gz/ba3e0053175ce63e7810c150d442e6dbfdc6cd20",
+      "sha256": "3bac351d51bf424b0880b32ce63a2401df023196c12f55500e4bd72f88cc97e0"
+    },
+    "pam_modules": {
+      "repository": "apple-oss-distributions/pam_modules",
+      "tag": "pam_modules-140.40.1",
+      "revision": "1fdeeea58999169ad3a14b4c88985d3924f5f38e",
+      "url": "https://codeload.github.com/apple-oss-distributions/pam_modules/tar.gz/1fdeeea58999169ad3a14b4c88985d3924f5f38e",
+      "sha256": "8d0f4ec8046cbd39379ad84765c6ad2abf6313143531c02a2204e8584f01b354"
     }
   }
 }

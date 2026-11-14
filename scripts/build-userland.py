@@ -142,7 +142,16 @@ def main():
             name: hashlib.sha256(
                 (ROOT / "build/darwin/system" / name).read_bytes()
             ).hexdigest()
-            for name in ("dyld", "libSystem.B.dylib", "libsystem_kernel.dylib")
+            for name in (
+                "dyld",
+                "libSystem.B.dylib",
+                "libsystem_kernel.dylib",
+                "libpam.2.dylib",
+            )
+        },
+        "pam_modules": {
+            path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in sorted((ROOT / "build/darwin/pam").glob("*.so"))
         },
         "platform_commands": list(programs),
         "sources": json.loads((ROOT / "sources.lock.json").read_text()),

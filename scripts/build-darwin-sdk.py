@@ -68,6 +68,7 @@ def prepare(sdk):
     for name in ("pwd.h", "grp.h", "netdb.h", "aliasdb.h"):
         shutil.copyfile(ROOT / "sources/libinfo/lookup.subproj" / name, include / name)
     headers(ROOT / "sources/libinfo/membership.subproj", include)
+    headers(ROOT / "sources/openpam/openpam/include/security", include / "security")
     shutil.copyfile(
         ROOT / "sources/libinfo/gen.subproj/ifaddrs.h", include / "ifaddrs.h"
     )
