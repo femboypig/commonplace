@@ -94,6 +94,7 @@ def main():
         manifest = {
             "schema": 1,
             "profile": "apple-services" if options.services else "bootstrap",
+            "authentication": "local-pam" if options.services else "recovery",
             "target": "qemu-q35-x86_64-kvm",
             "revision": revision,
             "immutable": {name: digest(staging / name) for name in (*files, notices)},

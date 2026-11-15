@@ -17,11 +17,24 @@ ROOT = Path(__file__).resolve().parent.parent
 def boot(directory, memory, output, prepare=False):
     manifest = json.loads((directory / "manifest.json").read_text())
     timeout = 180 if manifest.get("profile") == "apple-services" else 60
+    authenticated = manifest.get("authentication") == "local-pam"
+    # Test-only secret is provisioned into the extracted writable disk.
+    password = "Release-check-passphrase-2026!"
     console = Console([str(directory / "run.sh"), "--memory", str(memory)], output)
     try:
         started = time.monotonic()
-        first = console.expect(PROMPT, seconds=timeout)
-        if b"BSD root: cp1," not in first or b"Added memory device md0" in first:
+        if authenticated:
+            if prepare:
+                console.expect(
+                    rb"commonplace first boot: set the root password", seconds=timeout
+                )
+                console.change_password(password)
+            first = console.login("root", password, seconds=timeout)
+            boot_log = output.read_bytes()
+        else:
+            first = console.expect(PROMPT, seconds=timeout)
+            boot_log = first
+        if b"BSD root: cp1," not in boot_log or b"Added memory device md0" in boot_log:
             raise ValueError("release did not boot directly from its persistent root")
         duration = round(time.monotonic() - started, 3)
         if prepare:
@@ -42,7 +55,10 @@ def boot(directory, memory, output, prepare=False):
             )
             os.write(console.master, b"reboot\n")
             console.expect(rb"commonplace: restarting q35")
-            console.expect(PROMPT, seconds=timeout)
+            if authenticated:
+                console.login("root", password, seconds=timeout)
+            else:
+                console.expect(PROMPT, seconds=timeout)
         console.command("cat /data/probe", rb"\nrelease-ok\n")
         console.command("/usr/bin/persisted executable-ok", rb"\nexecutable-ok\n")
         console.command(
