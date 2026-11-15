@@ -82,21 +82,6 @@ extern si_mod_t *si_module_static_file(void);
 
 
 def hosts(original, network=None):
-    config = network.split("__private_extern__ int\nsi_inet_config", 1)[1].split(
-        "void\nfreeaddrinfo", 1
-    )[0]
-    begin = config.index("\tif (net_config_token < 0)")
-    end = config.index("\tstatus = 0;", begin)
-    config = config[:begin] + config[end:]
-    constants = network.split("#define SOCK_UNSPEC", 1)[1].split(
-        "static int net_config_token", 1
-    )[0]
-    state = network.split("static uint32_t net_v4_count", 1)[1].split("// Libc SPI", 1)[
-        0
-    ]
-    types = network.split("typedef struct {", 1)[1].split("__private_extern__ int", 1)[
-        0
-    ]
     hosts = original.split("void\nfreehostent", 1)[1].split(
         "struct hostent *\ngethostbynameerrno", 1
     )[0]
@@ -108,6 +93,7 @@ def hosts(original, network=None):
         + """
 #include <si_module.h>
 #include <si_data.h>
+#include <thread_data.h>
 #include <netdb.h>
 #include <net/if.h>
 #include <ifaddrs.h>
@@ -118,19 +104,22 @@ def hosts(original, network=None):
 extern si_mod_t *si_module_static_file(void);
 #define si_search si_module_static_file
 #define si_host_byname(m,n,f,i,e) ((m)->vtable->sim_host_byname((m),(n),(f),(i),(e)))
-#define SOCK_UNSPEC"""
-        + constants
-        + "static uint32_t net_v4_count"
-        + state
-        + "typedef struct {"
-        + types
-    )
-    contents += (
-        "int\nsi_inet_config" + config + network.split("/* getipnodebyname */", 1)[1]
+#define si_host_byaddr(m,a,f,i,e) ((m)->vtable->sim_host_byaddr((m),(a),(f),(i),(e)))
+"""
     )
     contents += (
         "void\nfreehostent" + hosts + "struct hostent *\ngetipnodebyname(" + lookup
     )
+    for name in (
+        "gethostbynameerrno",
+        "gethostbyname",
+        "gethostbyname2",
+        "gethostbyaddr",
+    ):
+        signature = "struct hostent *\n" + name + "("
+        contents += (
+            signature + original.split(signature, 1)[1].split("\n}\n", 1)[0] + "\n}\n"
+        )
     return contents
 
 
@@ -161,3 +150,25 @@ extern si_mod_t *si_module_static_file(void);
         body = original.split(signature + "\n" + name + "(", 1)[1].split("\n}\n", 1)[0]
         reentrant += signature + "\n" + name + "(" + body + "\n}\n"
     return reentrant
+
+
+def addresses(original, network=None):
+    section = original.split("/* GETADDRINFO */", 1)[1].split(
+        "#ifdef CALL_TRACE\n\nstatic char *", 1
+    )[0]
+    return (
+        original[: original.index("#include")]
+        + """
+#include <si_module.h>
+#include <si_data.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdlib.h>
+extern struct addrinfo *si_list_to_addrinfo(si_list_t *);
+#define SOCK_UNSPEC 0
+#define IPPROTO_UNSPEC 0
+extern si_mod_t *si_module_static_file(void);
+#define si_search si_module_static_file
+"""
+        + section
+    )

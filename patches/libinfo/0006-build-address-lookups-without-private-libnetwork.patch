@@ -1,0 +1,72 @@
+--- a/lookup.subproj/si_getaddrinfo.c
++++ b/lookup.subproj/si_getaddrinfo.c
+@@ -29,8 +29,10 @@
+ #include <sys/socket.h>
+ #include <net/if.h>
+ #include <netinet/in.h>
++#ifndef LIBINFO_NO_LIBNETWORK
+ #include <network/sa_compare.h>
+ #include <network/nat64.h>
++#endif
+ #include <arpa/inet.h>
+ #include <ifaddrs.h>
+ #include <net/if.h>
+@@ -760,6 +762,7 @@
+ 	return out;
+ }
+ 
++#ifndef LIBINFO_NO_LIBNETWORK
+ int
+ _gai_addr_sort(const void *a, const void *b)
+ {
+@@ -784,6 +787,8 @@
+ 	return sa_dst_compare(sq, sp, 0);
+ }
+ 
++#endif
++
+ static si_list_t *
+ _gai_sort_list(si_list_t *in, uint32_t flags)
+ {
+@@ -854,7 +859,9 @@
+ 		free(in);
+ 	}
+ 
++#ifndef LIBINFO_NO_LIBNETWORK
+ 	qsort(&out->entry[0], out->count, sizeof(si_item_t *), _gai_addr_sort);
++#endif
+ 	return out;
+ }
+ 
+@@ -1023,6 +1030,7 @@
+ 	return result;
+ }
+ 
++#ifndef LIBINFO_NO_LIBNETWORK
+ static si_list_t *
+ _gai_nat64_synthesis(si_mod_t *si, const char *node, const char *serv, int numericserv,
+ 					 uint32_t family, uint32_t socktype, uint32_t proto, uint32_t flags, const char *interface)
+@@ -1138,6 +1146,8 @@
+ 
+ 	return _gai_sort_list(out_list, flags);
+ }
++
++#endif
+ 
+ si_list_t *
+ si_addrinfo(si_mod_t *si, const char *node, const char *serv, uint32_t family, uint32_t socktype, uint32_t proto, uint32_t flags, const char *interface, uint32_t *err)
+@@ -1275,12 +1285,14 @@
+ 		}
+ 	}
+ 
++#ifndef LIBINFO_NO_LIBNETWORK
+ 	/* NAT64 IPv6 address synthesis support */
+ 	si_list_t *nat64_list = _gai_nat64_synthesis(si, node, serv, numericserv, family, socktype, proto, flags, interface);
+ 	if (NULL != nat64_list)
+ 	{
+ 		return nat64_list;
+ 	}
++#endif
+ 
+ 	numerichost = _gai_numerichost(node, &family, flags, &a4, &a6, &scope);
+ 	if ((numerichost == -1) || ((flags & AI_NUMERICHOST) && (numerichost == 0)))

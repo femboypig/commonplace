@@ -45,6 +45,7 @@ def main():
         "filesystem",
         "hosts",
         "account_reentrant",
+        "addresses",
     ):
         derived = OUT / "derived" / (name + ".c")
         derived.parent.mkdir(parents=True, exist_ok=True)
@@ -54,7 +55,27 @@ def main():
         objects.append(
             compile_source(derived, OUT / "obj/libinfo" / (name + ".o"), flags)
         )
-    for name in ("getifaddrs", "if_nametoindex"):
+    objects.append(
+        compile_source(
+            directory / "si_getaddrinfo.c",
+            OUT / "obj/libinfo/si_getaddrinfo.o",
+            [
+                *flags,
+                "-DLIBINFO_NO_LIBNETWORK=1",
+                "-include",
+                str(ROOT / "userland/darwin/libinfo/file_backend.h"),
+            ],
+        )
+    )
+    objects.append(
+        compile_source(source / "gen.subproj/vars.c", OUT / "obj/libinfo/vars.o", flags)
+    )
+    objects.append(
+        compile_source(
+            source / "dns.subproj/herror.c", OUT / "obj/libinfo/herror.o", flags
+        )
+    )
+    for name in ("getifaddrs", "if_nametoindex", "if_indextoname"):
         objects.append(
             compile_source(
                 source / "gen.subproj" / (name + ".c"),
