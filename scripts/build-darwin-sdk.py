@@ -81,6 +81,10 @@ def prepare(sdk):
     shutil.copyfile(launch / "bootstrap.h", include / "servers/bootstrap.h")
     for name in ("notify.h", "notify_keys.h", "notify_private.h"):
         shutil.copyfile(ROOT / "sources/libnotify" / name, include / name)
+    asl = prepare_source("libc_asl")
+    shutil.copyfile(asl / "include/asl.h", include / "asl.h")
+    for header in (asl / "gen").glob("asl*.h"):
+        shutil.copyfile(header, include / header.name)
     dispatch = ROOT / "sources/libdispatch"
     headers(dispatch / "dispatch", include / "dispatch")
     headers(

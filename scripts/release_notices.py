@@ -12,6 +12,7 @@ PROJECTS = (
     "libresolv",
     "libc",
     "libc_directories",
+    "libc_asl",
     "libnotify",
     "launchd",
     "cctools",

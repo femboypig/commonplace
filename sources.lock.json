@@ -274,6 +274,13 @@
       "revision": "3968b5b6c9cecee556e2663905e01c87ff4a40ad",
       "url": "https://codeload.github.com/apple-oss-distributions/Libnotify/tar.gz/3968b5b6c9cecee556e2663905e01c87ff4a40ad",
       "sha256": "8f37fed8c681fbe923bee42aaf2628832f0b3ec6f3e3c21f3b01d8507f192068"
+    },
+    "libc_asl": {
+      "repository": "apple-oss-distributions/Libc",
+      "tag": "Libc-825.40.1",
+      "revision": "224a8105d573730ae33f474ae5b63b113123aee4",
+      "url": "https://codeload.github.com/apple-oss-distributions/Libc/tar.gz/224a8105d573730ae33f474ae5b63b113123aee4",
+      "sha256": "665de84510b905af8a00617f6663fd24205550854582ed9a23436f6a89e384b4"
     }
   }
 }

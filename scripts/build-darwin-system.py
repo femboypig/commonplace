@@ -81,6 +81,7 @@ def main():
         "libsystem_launch.a",
         "libsystem_notify.a",
         "libsystem_diagnostics.a",
+        "libsystem_asl.a",
         "libsystem_c.a",
         "libsystem_m.a",
         "libsystem_macho.a",
