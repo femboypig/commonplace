@@ -1,0 +1,15 @@
+--- a/include/os/base_private.h
++++ b/include/os/base_private.h
+@@ -24,10 +24,10 @@
+ #include <os/base.h>
+ 
+ #ifndef os_fastpath
+-#define os_fastpath(x) ((__typeof__(x))OS_EXPECT((long)(x), ~0l))
++#define os_fastpath(x) ((__typeof__(((void)0, (x))))OS_EXPECT((long)(x), ~0l))
+ #endif
+ #ifndef os_slowpath
+-#define os_slowpath(x) ((__typeof__(x))OS_EXPECT((long)(x), 0l))
++#define os_slowpath(x) ((__typeof__(((void)0, (x))))OS_EXPECT((long)(x), 0l))
+ #endif
+ #ifndef os_likely
+ #define os_likely(x) OS_EXPECT(!!(x), 1)

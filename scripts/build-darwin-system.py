@@ -77,8 +77,10 @@ def main():
     ]
     for name in (
         "libsystem_info_file.a",
+        "libsystem_diagnostics.a",
         "libsystem_c.a",
         "libsystem_m.a",
+        "libsystem_macho.a",
         "libsystem_malloc.a",
         "libsystem_pthread.a",
         "libsystem_platform.a",

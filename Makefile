@@ -105,6 +105,8 @@ darwin-libraries: darwin-sdk
 	$(PYTHON) scripts/build-darwin-dyld.py
 	$(PYTHON) scripts/build-darwin-kernel-library.py
 	$(PYTHON) scripts/build-darwin-dispatch.py
+	$(PYTHON) scripts/build-darwin-diagnostics.py
+	$(PYTHON) scripts/build-darwin-macho.py
 	$(PYTHON) scripts/build-darwin-system.py
 
 darwin-userland: darwin-libraries

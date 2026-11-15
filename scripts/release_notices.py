@@ -12,6 +12,7 @@ PROJECTS = (
     "libresolv",
     "libc",
     "libc_directories",
+    "cctools",
     "icu",
     "libinfo",
     "libplatform",

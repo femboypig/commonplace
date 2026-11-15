@@ -69,6 +69,9 @@ def prepare(sdk):
     for name in ("pwd.h", "grp.h", "netdb.h", "aliasdb.h"):
         shutil.copyfile(ROOT / "sources/libinfo/lookup.subproj" / name, include / name)
     headers(ROOT / "sources/libinfo/membership.subproj", include)
+    for name in ("assumes.h", "debug_private.h"):
+        shutil.copyfile(ROOT / "sources/libc/os" / name, include / "os" / name)
+    shutil.copyfile(ROOT / "sources/libc/gen/execinfo.h", include / "execinfo.h")
     dispatch = ROOT / "sources/libdispatch"
     headers(dispatch / "dispatch", include / "dispatch")
     headers(
@@ -135,7 +138,7 @@ def prepare(sdk):
     for name in ("Block.h", "Block_private.h"):
         shutil.copyfile(ROOT / "sources/libclosure" / name, include / name)
     headers(ROOT / "sources/libmalloc/include", include)
-    headers(ROOT / "sources/libplatform/include", include)
+    headers(prepare_source("libplatform") / "include", include)
     shutil.copyfile(
         ROOT / "sources/libsystem/alloc_once_private.h",
         include / "os/alloc_once_private.h",
