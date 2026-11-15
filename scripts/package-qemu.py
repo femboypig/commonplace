@@ -52,6 +52,18 @@ def main():
             "scripts/console-qemu.py": "scripts/console-qemu.py",
             "scripts/qemu_machine.py": "scripts/qemu_machine.py",
             "scripts/verify-release.py": "scripts/verify-release.py",
+            **{
+                "scripts/" + name: "scripts/" + name
+                for name in (
+                    "create_disk_image.py",
+                    "offline_image.py",
+                    "guest_console.py",
+                    "rootfs_image.py",
+                    "recovery_session.py",
+                    "recover-system.py",
+                    "update-system.py",
+                )
+            },
             "run.sh": "scripts/run-release.sh",
             "sources.lock.json": "sources.lock.json",
             "build/rootfs/image.json": "build/rootfs/image.json",

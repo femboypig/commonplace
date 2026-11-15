@@ -2,6 +2,8 @@
 """Boot the packaged system, then verify a warm reboot and cold persistence."""
 
 import argparse
+import hashlib
+import sys
 from datetime import datetime, timezone
 import json
 import os
@@ -12,14 +14,15 @@ import time
 from guest_console import Console, PROMPT
 
 ROOT = Path(__file__).resolve().parent.parent
+PASSWORD = "Release-check-passphrase-2026!"
+RESET_PASSWORD = "Release-recovered-passphrase-2026!"
 
 
-def boot(directory, memory, output, prepare=False):
+def boot(directory, memory, output, prepare=False, *, password=PASSWORD):
     manifest = json.loads((directory / "manifest.json").read_text())
     timeout = 180 if manifest.get("profile") == "apple-services" else 60
     authenticated = manifest.get("authentication") == "local-pam"
     # Test-only secret is provisioned into the extracted writable disk.
-    password = "Release-check-passphrase-2026!"
     console = Console([str(directory / "run.sh"), "--memory", str(memory)], output)
     try:
         started = time.monotonic()
@@ -75,6 +78,82 @@ def boot(directory, memory, output, prepare=False):
         console.close()
 
 
+def packaged_recovery(directory, output):
+    system = directory / "build/disks/system.hfs"
+    before = hashlib.sha256(system.read_bytes()).hexdigest()
+    snapshots = set(system.parent.glob("system.hfs.previous-*"))
+    console = Console(
+        [
+            sys.executable,
+            str(directory / "scripts/recover-system.py"),
+            "--path",
+            str(system),
+            "--reset-password",
+            "root",
+        ],
+        output / "password-reset.log",
+    )
+    try:
+        console.change_password(RESET_PASSWORD, seconds=180)
+        console.expect(rb"system ready: ", seconds=180)
+        if console.process.wait(timeout=10) != 0:
+            raise ValueError("packaged password recovery failed")
+    finally:
+        console.close()
+    if RESET_PASSWORD.encode() in (output / "password-reset.log").read_bytes():
+        raise ValueError("packaged recovery echoed its password")
+    added = set(system.parent.glob("system.hfs.previous-*")) - snapshots
+    if len(added) != 1:
+        raise ValueError("packaged recovery did not retain one snapshot")
+    snapshot = added.pop()
+    if hashlib.sha256(snapshot.read_bytes()).hexdigest() != before:
+        raise ValueError("packaged recovery snapshot differs from the original")
+    recovered = boot(directory, 1024, output / "recovered.log", password=RESET_PASSWORD)
+    subprocess.run(
+        [
+            sys.executable,
+            str(directory / "scripts/recover-system.py"),
+            "--path",
+            str(system),
+            "--repair",
+        ],
+        check=True,
+    )
+    subprocess.run(
+        [
+            sys.executable,
+            str(directory / "scripts/update-system.py"),
+            "--path",
+            str(system),
+            "--restore",
+            str(snapshot),
+        ],
+        check=True,
+    )
+    if hashlib.sha256(system.read_bytes()).hexdigest() != before:
+        raise ValueError("packaged rollback did not restore the original bytes")
+    restored = boot(directory, 1024, output / "restored.log")
+    current = hashlib.sha256(system.read_bytes()).hexdigest()
+    rejected = subprocess.run(
+        [
+            sys.executable,
+            str(directory / "scripts/update-system.py"),
+            "--path",
+            str(system),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if (
+        rejected.returncode == 0
+        or "source updates require a build tree" not in rejected.stderr
+    ):
+        raise ValueError("standalone update did not explain its build requirement")
+    if hashlib.sha256(system.read_bytes()).hexdigest() != current:
+        raise ValueError("rejected standalone update changed the installed system")
+    return [recovered, restored]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("archive", type=Path)
@@ -97,6 +176,9 @@ def main():
         boot(directory, 512, output / "warm.log", prepare=True),
         boot(directory, 2048, output / "cold.log"),
     ]
+    manifest = json.loads((directory / "manifest.json").read_text())
+    if manifest.get("authentication") == "local-pam":
+        results.extend(packaged_recovery(directory, output))
     subprocess.run(
         ["python3", str(directory / "scripts/verify-release.py"), str(directory)],
         check=True,
@@ -104,7 +186,10 @@ def main():
     manifest = json.loads((directory / "manifest.json").read_text())
     summary = {"passed": True, "revision": manifest["revision"], "boots": results}
     (output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
-    print("packaged warm reboot and cold persistence passed; evidence: " + str(output))
+    print(
+        "packaged boot, persistence and standalone recovery passed; evidence: "
+        + str(output)
+    )
 
 
 if __name__ == "__main__":

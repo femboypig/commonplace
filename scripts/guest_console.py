@@ -63,13 +63,13 @@ class Console:
         self.sendline(password)
         return self.expect(prompt)
 
-    def change_password(self, password, old=None):
+    def change_password(self, password, old=None, *, seconds=60):
         if old is not None:
-            self.expect(rb"Old password:")
+            self.expect(rb"Old password:", seconds=seconds)
             self.sendline(old)
-        self.expect(rb"New password:")
+        self.expect(rb"New password:", seconds=seconds)
         self.sendline(password)
-        self.expect(rb"Retype new password:")
+        self.expect(rb"Retype new password:", seconds=seconds)
         self.sendline(password)
 
     def command(self, text, expected):
