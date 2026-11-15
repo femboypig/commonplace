@@ -81,6 +81,18 @@ def main():
                 console.change_password(USER_PASSWORD)
                 console.expect(PROMPT)
                 console.command("login_policy", rb"native login policy:.*passed")
+                console.command(
+                    "printf '%s\\n' '#!/bin/sh' 'echo \"vipwtest:*:504:20::0:0:vipw test:/home/tester:/bin/sh\" >> \"$1\"' > /tmp/account-editor; chmod 700 /tmp/account-editor; EDITOR=/tmp/account-editor vipw; id -u vipwtest",
+                    rb"\n504\n",
+                )
+                console.command(
+                    "printf '%s\\n' '#!/bin/sh' 'sed -i \"\" s/^vipwtest:/vipwuser:/ \"$1\"' > /tmp/account-editor; EDITOR=/tmp/account-editor vipw; id -u vipwuser",
+                    rb"\n504\n",
+                )
+                console.command(
+                    "EDITOR=/bin/true vipw; echo unchanged-status:$?",
+                    rb"unchanged[\s\S]*unchanged-status:0",
+                )
             console.sendline("exit")
             console.expect(rb"login: ")
             console.sendline("tester")
