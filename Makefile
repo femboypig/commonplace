@@ -2,7 +2,7 @@
 PYTHON ?= python3
 JOBS ?= 2
 
-.PHONY: package-services darwin-services service-image boot-services check-launchd help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime check-dispatch check-foundation check-corefoundation check-service-runtime userland rootfs boot-init boot-console boot-recovery system-disk check-system check-hfs check-mount check-newfs check-admin-runtime update-system check-update disk-image check-storage check-storage-reliability package test
+.PHONY: check-login package-services darwin-services service-image boot-services check-launchd help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime check-dispatch check-foundation check-corefoundation check-service-runtime userland rootfs boot-init boot-console boot-recovery system-disk check-system check-hfs check-mount check-newfs check-admin-runtime update-system check-update disk-image check-storage check-storage-reliability package test
 help:
 	@printf '%s\n' 'commonplace — darwin/x86_64' \
 	  'make doctor       check host tools and virtualization' \
@@ -28,6 +28,7 @@ help:
 	  'make check-service-runtime verify native ASL records and Mach notifications' \
 	  'make service-image build the native Apple launchd system on a separate disk' \
 	  'make boot-services boot Apple launchd, notifyd and syslogd' \
+	  'make check-login verify password provisioning and native user sessions' \
 	  'make check-launchd verify native services and persistent system logging' \
 	  'make boot-init    require PID 1 and exercise the serial console' \
 	  'make boot-console attach this terminal to the guest (Ctrl-A X exits)' \
@@ -122,7 +123,11 @@ darwin-libraries: darwin-sdk
 darwin-userland: darwin-libraries
 	$(PYTHON) scripts/build-darwin-icu.py
 	$(PYTHON) scripts/build-darwin-cf.py
+	$(PYTHON) scripts/build-darwin-crypto.py
+	$(PYTHON) scripts/build-darwin-password.py
 	$(PYTHON) scripts/build-darwin-pam.py
+	$(PYTHON) scripts/build-darwin-accounts.py
+	$(PYTHON) scripts/build-darwin-login.py
 	$(PYTHON) scripts/build-darwin-newfs.py
 	$(PYTHON) scripts/build-darwin-commands.py
 	$(PYTHON) scripts/build-darwin-bash.py
@@ -143,6 +148,9 @@ service-image: darwin-services rootfs-tools
 
 boot-services: loader check-kernel service-image disk-image
 	$(PYTHON) scripts/console-qemu.py --system-disk build/disks/services.hfs
+
+check-login: loader check-kernel darwin-services rootfs-tools
+	$(PYTHON) scripts/check-login.py
 
 check-launchd: loader check-kernel darwin-services rootfs-tools
 	$(PYTHON) scripts/check-launchd.py
