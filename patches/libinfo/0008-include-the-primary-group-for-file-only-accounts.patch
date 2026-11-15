@@ -1,0 +1,19 @@
+--- a/lookup.subproj/file_module.c
++++ b/lookup.subproj/file_module.c
+@@ -979,8 +979,15 @@
+ 		item = NULL;
+ 	}
+ 
++	if (basegid != (gid_t)-1)
++	{
++		gidlist = malloc(sizeof(*gidlist));
++		if (gidlist == NULL) return NULL;
++		gidlist[gidcount++] = basegid;
++	}
++
+ 	f = fopen(_PATH_GROUP, "r");
+-	if (f == NULL) return NULL;
++	if (f == NULL) { free(gidlist); return NULL; }
+ 
+ 	_fsi_get_validation(si, VALIDATION_GROUP, _PATH_GROUP, f, &va, &vb);
+ 
