@@ -1,0 +1,13 @@
+--- a/modules/pam_uwtmp/pam_uwtmp.c
++++ b/modules/pam_uwtmp/pam_uwtmp.c
+@@ -110,8 +110,8 @@
+ 
+ 	if( pututxline(u) == NULL ) {
+ 		openpam_log(PAM_LOG_ERROR, "Unable to write the utmp record.");
+-		status = PAM_SYSTEM_ERR;
+-		goto err;
++		pam_set_data(pamh, DATA_NAME, NULL, NULL);
++		return PAM_SYSTEM_ERR;
+ 	}
+ 
+ 	return PAM_SUCCESS;

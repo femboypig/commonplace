@@ -3,7 +3,7 @@
 
 import re
 import subprocess
-from darwin_build import OUT, LD, compile_source, prepare_source
+from darwin_build import ROOT, OUT, LD, compile_source, prepare_source
 
 
 def main():
@@ -12,6 +12,7 @@ def main():
     section = makefile.split("libpam_la_SOURCES", 1)[1].split("$(NULL)", 1)[0]
     names = re.findall(r"\b([a-z_]+\.c)\b", section)
     flags = [
+        "-I" + str(ROOT / "userland/darwin/password"),
         "-DHAVE_CONFIG_H=1",
         "-fblocks",
         "-I" + str(source),
@@ -59,6 +60,9 @@ def main():
         ("pam_deny", source / "modules/pam_deny/pam_deny.c"),
         ("pam_rootok", upstream / "modules/pam_rootok/pam_rootok.c"),
         ("pam_self", upstream / "modules/pam_self/pam_self.c"),
+        ("pam_unix", source / "modules/pam_unix/pam_unix.c"),
+        ("pam_nologin", upstream / "modules/pam_nologin/pam_nologin.c"),
+        ("pam_uwtmp", upstream / "modules/pam_uwtmp/pam_uwtmp.c"),
     ):
         obj = compile_source(
             path,
@@ -73,6 +77,8 @@ def main():
         )
         target = modules / (name + ".so")
         dependencies = [str(OUT / "system/libSystem.B.dylib")]
+        if name == "pam_unix":
+            dependencies.insert(0, str(OUT / "system/libcrypt.dylib"))
         if name != "pam_deny":
             dependencies.insert(0, str(output))
         subprocess.run(
