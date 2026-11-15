@@ -59,3 +59,54 @@ class UpdateLockTest(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("disk is in use", result.stderr)
             self.assertEqual(image.read_bytes(), b"unchanged")
+
+
+class ImageTransactionTest(unittest.TestCase):
+    def image(self, path, *, clean=True):
+        with path.open("wb") as stream:
+            stream.truncate(16 * 1024 * 1024)
+            stream.seek(1024)
+            stream.write(b"H+\0\4" + struct.pack(">I", 0x100 if clean else 0))
+
+    def test_failed_operation_does_not_publish(self):
+        from offline_image import image_transaction
+
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "system.hfs"
+            self.image(path)
+            before = path.read_bytes()
+            with self.assertRaisesRegex(RuntimeError, "interrupted"):
+                with image_transaction(path, "failed") as transaction:
+                    with transaction.staged.open("r+b") as stream:
+                        stream.seek(4096)
+                        stream.write(b"incomplete update")
+                    raise RuntimeError("interrupted")
+            self.assertEqual(path.read_bytes(), before)
+            self.assertFalse(list(path.parent.glob("system.hfs.previous-*")))
+            self.assertFalse(list(path.parent.glob(".update-*")))
+
+    def test_restore_accepts_dirty_target_and_preserves_it(self):
+        from offline_image import image_transaction
+
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "system.hfs"
+            source = Path(temporary) / "clean.hfs"
+            self.image(path, clean=False)
+            self.image(source)
+            dirty, clean = path.read_bytes(), source.read_bytes()
+            with image_transaction(path, "restored", restore=source) as transaction:
+                self.assertEqual(transaction.staged.read_bytes(), clean)
+            self.assertEqual(path.read_bytes(), clean)
+            self.assertEqual(transaction.backup.read_bytes(), dirty)
+
+    def test_restore_rejects_an_alias_of_the_installed_image(self):
+        from offline_image import image_transaction
+
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "system.hfs"
+            source = Path(temporary) / "alias.hfs"
+            self.image(path)
+            os.link(path, source)
+            with self.assertRaisesRegex(ValueError, "different image"):
+                with image_transaction(path, "alias", restore=source):
+                    self.fail("same-inode restore was accepted")
