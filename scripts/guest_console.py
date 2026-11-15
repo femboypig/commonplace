@@ -15,7 +15,7 @@ PROMPT = rb"[A-Za-z0-9][A-Za-z0-9.-]{0,254}:[^\n]{1,1024}? root# "
 
 
 class Console:
-    def __init__(self, command, output):
+    def __init__(self, command, output, *, cwd=None):
         self.master, slave = pty.openpty()
         self.process = subprocess.Popen(
             command,
@@ -23,6 +23,7 @@ class Console:
             stdout=slave,
             stderr=slave,
             start_new_session=True,
+            cwd=cwd,
         )
         os.close(slave)
         self.log = output.open("wb")

@@ -67,9 +67,12 @@ def console_for(directory, recovery, system):
     boot = directory / "boot"
     boot.mkdir()
     command = command_for(
-        [KERNEL, recovery], 1024, bounded=False, system_disk=system
+        [KERNEL.relative_to(ROOT), recovery.relative_to(ROOT)],
+        1024,
+        bounded=False,
+        system_disk=system,
     ) + ["-serial", "mon:stdio"]
-    return Console(command, boot / "serial.log")
+    return Console(command, boot / "serial.log", cwd=ROOT)
 
 
 def run_command(directory, recovery, system, command, *, seconds=600):
