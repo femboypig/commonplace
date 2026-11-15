@@ -281,6 +281,55 @@
       "revision": "224a8105d573730ae33f474ae5b63b113123aee4",
       "url": "https://codeload.github.com/apple-oss-distributions/Libc/tar.gz/224a8105d573730ae33f474ae5b63b113123aee4",
       "sha256": "665de84510b905af8a00617f6663fd24205550854582ed9a23436f6a89e384b4"
+    },
+    "launchd_manager": {
+      "repository": "apple-oss-distributions/launchd",
+      "tag": "launchd-329.3.3",
+      "revision": "c7e42775ac53457c214e0d44e0978ac95f8f5a79",
+      "url": "https://codeload.github.com/apple-oss-distributions/launchd/tar.gz/c7e42775ac53457c214e0d44e0978ac95f8f5a79",
+      "sha256": "f6ca3076674cbf9c1cb991dc362eab3c58da241a9bfbe7dbb1d71b864841a91b"
+    },
+    "iokit_user": {
+      "repository": "apple-oss-distributions/IOKitUser",
+      "tag": "IOKitUser-1179.50.2",
+      "revision": "f65ac530b8a28b7617b94b3301396c54556d4ab2",
+      "url": "https://codeload.github.com/apple-oss-distributions/IOKitUser/tar.gz/f65ac530b8a28b7617b94b3301396c54556d4ab2",
+      "sha256": "38780d22d06516de11108ac8dfd18008cb8cd97406928fd18b4b63404253dd68"
+    },
+    "carbon_headers": {
+      "repository": "apple-oss-distributions/CarbonHeaders",
+      "tag": "CarbonHeaders-18.1",
+      "revision": "214a9ae7ab3c0c78ddb50328ca226e6313c4c782",
+      "url": "https://codeload.github.com/apple-oss-distributions/CarbonHeaders/tar.gz/214a9ae7ab3c0c78ddb50328ca226e6313c4c782",
+      "sha256": "5e2d730b17c62349a449d01fcb5af92c8aed23104db65a5eb711d4c224fa2f4b"
+    },
+    "security_headers": {
+      "repository": "apple-oss-distributions/Security",
+      "tag": "Security-55471.14.18",
+      "revision": "5437914d400816e369940421d1417d37822a8fbe",
+      "url": "https://codeload.github.com/apple-oss-distributions/Security/tar.gz/refs/tags/Security-55471.14.18",
+      "sha256": "eeaaf421a9a30970a86c827a57d2adbdb3019090df442cb80b97aaa4726540b2"
+    },
+    "mdns": {
+      "repository": "apple-oss-distributions/mDNSResponder",
+      "tag": "mDNSResponder-576.30.4",
+      "revision": "f788e3854d7a72cf3ef484da77488739e226705d",
+      "url": "https://codeload.github.com/apple-oss-distributions/mDNSResponder/tar.gz/f788e3854d7a72cf3ef484da77488739e226705d",
+      "sha256": "baa7d17610919a49947c0553023069d9951b15c3fd6b4352d55048c734d1d4f2"
+    },
+    "openbsm": {
+      "repository": "apple-oss-distributions/OpenBSM",
+      "tag": "OpenBSM-21",
+      "revision": "bb0681420e99d447f466ba70d38589213bb69fea",
+      "url": "https://codeload.github.com/apple-oss-distributions/OpenBSM/tar.gz/bb0681420e99d447f466ba70d38589213bb69fea",
+      "sha256": "510a7b71b86e0c20edd4cb8d6979ced8cf2e438f628422a94cba1c4ffbfec7eb"
+    },
+    "syslog_services": {
+      "repository": "apple-oss-distributions/syslog",
+      "tag": "syslog-148.8",
+      "revision": "b2643246fb0f9cda5da5c0411f3c3cb72c9116af",
+      "url": "https://codeload.github.com/apple-oss-distributions/syslog/tar.gz/b2643246fb0f9cda5da5c0411f3c3cb72c9116af",
+      "sha256": "31d0f921b06dd1be49c982791233a4fd7528f00d2ecbf484a0159ea5294d76e9"
     }
   }
 }
