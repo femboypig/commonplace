@@ -1,0 +1,33 @@
+--- a/pwd_mkdb.tproj/pwd_mkdb.c
++++ b/pwd_mkdb.tproj/pwd_mkdb.c
+@@ -135,7 +135,7 @@
+ 			break;
+ 		case 'u':			/* only update this record */
+ 			username = optarg;
+-			if (strlen(username) > _PW_NAME_LEN)
++			if (strlen(username) > (MAXLOGNAME - 1))
+ 				errx(1, "username too long");
+ 			break;
+ 		case 'v':			/* backward compatible */
+@@ -301,19 +301,8 @@
+ 	db_store(fp, oldfp, edp, dp, &pwd, _PW_KEYBYUID, username, olduid);
+ 	db_store(fp, oldfp, edp, dp, &pwd, _PW_KEYBYNUM, username, olduid);
+ 
+-	/* Store YP token, if needed. */
+-	if (hasyp && !username) {
+-		key.data = (u_char *)_PW_YPTOKEN;
+-		key.size = strlen(_PW_YPTOKEN);
+-		data.data = (u_char *)NULL;
+-		data.size = 0;
+-
+-		if ((edp->put)(edp, &key, &data, R_NOOVERWRITE) == -1)
+-			error("put");
+-
+-		if (dp && (dp->put)(dp, &key, &data, R_NOOVERWRITE) == -1)
+-			error("put");
+-	}
++	if (hasyp)
++		errx(1, "NIS records are unavailable in the local account profile");
+ 
+ 	if ((edp->close)(edp))
+ 		error("close edp");
