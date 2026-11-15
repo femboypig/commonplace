@@ -365,6 +365,11 @@
       "sources": [
         "diskdev_cmds/fsck.tproj/fsck.c"
       ]
+    },
+    "chown": {
+      "sources": [
+        "file_cmds/chown/chown.c"
+      ]
     }
   }
 }
