@@ -9,27 +9,11 @@ import subprocess
 import shutil
 import sys
 from rootfs_image import ROOT, build_image
+from update_check_support import run_update
 
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def run_update(system, *options, success=True):
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "scripts/update-system.py"),
-            "--path",
-            str(system),
-            *options,
-        ],
-        capture_output=True,
-        text=True,
-    )
-    if (result.returncode == 0) != success:
-        raise ValueError(result.stdout + result.stderr)
-    return result
 
 
 def boot(directory, system, cases, *, seconds=180):
@@ -90,6 +74,8 @@ def main():
         "/usr/lib/libicucore.A.dylib",
         "/usr/share/icu/icudt55l.dat",
         "/usr/share/icu",
+        "/usr/share/commonplace/profile",
+        "/usr/share/commonplace",
         "/usr/share",
     ):
         subprocess.run([hfs, str(system), "rm", path], check=True)
