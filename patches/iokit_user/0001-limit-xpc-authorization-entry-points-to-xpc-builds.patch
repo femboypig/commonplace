@@ -1,0 +1,29 @@
+--- a/IOKitLib.c
++++ b/IOKitLib.c
+@@ -44,7 +44,9 @@
+ #include <asl.h>
+ #include <dispatch/dispatch.h>
+ #include <dispatch/private.h> 
++#if __has_include(<xpc/xpc.h>)
+ #include <xpc/xpc.h>
++#endif
+ 
+ #include <CoreFoundation/CoreFoundation.h>
+ #include <CoreFoundation/CFMachPort.h>
+@@ -1390,6 +1392,7 @@
+     return( io_service_request_probe( service, options ));
+ }
+ 
++#if __has_include(<xpc/xpc.h>)
+ kern_return_t
+ IOServiceAuthorize(
+ 	io_service_t	service,
+@@ -1561,6 +1564,8 @@
+ 
+     return fd;
+ }
++
++#endif
+ 
+ kern_return_t
+ _IOServiceGetAuthorizationID(

@@ -6,7 +6,9 @@ import subprocess
 from darwin_build import ROOT, SDK
 
 
-def generate_interface(name, definition, output, includes=()):
+def generate_interface(
+    name, definition, output, includes=(), *, arch="i386", defines=()
+):
     output.mkdir(parents=True, exist_ok=True)
     directories = [
         ROOT / "sources/xnu/osfmk",
@@ -28,7 +30,8 @@ def generate_interface(name, definition, output, includes=()):
         str(ROOT / "toolchain/bin/mig"),
         "-novouchers",
         "-arch",
-        "i386",
+        arch,
+        *("-D" + define for define in defines),
         *("-I" + str(path) for path in directories),
     ]
     for kind, path in paths.items():
