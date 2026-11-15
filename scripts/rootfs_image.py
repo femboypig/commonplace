@@ -44,10 +44,31 @@ def system_files():
     programs["/usr/lib/libicucore.A.dylib"] = (
         ROOT / "build/darwin/system/libicucore.A.dylib"
     )
-    programs["/usr/share/icu/icudt55l.dat"] = (
-        ROOT / "build/darwin/resources/icu/icudt55l.dat"
-    )
+    programs[
+        "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation"
+    ] = ROOT / "build/darwin/system/CoreFoundation"
+    programs.update(system_resources())
     return programs
+
+
+def system_resources():
+    return {
+        "/usr/share/icu/icudt55l.dat": ROOT / "build/darwin/resources/icu/icudt55l.dat",
+        "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Resources/Info.plist": ROOT
+        / "build/darwin/resources/CoreFoundation/Info.plist",
+    }
+
+
+def system_symlinks():
+    framework = "/System/Library/Frameworks/CoreFoundation.framework/"
+    return {
+        framework + path: target
+        for path, target in (
+            ("Versions/Current", "A"),
+            ("CoreFoundation", "Versions/Current/CoreFoundation"),
+            ("Resources", "Versions/Current/Resources"),
+        )
+    }
 
 
 def build_image(image, size_mib=64, persistent=False):
@@ -110,7 +131,7 @@ def build_image(image, size_mib=64, persistent=False):
                     str(hfs),
                     str(image),
                     "chmod",
-                    "644" if destination.endswith(".dat") else "755",
+                    "644" if destination in system_resources() else "755",
                     destination,
                 ],
                 check=True,
@@ -125,6 +146,8 @@ def build_image(image, size_mib=64, persistent=False):
                     "HFS+ program round-trip verification failed: " + destination
                 )
             hashes[destination] = hashlib.sha256(program.read_bytes()).hexdigest()
+        for path, target in system_symlinks().items():
+            subprocess.run([str(hfs), str(image), "symlink", path, target], check=True)
         for configuration in sorted((ROOT / "userland/darwin/etc").rglob("*")):
             if not configuration.is_file():
                 continue

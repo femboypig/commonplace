@@ -1,0 +1,21 @@
+--- a/CoreFoundation_Prefix.h
++++ b/CoreFoundation_Prefix.h
+@@ -47,6 +47,7 @@
+ #define pthread_override_qos_class_start_np(A, B, C) (NULL)
+ #define pthread_override_qos_class_end_np(A) do {} while (0)
+ #elif (DEPLOYMENT_TARGET_MACOSX || DEPLOYMENT_TARGET_EMBEDDED)
++#include <pthread.h>
+ #include <pthread/qos.h>
+ #endif
+ 
+--- a/CFBundlePriv.h
++++ b/CFBundlePriv.h
+@@ -254,7 +254,7 @@
+ CF_EXPORT
+ CFURLRef _CFBundleCopyFrameworkURLForExecutablePath(CFStringRef executablePath);
+ 
+-#if (TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)) || (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)
++#if ((TARGET_OS_MAC && !(TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)) || (TARGET_OS_EMBEDDED || TARGET_OS_IPHONE)) && __has_include(<xpc/xpc.h>)
+ #include <xpc/xpc.h>
+ CF_EXPORT
+ void _CFBundleSetupXPCBootstrap(xpc_object_t bootstrap) CF_AVAILABLE(10_10, 8_0);

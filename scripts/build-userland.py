@@ -148,9 +148,13 @@ def main():
                 "libsystem_kernel.dylib",
                 "libpam.2.dylib",
                 "libicucore.A.dylib",
+                "CoreFoundation",
             )
         },
         "resources": {
+            "CoreFoundation/Info.plist": hashlib.sha256(
+                (ROOT / "build/darwin/resources/CoreFoundation/Info.plist").read_bytes()
+            ).hexdigest(),
             "icu/icudt55l.dat": hashlib.sha256(
                 (ROOT / "build/darwin/resources/icu/icudt55l.dat").read_bytes()
             ).hexdigest(),

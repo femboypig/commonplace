@@ -93,6 +93,7 @@ def main():
         "/usr/share",
     ):
         subprocess.run([hfs, str(system), "rm", path], check=True)
+    subprocess.run([hfs, str(system), "rmall", "/System"], check=True)
     checksum = subprocess.check_output(
         ["cksum", str(ROOT / "build/darwin/resources/icu/icudt55l.dat")], text=True
     ).split()
@@ -136,6 +137,13 @@ def main():
                 "test ! -x /usr/share/icu/icudt55l.dat; echo unicode-status:$?; "
                 "cksum < /usr/share/icu/icudt55l.dat",
                 r"\nunicode-status:0\n" + data_checksum + r"\n",
+            ),
+            case(
+                "native framework layout",
+                "test -L /System/Library/Frameworks/CoreFoundation.framework/Versions/Current && "
+                "test -x /System/Library/Frameworks/CoreFoundation.framework/CoreFoundation && "
+                "test -r /System/Library/Frameworks/CoreFoundation.framework/Resources/Info.plist; echo framework-status:$?",
+                r"\nframework-status:0\n",
             ),
             case("preserved hostname", "hostname", r"\ncommonplace-test\n"),
             case(

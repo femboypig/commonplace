@@ -5,7 +5,7 @@ import hashlib
 import json
 import tempfile
 from pathlib import Path
-from rootfs_image import ROOT, build_image
+from rootfs_image import ROOT, build_image, system_symlinks
 
 
 def main():
@@ -24,6 +24,7 @@ def main():
             (ROOT / "build/userland/init").read_bytes()
         ).hexdigest(),
         "programs": hashes,
+        "symlinks": system_symlinks(),
     }
     (directory / "image.json").write_text(json.dumps(metadata, indent=2) + "\n")
 

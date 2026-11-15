@@ -75,6 +75,7 @@ def prepare(sdk):
     for name in ("assumes.h", "debug_private.h"):
         shutil.copyfile(ROOT / "sources/libc/os" / name, include / "os" / name)
     shutil.copyfile(ROOT / "sources/libc/gen/execinfo.h", include / "execinfo.h")
+    shutil.copyfile(ROOT / "sources/removefile/checkint.h", include / "checkint.h")
     launch = prepare_source("launchd") / "liblaunch"
     headers(launch, include)
     (include / "servers").mkdir(exist_ok=True)
@@ -131,6 +132,8 @@ def prepare(sdk):
         + config.read_text()
     )
     for header in prepare_source("cf").glob("*.h"):
+        if header.name == "TargetConditionals.h":
+            continue  # Upstream supplies this header for its Linux build only.
         destination = include / "CoreFoundation" / header.name
         destination.parent.mkdir(exist_ok=True)
         shutil.copyfile(header, destination)

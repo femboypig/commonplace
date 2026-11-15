@@ -1,0 +1,40 @@
+--- a/CFURLPriv.h
++++ b/CFURLPriv.h
+@@ -35,8 +35,12 @@
+ #include <CoreFoundation/CFDictionary.h>
+ #include <CoreFoundation/CFString.h>
+ #include <CoreFoundation/CFURL.h>
++#if __has_include(<CoreFoundation/CFFileSecurity.h>)
+ #include <CoreFoundation/CFFileSecurity.h>
++#endif
++#if __has_include(<CoreFoundation/CFURLEnumerator.h>)
+ #include <CoreFoundation/CFURLEnumerator.h>
++#endif
+ #include <CoreFoundation/CFDate.h>
+ #if TARGET_OS_MAC
+ #include <sys/mount.h>
+@@ -377,6 +381,7 @@
+ /*
+     The structure where _CFURLCopyFilePropertyValuesAndFlags() returns file resource properties.
+  */
++#if __has_include(<CoreFoundation/CFFileSecurity.h>)
+ struct _CFURLFilePropertyValues {
+     CFStringRef		name;		/* you are responsible for releasing this if you ask for it and get it */
+     uint32_t		linkCount;
+@@ -392,6 +397,7 @@
+     uint8_t		finderInfo[32];
+     CFFileSecurityRef	fileSecurity;	/* you are responsible for releasing this if you ask for it and get it */
+ };
++#endif
+ typedef struct _CFURLFilePropertyValues _CFURLFilePropertyValues;
+ 
+ /*
+@@ -628,6 +634,8 @@
+ 
++#if __has_include(<CoreFoundation/CFURLEnumerator.h>)
+ CF_EXPORT
+ CFURLEnumeratorResult _CFURLEnumeratorGetURLsBulk(CFURLEnumeratorRef enumerator, CFIndex maximumURLs, CFIndex *actualURLs, CFURLRef *urls, CFErrorRef *error) CF_AVAILABLE(10_6, 4_0);
++#endif
+ 
+ // Returns a string describing the bookmark data. For debugging purposes only.
+ CF_EXPORT

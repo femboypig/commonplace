@@ -16,7 +16,7 @@ import subprocess
 import sys
 import tempfile
 from create_disk_image import validate_image, sync_directory
-from rootfs_image import ROOT, system_files
+from rootfs_image import ROOT, system_files, system_symlinks
 
 
 @contextmanager
@@ -49,6 +49,8 @@ def recovery_check(directory, image, update):
                 raise ValueError(
                     "rebuild the recovery image before updating: " + target
                 )
+    if metadata.get("symlinks") != system_symlinks():
+        raise ValueError("rebuild recovery with the current framework layout")
     script = directory / "update.sh"
     commands = ["set -eu", "fsck_hfs -fn -c 16m /dev/rcp1"]
     if update:
@@ -76,6 +78,14 @@ def recovery_check(directory, image, update):
                 f"test ! -e {target} || test -f {target}",
                 f"cp -p {source} {target}",
                 f'test "$(cksum < {source})" = "$(cksum < {target})"',
+            ]
+        for path, link in system_symlinks().items():
+            target = shlex.quote("/tmp/system" + path)
+            commands += [
+                f"test ! -e {target} || test -L {target}",
+                f"rm -f {target}",
+                f"ln -s {shlex.quote(link)} {target}",
+                f"test -L {target} && test -e {target}",
             ]
         commands += ["sync", "umount /tmp/system", "fsck_hfs -fn -c 16m /dev/rcp1"]
     commands.append("echo system-image-verified")
