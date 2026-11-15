@@ -43,6 +43,7 @@ def main():
     platform = prepare_source("libplatform")
     directories = (
         "fbsdcompat",
+        "gen",
         "locale",
         "locale/FreeBSD",
         "stdio",
@@ -101,6 +102,10 @@ def main():
             "gen/dirfd.c",
             "gen/nanosleep.c",
             "util/mkpath_np.c",
+            "util/login_tty.c",
+            "gen/setlogin.c",
+            "gen/NetBSD/utmpx.c",
+            "gen/utmpx-darwin.c",
             "emulated/lutimes.c",
             "gen/devname.c",
             "gen/getvfsbyname.c",
@@ -241,9 +246,9 @@ def main():
     )
     objects.append(
         compile_source(
-            prepare_source("xnu", "libkern/net", "xnu-userland") / "inet_aton.c",
+            source / "net/FreeBSD/inet_addr.c",
             OUT / "obj/net/inet_aton.o",
-            ["-include", "stdlib.h"],
+            flags,
         )
     )
     renames = [
@@ -267,6 +272,13 @@ def main():
     objects.append(
         compile_source(
             ROOT / "userland/darwin/syslog/locking.c", OUT / "obj/syslog/locking.o"
+        )
+    )
+    objects.append(
+        compile_source(
+            ROOT / "sources/xnu/libsyscall/wrappers/getiopolicy_np.c",
+            OUT / "obj/libc-native/getiopolicy_np.o",
+            flags,
         )
     )
     library = OUT / "lib" / "libsystem_c.a"
