@@ -1,0 +1,10 @@
+--- a/init.c
++++ b/init.c
+@@ -219,6 +219,7 @@
+ 	dispatch_atfork_child();
+ 	
+ 	_mach_fork_child();
++	bootstrap_init();
+ 	_libc_fork_child();
+ 
+ #if defined(HAVE_SYSTEM_CORESERVICES)
