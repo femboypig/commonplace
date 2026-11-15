@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Package a QEMU system with a fresh system installation and empty data disk."""
 
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -19,6 +20,13 @@ def digest(path):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--services",
+        action="store_true",
+        help="package the native Apple service system",
+    )
+    options = parser.parse_args()
     subprocess.run(["python3", str(ROOT / "scripts/check-kernel.py")], check=True)
     if subprocess.check_output(
         ["git", "status", "--porcelain"], cwd=ROOT, text=True
@@ -27,7 +35,11 @@ def main():
     revision = subprocess.check_output(
         ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
     ).strip()
-    name = "commonplace-qemu-x86_64-" + revision[:12]
+    name = (
+        "commonplace-services-qemu-x86_64-"
+        if options.services
+        else "commonplace-qemu-x86_64-"
+    ) + revision[:12]
     output = ROOT / "build/releases"
     output.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=output, prefix=".package-") as temporary:
@@ -65,7 +77,15 @@ def main():
         subprocess.run(
             [
                 "python3",
-                str(ROOT / "scripts/create-system-disk.py"),
+                str(
+                    ROOT
+                    / "scripts"
+                    / (
+                        "create-service-image.py"
+                        if options.services
+                        else "create-system-disk.py"
+                    )
+                ),
                 "--path",
                 str(system),
             ],
@@ -73,6 +93,7 @@ def main():
         )
         manifest = {
             "schema": 1,
+            "profile": "apple-services" if options.services else "bootstrap",
             "target": "qemu-q35-x86_64-kvm",
             "revision": revision,
             "immutable": {name: digest(staging / name) for name in (*files, notices)},

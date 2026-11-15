@@ -23,7 +23,10 @@ def boot_state(log):
         "platform_started": "commonplace: q35 bootstrap platform started" in log,
         "root_mounted": any("BSD root: " + name + "," in log for name in ("md0", "cp1"))
         and "hfs: mounted " in log,
-        "init_started": "commonplace init: pid 1\n" in log.replace("\r", "")
+        "init_started": (
+            "commonplace init: pid 1\n" in log.replace("\r", "")
+            or "*** launchd[1] has started up. ***" in log
+        )
         and re.search(rb"[A-Za-z0-9][A-Za-z0-9.-]{0,254}:/ root# ", log.encode())
         is not None,
         "crypto_started": "commonplace: crypto provider started" in log,

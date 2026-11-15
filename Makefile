@@ -2,7 +2,7 @@
 PYTHON ?= python3
 JOBS ?= 2
 
-.PHONY: help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime check-dispatch check-foundation check-corefoundation check-service-runtime userland rootfs boot-init boot-console boot-recovery system-disk check-system check-hfs check-mount check-newfs check-admin-runtime update-system check-update disk-image check-storage check-storage-reliability package test
+.PHONY: package-services darwin-services service-image boot-services check-launchd help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime check-dispatch check-foundation check-corefoundation check-service-runtime userland rootfs boot-init boot-console boot-recovery system-disk check-system check-hfs check-mount check-newfs check-admin-runtime update-system check-update disk-image check-storage check-storage-reliability package test
 help:
 	@printf '%s\n' 'commonplace — darwin/x86_64' \
 	  'make doctor       check host tools and virtualization' \
@@ -26,6 +26,9 @@ help:
 	  'make check-foundation verify native math and ICU Unicode APIs' \
 	  'make check-corefoundation verify native property lists, streams and run loops' \
 	  'make check-service-runtime verify native ASL records and Mach notifications' \
+	  'make service-image build the native Apple launchd system on a separate disk' \
+	  'make boot-services boot Apple launchd, notifyd and syslogd' \
+	  'make check-launchd verify native services and persistent system logging' \
 	  'make boot-init    require PID 1 and exercise the serial console' \
 	  'make boot-console attach this terminal to the guest (Ctrl-A X exits)' \
 	  'make boot-recovery boot the RAM recovery root' \
@@ -40,6 +43,7 @@ help:
 	  'make disk-image   create the persistent data disk without replacing it' \
 	  'make check-storage verify persistence across poweroff and reboot' \
 	  'make check-storage-reliability verify crash recovery and full disks' \
+	  'make package-services package the native Apple service system' \
 	  'make package      package a ready-to-run QEMU system' \
 	  'make test         run targeted regression tests'
 
@@ -123,6 +127,27 @@ darwin-userland: darwin-libraries
 	$(PYTHON) scripts/build-darwin-commands.py
 	$(PYTHON) scripts/build-darwin-bash.py
 
+# These targets use Apple's published service manager and isolated system image.
+darwin-services: userland
+	$(PYTHON) scripts/build-darwin-bsm.py
+	$(PYTHON) scripts/build-darwin-iokit.py
+	$(PYTHON) scripts/build-darwin-dnssd.py
+	$(PYTHON) scripts/build-darwin-readline.py
+	$(PYTHON) scripts/build-darwin-launchd.py
+	$(PYTHON) scripts/build-darwin-launchctl.py
+	$(PYTHON) scripts/build-darwin-notifyd.py
+	$(PYTHON) scripts/build-darwin-syslogd.py
+
+service-image: darwin-services rootfs-tools
+	$(PYTHON) scripts/create-service-image.py
+
+boot-services: loader check-kernel service-image disk-image
+	$(PYTHON) scripts/console-qemu.py --system-disk build/disks/services.hfs
+
+check-launchd: loader check-kernel darwin-services rootfs-tools
+	$(PYTHON) scripts/check-launchd.py
+
+
 userland: darwin-userland
 	$(PYTHON) scripts/build-userland.py
 
@@ -188,6 +213,9 @@ check-storage: loader check-kernel rootfs
 
 check-storage-reliability: loader check-kernel rootfs
 	$(PYTHON) scripts/check-storage-reliability.py
+
+package-services: loader check-kernel rootfs darwin-services
+	$(PYTHON) scripts/package-qemu.py --services
 
 package: loader check-kernel rootfs
 	$(PYTHON) scripts/package-qemu.py

@@ -3,6 +3,7 @@
 
 import argparse
 import os
+from pathlib import Path
 from qemu_machine import (
     ROOT,
     KERNEL,
@@ -20,14 +21,16 @@ def main():
     parser.add_argument(
         "--recovery", action="store_true", help="boot the RAM recovery root"
     )
+    parser.add_argument("--system-disk", type=Path, default=SYSTEM_DISK)
     options = parser.parse_args()
+    system_disk = options.system_disk.resolve()
     if not 512 <= options.memory <= 8192:
         parser.error("memory must be 512..8192 MiB")
     required = (
         LOADER,
         KERNEL,
         DATA_DISK,
-        ROOT_IMAGE if options.recovery else SYSTEM_DISK,
+        ROOT_IMAGE if options.recovery else system_disk,
     )
     for path in required:
         if not path.is_file():
@@ -41,7 +44,7 @@ def main():
         options.memory,
         DATA_DISK.relative_to(ROOT),
         bounded=False,
-        system_disk=SYSTEM_DISK.relative_to(ROOT) if SYSTEM_DISK.is_file() else None,
+        system_disk=system_disk if system_disk.is_file() else None,
         disk_root=not options.recovery,
     ) + ["-serial", "mon:stdio"]
     os.execvp(command[0], command)
