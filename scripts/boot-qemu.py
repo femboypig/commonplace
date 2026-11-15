@@ -27,7 +27,7 @@ def boot_state(log):
             "commonplace init: pid 1\n" in log.replace("\r", "")
             or "*** launchd[1] has started up. ***" in log
         )
-        and re.search(rb"[A-Za-z0-9][A-Za-z0-9.-]{0,254}:/ root# ", log.encode())
+        and SerialProbe.prompt.search(log.encode())
         is not None,
         "crypto_started": "commonplace: crypto provider started" in log,
         "waiting_for_root": "Still waiting for root device" in log,

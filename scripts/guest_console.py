@@ -8,7 +8,7 @@ import select
 import subprocess
 import time
 
-PROMPT = rb"[A-Za-z0-9][A-Za-z0-9.-]{0,254}:/ root# "
+PROMPT = rb"[A-Za-z0-9][A-Za-z0-9.-]{0,254}:[^\n]{1,1024}? root# "
 
 
 class Console:
@@ -44,13 +44,30 @@ class Console:
                     raise
                 data = b""
             if not data:
-                raise RuntimeError(
-                    "guest console closed before the expected response"
-                )
+                raise RuntimeError("guest console closed before the expected response")
             self.log.write(data)
             self.log.flush()
             self.pending += data.replace(b"\r", b"")
         raise TimeoutError("guest console timed out: " + repr(self.pending[-512:]))
+
+    def sendline(self, text):
+        os.write(self.master, (text + "\n").encode())
+
+    def login(self, username, password, prompt=PROMPT, seconds=180):
+        self.expect(rb"login: ", seconds=seconds)
+        self.sendline(username)
+        self.expect(rb"Password:")
+        self.sendline(password)
+        return self.expect(prompt)
+
+    def change_password(self, password, old=None):
+        if old is not None:
+            self.expect(rb"Old password:")
+            self.sendline(old)
+        self.expect(rb"New password:")
+        self.sendline(password)
+        self.expect(rb"Retype new password:")
+        self.sendline(password)
 
     def command(self, text, expected):
         os.write(self.master, (text + "\n").encode())
