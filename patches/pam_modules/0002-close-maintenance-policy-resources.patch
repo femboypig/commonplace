@@ -1,0 +1,43 @@
+--- a/modules/pam_nologin/pam_nologin.c
++++ b/modules/pam_nologin/pam_nologin.c
+@@ -84,6 +84,7 @@
+        if ((pam_get_user(pamh, &username, NULL) != PAM_SUCCESS)
+            || !username) {
+ 		   openpam_log(PAM_LOG_ERROR, "Failed to obtain the username.");
++         close(fd);
+          return PAM_SERVICE_ERR;
+        }
+        if (getpwnam_r(username, &pwdbuf, pwbuffer, sizeof(pwbuffer), &user_pwd) != 0) {
+@@ -106,16 +107,20 @@
+        /* fill in message buffer with contents of /etc/nologin */
+ 	   if (fstat(fd, &st) < 0) {/* give up trying to display message */
+ 		   openpam_log(PAM_LOG_DEBUG, "Failure displaying the message.");
++		   close(fd);
+ 		   return retval;
+ 	   }
+        message.msg = mtmp = malloc(st.st_size+1);
+        /* if malloc failed... */
+ 	   if (!message.msg){
+ 		   openpam_log(PAM_LOG_DEBUG, "The message is empty.");
++		   close(fd);
+ 		   return retval;
+ 	   }
+-       read(fd, mtmp, st.st_size);
+-       mtmp[st.st_size] = '\000';
++       ssize_t size = read(fd, mtmp, st.st_size);
++       close(fd);
++       if (size < 0) { free(mtmp); return PAM_SYSTEM_ERR; }
++       mtmp[size] = '\000';
+ 
+        /* Use conversation function to give user contents of /etc/nologin */
+        pam_get_item(pamh, PAM_CONV, (const void **)&conversation);
+@@ -124,7 +129,9 @@
+        free(mtmp);
+        if (NULL != resp && NULL != resp->resp) {
+          memset(resp->resp, 0, strlen(resp->resp));
++         free(resp->resp);
+        }
++       free(resp);
+      }
+ 
+      return retval;

@@ -79,6 +79,14 @@ static void check_identity(void)
     puts("native user credentials: identity, groups and privilege separation passed");
 }
 
+static int open_descriptors(void)
+{
+    int count = 0;
+    for (int fd = 0; fd < getdtablesize(); ++fd)
+        count += fcntl(fd, F_GETFD) != -1;
+    return count;
+}
+
 int main(int argc, char **argv)
 {
     if (argc == 2 && strcmp(argv[1], "--identity") == 0)
@@ -100,6 +108,10 @@ int main(int argc, char **argv)
     CHECK(close(fd) == 0);
     check_account("tester", PAM_AUTH_ERR);
     check_account("root", PAM_SUCCESS);
+    int descriptors = open_descriptors();
+    for (unsigned attempt = 0; attempt < 64; ++attempt)
+        check_account("tester", PAM_AUTH_ERR);
+    CHECK(open_descriptors() == descriptors);
     CHECK(unlink("/etc/nologin") == 0);
     check_account("tester", PAM_SUCCESS);
     puts("native login policy: authentication, locked accounts, expiration and maintenance passed");
