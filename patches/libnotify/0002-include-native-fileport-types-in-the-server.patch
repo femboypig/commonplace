@@ -1,0 +1,10 @@
+--- a/notifyd/notify_proc.c
++++ b/notifyd/notify_proc.c
+@@ -32,6 +32,7 @@
+ #include <sys/sysctl.h>
+ #include <pthread.h>
+ #include <sys/fcntl.h>
++#include <sys/fileport.h>
+ #include <dispatch/private.h>
+ #include "notify.h"
+ #include "notifyd.h"
