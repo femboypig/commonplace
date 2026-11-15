@@ -330,6 +330,19 @@
       "revision": "b2643246fb0f9cda5da5c0411f3c3cb72c9116af",
       "url": "https://codeload.github.com/apple-oss-distributions/syslog/tar.gz/b2643246fb0f9cda5da5c0411f3c3cb72c9116af",
       "sha256": "31d0f921b06dd1be49c982791233a4fd7528f00d2ecbf484a0159ea5294d76e9"
+    },
+    "patch_cmds": {
+      "repository": "apple-oss-distributions/patch_cmds",
+      "tag": "patch_cmds-66",
+      "revision": "19930c6023565f5d6b6aeb1379e0b74f4f543d61",
+      "url": "https://codeload.github.com/apple-oss-distributions/patch_cmds/tar.gz/19930c6023565f5d6b6aeb1379e0b74f4f543d61",
+      "sha256": "9e0e2b12be542f962dbefa6bcfd4130975e7fb56b5ea79ce6be3bd9998e68def"
+    },
+    "libutil_numbers": {
+      "repository": "apple-oss-distributions/libutil",
+      "revision": "0f4264d617b0a94d8905521fa444e2aa215f0a4d",
+      "url": "https://codeload.github.com/apple-oss-distributions/libutil/tar.gz/0f4264d617b0a94d8905521fa444e2aa215f0a4d",
+      "sha256": "5fed21778113a7dfba7cc4fa54b793c3625399c0c86968a35c56d53ab4e8e8f7"
     }
   }
 }

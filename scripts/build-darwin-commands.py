@@ -21,6 +21,13 @@ def main():
     for name, configuration in registry["programs"].items():
         if Path(name).name != name:
             raise ValueError("invalid command name: " + name)
+        includes = []
+        for project in configuration.get("include_projects", []):
+            if project not in revisions:
+                raise ValueError("unknown command include project: " + project)
+            if project not in sources:
+                sources[project] = prepare_source(project)
+            includes.append("-I" + str(sources[project]))
         objects = []
         for relative in configuration["sources"]:
             path = Path(relative)
@@ -37,6 +44,7 @@ def main():
                         "-Wno-deprecated-non-prototype",
                         "-Wno-deprecated-declarations",
                         *configuration.get("flags", []),
+                        *includes,
                     ],
                 )
             )

@@ -375,6 +375,19 @@
       "sources": [
         "shell_cmds/chroot/chroot.c"
       ]
+    },
+    "cmp": {
+      "sources": [
+        "patch_cmds/cmp/cmp.c",
+        "patch_cmds/cmp/link.c",
+        "patch_cmds/cmp/misc.c",
+        "patch_cmds/cmp/regular.c",
+        "patch_cmds/cmp/special.c",
+        "libutil_numbers/expand_number.c"
+      ],
+      "include_projects": [
+        "libutil_numbers"
+      ]
     }
   }
 }
