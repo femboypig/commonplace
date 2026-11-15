@@ -370,6 +370,11 @@
       "sources": [
         "file_cmds/chown/chown.c"
       ]
+    },
+    "chroot": {
+      "sources": [
+        "shell_cmds/chroot/chroot.c"
+      ]
     }
   }
 }
