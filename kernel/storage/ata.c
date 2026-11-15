@@ -38,13 +38,39 @@ static int wait_status(unsigned required, int completion, int check_error)
             if ((status & required) == required && (!completion || !(status & ATA_DRQ)))
                 return 0;
         }
-        if (mach_absolute_time() >= deadline) {
+        if (mach_absolute_time() >= deadline)
+        {
             printf("commonplace: ATA timeout status=0x%x select=0x%x required=0x%x completion=%d\n",
                    status, inb(ATA_DRIVE), required, completion);
             return ETIMEDOUT;
         }
         IOSleep(1);
     }
+}
+
+/* A complete 512-byte data phase follows each successful DRQ check. */
+static void read_sector(void *data)
+{
+    /* INS may consume port data before a destination fault (Intel SDM, vol. 2A).
+     * Use a touched, wired kernel-stack buffer, then copy to the I/O mapping. */
+    u_int16_t sector[256];
+    void *destination = sector;
+    unsigned long words = 256;
+    bzero(sector, sizeof(sector));
+    __asm__ volatile("cld; rep insw"
+                     : "+D"(destination), "+c"(words)
+                     : "d"((u_int16_t)ATA_DATA)
+                     : "memory");
+    memcpy(data, sector, sizeof(sector));
+}
+
+static void write_sector(const void *data)
+{
+    unsigned long words = 256;
+    __asm__ volatile("cld; rep outsw"
+                     : "+S"(data), "+c"(words)
+                     : "d"((u_int16_t)ATA_DATA)
+                     : "memory");
 }
 
 static void select_sector(unsigned unit, u_int32_t sector)
@@ -85,8 +111,7 @@ int commonplace_ata_probe(unsigned unit, u_int32_t *sectors)
     if (inb(ATA_LBA + 1) || inb(ATA_LBA + 2))
         return ENOTSUP; /* Not ATAPI. */
     u_int16_t identity[256];
-    for (unsigned i = 0; i < 256; ++i)
-        identity[i] = inw(ATA_DATA);
+    read_sector(identity);
     error = wait_status(0, 1, 1);
     if (error)
         return error;
@@ -119,18 +144,11 @@ int commonplace_ata_transfer(unsigned unit, u_int32_t sector, unsigned count, vo
         error = wait_status(ATA_DRQ, 0, 1);
         if (error)
             return error;
-        for (unsigned i = 0; i < 256; ++i)
-        {
-            if (writing)
-                outw(ATA_DATA, (u_int16_t)bytes[0] | (u_int16_t)bytes[1] << 8);
-            else
-            {
-                u_int16_t value = inw(ATA_DATA);
-                bytes[0] = value & 255;
-                bytes[1] = value >> 8;
-            }
-            bytes += 2;
-        }
+        if (writing)
+            write_sector(bytes);
+        else
+            read_sector(bytes);
+        bytes += 512;
         error = wait_status(0, 1, 1);
         if (error)
             return error;
