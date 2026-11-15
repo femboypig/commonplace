@@ -39,6 +39,7 @@ def prepare(sdk):
     )
     for name in (
         "aio.h",
+        "poll.h",
         "times.h",
         "utsname.h",
         "timeb.h",
