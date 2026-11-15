@@ -1,0 +1,28 @@
+--- a/mount_hfs/mount_hfs.c
++++ b/mount_hfs/mount_hfs.c
+@@ -194,18 +194,21 @@
+ */
+ const char *rawdevice(const char *path)
+ {
+-	const char *devdisk = "/dev/disk";
++	const char *devdisk = "/dev/";
++	struct stat device_stat, raw_stat;
+ 	static char raw[MAXPATHLEN];
+ 
+-	if (!strncmp(path, devdisk, strlen(devdisk))) {
+-		/* The +5 below is strlen("/dev/"), so path+5 points to "disk..." */
++	if (!strncmp(path, devdisk, strlen(devdisk)) &&
++	    stat(path, &device_stat) == 0 && S_ISBLK(device_stat.st_mode)) {
++		/* BSD raw device names prepend r to the block device basename. */
+ 		int sn_len = snprintf(raw, sizeof(raw), "/dev/r%s", path+5);
+ 		if (sn_len < 0) {
+ 			/* error in building string. return original. */
+ 			return path;
+ 		}
+ 
+-		if ((unsigned long) sn_len < sizeof(raw)) {
++		if ((unsigned long) sn_len < sizeof(raw) &&
++		    stat(raw, &raw_stat) == 0 && S_ISCHR(raw_stat.st_mode)) {
+ 			return raw;
+ 		}
+ 	}
