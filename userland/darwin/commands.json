@@ -360,6 +360,11 @@
         "diskdev_cmds/umount.tproj/umount.c",
         "diskdev_cmds/disklib/vfslist.c"
       ]
+    },
+    "fsck": {
+      "sources": [
+        "diskdev_cmds/fsck.tproj/fsck.c"
+      ]
     }
   }
 }
