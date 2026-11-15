@@ -76,6 +76,32 @@ def compile_source(source, output, flags=()):
     return output
 
 
+def link_program(output, objects, libraries=()):
+    output.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(
+        [
+            str(LD),
+            "-L" + str(OUT / "system"),
+            "-Z",
+            "-fatal_warnings",
+            "-arch",
+            "x86_64",
+            "-macosx_version_min",
+            "10.11",
+            "-e",
+            "_main",
+            "-no_uuid",
+            "-dead_strip",
+            "-o",
+            str(output),
+            *map(str, objects),
+            *map(str, libraries),
+            str(OUT / "system/libSystem.B.dylib"),
+        ],
+        check=True,
+    )
+
+
 def archive(output, objects):
     output.parent.mkdir(parents=True, exist_ok=True)
     stamp = output.with_suffix(".members.json")
