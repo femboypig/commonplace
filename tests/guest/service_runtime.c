@@ -1,9 +1,13 @@
+#include <arpa/inet.h>
 #include <asl.h>
 #include <asl_core.h>
 #include <asl_file.h>
 #include <asl_private.h>
 #include <dispatch/dispatch.h>
 #include <fcntl.h>
+#include <mach/mach.h>
+#include <mach/task_special_ports.h>
+#include <netdb.h>
 #include <notify.h>
 #include <os/assumes.h>
 #include <stdio.h>
@@ -43,6 +47,73 @@ static void runtime_primitives(void)
     CHECK((first[6] & 0xf0) == 0x40 && (first[8] & 0xc0) == 0x80);
     CHECK(uuid_compare(first, second) != 0);
     puts("native runtime primitives: Mach-O diagnostic redirection and UUID generation passed");
+}
+
+static void bootstrap_fork(void)
+{
+    mach_port_t original, port;
+    CHECK(task_get_bootstrap_port(mach_task_self(), &original) == KERN_SUCCESS);
+    CHECK(mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &port) == KERN_SUCCESS);
+    CHECK(mach_port_insert_right(mach_task_self(), port, port, MACH_MSG_TYPE_MAKE_SEND) ==
+          KERN_SUCCESS);
+    CHECK(task_set_bootstrap_port(mach_task_self(), port) == KERN_SUCCESS);
+    pid_t child = fork();
+    CHECK(child >= 0);
+    if (child == 0)
+    {
+        mach_port_t inherited;
+        CHECK(task_get_bootstrap_port(mach_task_self(), &inherited) == KERN_SUCCESS);
+        CHECK(inherited != MACH_PORT_NULL && bootstrap_port == inherited);
+        mach_msg_header_t message = {.msgh_bits = MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND, 0),
+                                     .msgh_size = sizeof(message),
+                                     .msgh_remote_port = inherited,
+                                     .msgh_id = 12345};
+        CHECK(mach_msg(&message, MACH_SEND_MSG | MACH_SEND_TIMEOUT, sizeof(message), 0,
+                       MACH_PORT_NULL, 1000, MACH_PORT_NULL) == MACH_MSG_SUCCESS);
+        _exit(0);
+    }
+    CHECK(task_set_bootstrap_port(mach_task_self(), original) == KERN_SUCCESS);
+    int status;
+    CHECK(waitpid(child, &status, 0) == child && WIFEXITED(status) && WEXITSTATUS(status) == 0);
+    struct
+    {
+        mach_msg_header_t header;
+        mach_msg_trailer_t trailer;
+    } message;
+    CHECK(mach_msg(&message.header, MACH_RCV_MSG | MACH_RCV_TIMEOUT, 0, sizeof(message), port, 1000,
+                   MACH_PORT_NULL) == MACH_MSG_SUCCESS);
+    CHECK(message.header.msgh_id == 12345);
+    CHECK(mach_port_destroy(mach_task_self(), port) == KERN_SUCCESS);
+    if (original != MACH_PORT_NULL)
+        CHECK(mach_port_deallocate(mach_task_self(), original) == KERN_SUCCESS);
+    puts("native bootstrap: fork refreshes the inherited task namespace");
+}
+
+static void address_lookups(void)
+{
+    struct addrinfo hints = {.ai_family = AF_INET,
+                             .ai_socktype = SOCK_STREAM,
+                             .ai_flags = AI_NUMERICHOST | AI_NUMERICSERV};
+    struct addrinfo *addresses = NULL;
+    CHECK(getaddrinfo("127.0.0.1", "12345", &hints, &addresses) == 0);
+    CHECK(addresses && addresses->ai_family == AF_INET);
+    struct sockaddr_in *v4 = (struct sockaddr_in *)addresses->ai_addr;
+    CHECK(ntohs(v4->sin_port) == 12345 && ntohl(v4->sin_addr.s_addr) == INADDR_LOOPBACK);
+    freeaddrinfo(addresses);
+    hints.ai_family = AF_INET6;
+    CHECK(getaddrinfo("::1", "4321", &hints, &addresses) == 0);
+    CHECK(addresses && addresses->ai_family == AF_INET6);
+    struct sockaddr_in6 *v6 = (struct sockaddr_in6 *)addresses->ai_addr;
+    CHECK(ntohs(v6->sin6_port) == 4321 && IN6_IS_ADDR_LOOPBACK(&v6->sin6_addr));
+    freeaddrinfo(addresses);
+    hints.ai_family = AF_INET;
+    hints.ai_flags = AI_NUMERICSERV;
+    CHECK(getaddrinfo("localhost", "80", &hints, &addresses) == 0 && addresses);
+    freeaddrinfo(addresses);
+    hints.ai_flags |= AI_NUMERICHOST;
+    CHECK(getaddrinfo("not-a-numeric-host", "80", &hints, &addresses) == EAI_NONAME);
+    CHECK(strcmp(gai_strerror(EAI_NONAME), "Unknown error") != 0);
+    puts("native address lookup: IPv4, IPv6, host files and invalid input passed");
 }
 
 static void notifications(void)
@@ -129,6 +200,8 @@ int main(int argc, char **argv)
         return 0;
     }
     runtime_primitives();
+    bootstrap_fork();
+    address_lookups();
     notifications();
     records(argv[1], 1);
     pid_t child = fork();
