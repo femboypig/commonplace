@@ -2,7 +2,7 @@
 PYTHON ?= python3
 JOBS ?= 2
 
-.PHONY: check-maintenance-failures check-recovery check-service-update check-login package-services darwin-services service-image boot-services check-launchd help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime check-dispatch check-foundation check-corefoundation check-service-runtime userland rootfs boot-init boot-console boot-recovery system-disk check-system check-hfs check-mount check-newfs check-admin-runtime update-system check-update disk-image check-storage check-storage-reliability package test
+.PHONY: check-ata-transfer check-maintenance-failures check-recovery check-service-update check-login package-services darwin-services service-image boot-services check-launchd help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime check-dispatch check-foundation check-corefoundation check-service-runtime userland rootfs boot-init boot-console boot-recovery system-disk check-system check-hfs check-mount check-newfs check-admin-runtime update-system check-update disk-image check-storage check-storage-reliability package test
 help:
 	@printf '%s\n' 'commonplace — darwin/x86_64' \
 	  'make doctor       check host tools and virtualization' \
@@ -40,6 +40,7 @@ help:
 	  'make check-service-update verify service updates with preserved users' \
 	  'make check-recovery verify password recovery and HFS+ crash repair' \
 	  'make check-maintenance-failures verify interrupted and rejected operations' \
+	  'make check-ata-transfer verify raw sectors and transfer timings' \
 	  'make check-hfs    verify native HFS checking and repair' \
 	  'make check-mount  verify native Apple mount and unmount commands' \
 	  'make check-newfs  verify native HFS formatting and normalization' \
@@ -191,6 +192,9 @@ check-recovery: loader check-kernel darwin-services rootfs
 
 check-maintenance-failures: loader check-kernel darwin-services rootfs
 	$(PYTHON) scripts/check-maintenance-failures.py
+
+check-ata-transfer: loader check-kernel rootfs
+	$(PYTHON) scripts/check-ata-transfer.py
 
 check-hfs: loader check-kernel rootfs
 	$(PYTHON) scripts/check-hfs.py
