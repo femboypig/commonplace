@@ -170,7 +170,7 @@ def main():
                 ],
             )
         )
-    for name in ("udivti3", "udivmodti4", "umodti3"):
+    for name in ("udivti3", "udivmodti4", "umodti3", "gcc_personality_v0", "int_util"):
         objects.append(
             compile_source(
                 ROOT / "sources/compiler_rt/lib/builtins" / (name + ".c"),
@@ -185,6 +185,13 @@ def main():
                 [*flags, "-fblocks"],
             )
         )
+    objects.append(
+        compile_source(
+            source / "net/FreeBSD/recv.c",
+            OUT / "obj/libc/recv.o",
+            [*flags, "-DVARIANT_CANCELABLE=1"],
+        )
+    )
     for path in sorted((platform / "src/string/generic").glob("*.c")):
         objects.append(
             compile_source(
@@ -194,6 +201,7 @@ def main():
             )
         )
     for name in (
+        "gen_uuid.c",
         "clear.c",
         "compare.c",
         "copy.c",

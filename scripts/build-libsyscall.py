@@ -81,6 +81,7 @@ def main():
         "cancelable/sigsuspend-cancel.c",
         "cancelable/sigsuspend.c",
         "guarded_open_np.c",
+        "gethostuuid.c",
         "mach_approximate_time.c",
         "setpriority.c",
         "rmdir.c",

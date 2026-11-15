@@ -48,6 +48,8 @@ def prepare(sdk):
         "csr.h",
         "codesign.h",
         "guarded.h",
+        "fileport.h",
+        "reboot.h",
     ):
         shutil.copyfile(ROOT / "sources/xnu/bsd/sys" / name, include / "sys" / name)
     (include / "System/machine").mkdir(parents=True, exist_ok=True)
@@ -61,6 +63,7 @@ def prepare(sdk):
     for directory, name in (
         ("System/sys", "content_protection.h"),
         ("Kernel/sys", "decmpfs.h"),
+        ("System/sys", "fileport.h"),
     ):
         (include / directory).mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / "sources/xnu/bsd/sys" / name, include / directory / name)
