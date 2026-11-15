@@ -68,6 +68,7 @@ def system_files():
 
 def system_resources():
     return {
+        "/usr/share/commonplace/profile": ROOT / "userland/darwin/profile",
         "/usr/share/icu/icudt55l.dat": ROOT / "build/darwin/resources/icu/icudt55l.dat",
         "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Resources/Info.plist": ROOT
         / "build/darwin/resources/CoreFoundation/Info.plist",
