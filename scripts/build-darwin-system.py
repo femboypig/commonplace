@@ -79,6 +79,7 @@ def main():
         "libsystem_info_file.a",
         "libsystem_bootstrap.a",
         "libsystem_launch.a",
+        "libsystem_notify.a",
         "libsystem_diagnostics.a",
         "libsystem_c.a",
         "libsystem_m.a",

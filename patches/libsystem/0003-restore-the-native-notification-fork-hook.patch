@@ -1,0 +1,10 @@
+--- a/init.c
++++ b/init.c
+@@ -225,6 +225,7 @@
+ 	_libcoreservices_fork_child();
+ #endif
+ 
++	_notify_fork_child();
+ 
+ 	_pthread_fork_child_postinit();
+ }

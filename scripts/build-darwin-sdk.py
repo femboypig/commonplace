@@ -79,6 +79,8 @@ def prepare(sdk):
     headers(launch, include)
     (include / "servers").mkdir(exist_ok=True)
     shutil.copyfile(launch / "bootstrap.h", include / "servers/bootstrap.h")
+    for name in ("notify.h", "notify_keys.h", "notify_private.h"):
+        shutil.copyfile(ROOT / "sources/libnotify" / name, include / name)
     dispatch = ROOT / "sources/libdispatch"
     headers(dispatch / "dispatch", include / "dispatch")
     headers(

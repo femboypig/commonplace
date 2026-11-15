@@ -267,6 +267,13 @@
       "revision": "49a9c79b2949192dfca697b1054245cdfb645788",
       "url": "https://codeload.github.com/apple-oss-distributions/launchd/tar.gz/49a9c79b2949192dfca697b1054245cdfb645788",
       "sha256": "b60f6a86e6c9e7faf10f10c9a62cad7aa16bc5fe7f709b994957bc2e65ac0074"
+    },
+    "libnotify": {
+      "repository": "apple-oss-distributions/Libnotify",
+      "tag": "Libnotify-121.20.1",
+      "revision": "3968b5b6c9cecee556e2663905e01c87ff4a40ad",
+      "url": "https://codeload.github.com/apple-oss-distributions/Libnotify/tar.gz/3968b5b6c9cecee556e2663905e01c87ff4a40ad",
+      "sha256": "8f37fed8c681fbe923bee42aaf2628832f0b3ec6f3e3c21f3b01d8507f192068"
     }
   }
 }

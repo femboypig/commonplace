@@ -107,6 +107,7 @@ darwin-libraries: darwin-sdk
 	$(PYTHON) scripts/build-darwin-dispatch.py
 	$(PYTHON) scripts/build-darwin-bootstrap.py
 	$(PYTHON) scripts/build-darwin-launch.py
+	$(PYTHON) scripts/build-darwin-notify.py
 	$(PYTHON) scripts/build-darwin-diagnostics.py
 	$(PYTHON) scripts/build-darwin-macho.py
 	$(PYTHON) scripts/build-darwin-system.py

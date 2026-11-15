@@ -1,0 +1,10 @@
+--- a/notify_client.c
++++ b/notify_client.c
+@@ -28,6 +28,7 @@
+ #include <unistd.h>
+ #include <signal.h>
+ #include <sys/socket.h>
++#include <sys/fileport.h>
+ #include <netinet/in.h>
+ #include <sys/un.h>
+ #include <sys/ipc.h>
