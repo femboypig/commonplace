@@ -1,0 +1,11 @@
+--- a/src/launchctl.c
++++ b/src/launchctl.c
+@@ -47,6 +47,8 @@
+ #include <sys/sysctl.h>
+ #include <sys/stat.h>
+ #include <sys/socket.h>
++#include <sys/ioctl.h>
++#include <sys/sockio.h>
+ #ifndef SO_EXECPATH
+ /* This is just so it's easy for me to compile launchctl without buildit. */
+ 	#define SO_EXECPATH 0x1085

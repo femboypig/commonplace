@@ -1,0 +1,11 @@
+--- a/src/vproc_internal.h
++++ b/src/vproc_internal.h
+@@ -44,7 +44,7 @@
+ 	int32_t vp_shmem_flags;
+ };
+ 
+-#ifdef protocol_vproc_MSG_COUNT
++#ifdef _protocol_vproc_server_
+ /* HACK */
+ #include "launchd_core_logic.h"
+ #endif

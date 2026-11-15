@@ -1,0 +1,17 @@
+--- a/src/config.h
++++ b/src/config.h
+@@ -1,8 +1,8 @@
+ #ifndef __CONFIG_H__
+ #define __CONFIG_H__
+-#include <TargetConfig.h>
+-#define HAVE_QUARANTINE TARGET_HAVE_QUARANTINE
+-#define HAVE_SANDBOX TARGET_HAVE_SANDBOX
+-#define HAVE_SECURITY !TARGET_HAVE_EMBEDDED_SECURITY
+-#define HAVE_LIBAUDITD !TARGET_OS_EMBEDDED
+-#endif /* __CONFIG_H__ */
++#include <TargetConditionals.h>
++#define HAVE_QUARANTINE __has_include(<quarantine.h>)
++#define HAVE_SANDBOX __has_include(<sandbox.h>)
++#define HAVE_SECURITY 0
++#define HAVE_LIBAUDITD (__has_include(<bsm/auditd_lib.h>) && __has_include(<bsm/audit_session.h>))
++#endif

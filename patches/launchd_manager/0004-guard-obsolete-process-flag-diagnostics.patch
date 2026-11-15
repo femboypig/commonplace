@@ -1,0 +1,36 @@
+--- a/src/launchd_runtime.c
++++ b/src/launchd_runtime.c
+@@ -227,21 +227,33 @@
+ 		else FLAGIF(P_SYSTEM)
+ 		else FLAGIF(P_TIMEOUT)
+ 		else FLAGIF(P_TRACED)
++
++#ifdef P_RESV3
+ 		else FLAGIF(P_RESV3)
++#endif
+ 		else FLAGIF(P_WEXIT)
+ 		else FLAGIF(P_EXEC)
+ 		else FLAGIF(P_OWEUPC)
+ 		else FLAGIF(P_AFFINITY)
+ 		else FLAGIF(P_TRANSLATED)
++
++#ifdef P_RESV5
+ 		else FLAGIF(P_RESV5)
++#endif
+ 		else FLAGIF(P_CHECKOPENEVT)
+ 		else FLAGIF(P_DEPENDENCY_CAPABLE)
+ 		else FLAGIF(P_REBOOT)
++
++#ifdef P_TBE
+ 		else FLAGIF(P_TBE)
++#endif
+ 		else FLAGIF(P_RESV7)
+ 		else FLAGIF(P_THCWD)
+ 		else FLAGIF(P_RESV9)
++
++#ifdef P_RESV10
+ 		else FLAGIF(P_RESV10)
++#endif
+ 		else FLAGIF(P_RESV11)
+ 		else FLAGIF(P_NOSHLIB)
+ 		else FLAGIF(P_FORCEQUOTA)
