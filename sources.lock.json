@@ -260,6 +260,13 @@
       "revision": "423cd697a0961a8eb8eccb38a6d60bf6dfd4f50f",
       "url": "https://codeload.github.com/apple-oss-distributions/Libc/tar.gz/423cd697a0961a8eb8eccb38a6d60bf6dfd4f50f",
       "sha256": "582d962a21ee6e81dcf0dcc87eb24fd7134074e679698f6324f8baf74644301f"
+    },
+    "launchd": {
+      "repository": "apple-oss-distributions/launchd",
+      "tag": "launchd-842.92.1",
+      "revision": "49a9c79b2949192dfca697b1054245cdfb645788",
+      "url": "https://codeload.github.com/apple-oss-distributions/launchd/tar.gz/49a9c79b2949192dfca697b1054245cdfb645788",
+      "sha256": "b60f6a86e6c9e7faf10f10c9a62cad7aa16bc5fe7f709b994957bc2e65ac0074"
     }
   }
 }

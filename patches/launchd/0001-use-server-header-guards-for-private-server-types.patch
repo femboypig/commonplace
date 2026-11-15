@@ -1,0 +1,11 @@
+--- a/liblaunch/vproc_internal.h
++++ b/liblaunch/vproc_internal.h
+@@ -36,7 +36,7 @@
+ typedef pid_t * pid_array_t;
+ typedef mach_port_t vproc_mig_t;
+ 
+-#if defined(job_MSG_COUNT) || defined (xpc_domain_MSG_COUNT)
++#if defined(_job_server_) || defined(_xpc_domain_server_)
+ /* HACK */
+ #include "core.h"
+ #endif

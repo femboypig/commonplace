@@ -1,0 +1,18 @@
+--- a/init.c
++++ b/init.c
+@@ -26,6 +26,7 @@
+  * @APPLE_OSREFERENCE_LICENSE_HEADER_END@
+  */
+ 
++#include <bootstrap_priv.h>
+ #include <TargetConditionals.h>	// for TARGET_OS_*
+ 
+ #include <stddef.h>
+@@ -142,6 +143,7 @@
+ 	};
+ 
+ 	__libkernel_init(&libkernel_funcs, envp, apple, vars);
++	bootstrap_init();
+ 
+ 	__libplatform_init(NULL, envp, apple, vars);
+ 	__pthread_init(&libpthread_funcs, envp, apple, vars);

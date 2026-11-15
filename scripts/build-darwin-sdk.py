@@ -75,6 +75,10 @@ def prepare(sdk):
     for name in ("assumes.h", "debug_private.h"):
         shutil.copyfile(ROOT / "sources/libc/os" / name, include / "os" / name)
     shutil.copyfile(ROOT / "sources/libc/gen/execinfo.h", include / "execinfo.h")
+    launch = prepare_source("launchd") / "liblaunch"
+    headers(launch, include)
+    (include / "servers").mkdir(exist_ok=True)
+    shutil.copyfile(launch / "bootstrap.h", include / "servers/bootstrap.h")
     dispatch = ROOT / "sources/libdispatch"
     headers(dispatch / "dispatch", include / "dispatch")
     headers(
