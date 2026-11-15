@@ -7,6 +7,9 @@ import re
 import select
 import subprocess
 import time
+import sys
+import termios
+import tty
 
 PROMPT = rb"[A-Za-z0-9][A-Za-z0-9.-]{0,254}:[^\n]{1,1024}? root# "
 
@@ -82,6 +85,45 @@ class Console:
         self.expect(rb"commonplace: powering off q35")
         if self.process.wait(timeout=10) != 0:
             raise ValueError("guest QEMU did not exit cleanly")
+
+    def interact(self):
+        """Forward a real terminal without logging keyboard input or echoing secrets."""
+        terminal = sys.stdin.fileno()
+        if not os.isatty(terminal):
+            raise ValueError("interactive recovery requires a terminal")
+        settings = termios.tcgetattr(terminal)
+        try:
+            tty.setraw(terminal)
+            if self.pending:
+                sys.stdout.buffer.write(self.pending)
+                sys.stdout.buffer.flush()
+                self.pending = b""
+            while True:
+                ready, _, _ = select.select([self.master, terminal], [], [], 0.25)
+                if self.master in ready:
+                    try:
+                        data = os.read(self.master, 65536)
+                    except OSError as error:
+                        if error.errno != errno.EIO:
+                            raise
+                        data = b""
+                    if not data:
+                        break
+                    self.log.write(data)
+                    self.log.flush()
+                    sys.stdout.buffer.write(data)
+                    sys.stdout.buffer.flush()
+                if terminal in ready:
+                    data = os.read(terminal, 4096)
+                    if not data:
+                        raise EOFError("recovery terminal closed")
+                    offset = 0
+                    while offset < len(data):
+                        offset += os.write(self.master, data[offset:])
+            if self.process.wait(timeout=10) != 0:
+                raise ValueError("recovery VM did not exit cleanly")
+        finally:
+            termios.tcsetattr(terminal, termios.TCSANOW, settings)
 
     def close(self):
         if self.process.poll() is None:

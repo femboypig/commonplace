@@ -94,3 +94,21 @@ def image_transaction(path, stamp, *, restore=None, allow_unclean=False):
                 os.replace(staged, path)
                 sync_directory(path.parent)
 
+
+@contextmanager
+def maintenance_signals():
+    """Let VM and staging cleanup run when a maintenance command is terminated."""
+    import signal
+
+    def interrupted(number, frame):
+        raise SystemExit(128 + number)
+
+    previous = {
+        number: signal.signal(number, interrupted)
+        for number in (signal.SIGTERM, signal.SIGHUP)
+    }
+    try:
+        yield
+    finally:
+        for number, handler in previous.items():
+            signal.signal(number, handler)
