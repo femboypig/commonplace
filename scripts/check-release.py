@@ -38,7 +38,7 @@ def boot(directory, memory, output, prepare=False):
             raise ValueError("release did not boot directly from its persistent root")
         duration = round(time.monotonic() - started, 3)
         if prepare:
-            console.command("ls /data", rb"\Als /data\ncommonplace:/ root# ")
+            console.command("ls /data", rb"\Als /data\n" + PROMPT)
             console.command(
                 "echo release-ok > /data/probe", rb"\Aecho release-ok > /data/probe\n"
             )
