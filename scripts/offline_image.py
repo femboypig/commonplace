@@ -9,7 +9,7 @@ import shutil
 import stat
 import struct
 import tempfile
-from create_disk_image import validate_image, sync_directory
+from create_disk_image import validate_open_image, sync_directory
 
 
 @contextmanager
@@ -20,12 +20,12 @@ def locked_image(path, *, allow_unclean=False):
         except BlockingIOError:
             raise ValueError("disk is in use; shut down its VM first: " + str(path))
         identity = os.fstat(stream.fileno())
-        validate_image(path)
+        validate_open_image(stream, path)
         stream.seek(1028)
         attributes = struct.unpack(">I", stream.read(4))[0]
         if not allow_unclean and not attributes & 0x100:
             raise ValueError("disk was not cleanly unmounted; use recovery first")
-        yield identity
+        yield stream, identity
 
 
 @dataclass(frozen=True)
@@ -56,25 +56,35 @@ def image_transaction(path, stamp, *, restore=None, allow_unclean=False):
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             raise ValueError("another maintenance operation is using this disk")
-        with locked_image(
-            path, allow_unclean=allow_unclean or bool(restore)
-        ) as identity:
+        with locked_image(path, allow_unclean=allow_unclean or bool(restore)) as locked:
+            original, identity = locked
             with tempfile.TemporaryDirectory(
                 dir=path.parent, prefix=".update-"
             ) as temporary:
                 staged = Path(temporary) / "system.hfs"
                 if restore:
-                    with locked_image(source):
-                        shutil.copyfile(source, staged)
+                    with locked_image(source) as (stream, _):
+                        stream.seek(0)
+                        with staged.open("wb") as destination:
+                            shutil.copyfileobj(stream, destination, 1024 * 1024)
                 else:
-                    shutil.copyfile(source, staged)
+                    original.seek(0)
+                    with staged.open("wb") as destination:
+                        shutil.copyfileobj(original, destination, 1024 * 1024)
                 backup = path.with_name(path.name + ".previous-" + stamp)
                 yield ImageTransaction(staged, source, backup)
                 current = path.stat()
-                if (current.st_dev, current.st_ino) != (
-                    identity.st_dev,
-                    identity.st_ino,
-                ):
+
+                def fingerprint(status):
+                    return (
+                        status.st_dev,
+                        status.st_ino,
+                        status.st_size,
+                        status.st_mtime_ns,
+                        status.st_ctime_ns,
+                    )
+
+                if fingerprint(current) != fingerprint(identity):
                     raise ValueError("system image changed during maintenance")
                 shutil.copystat(path, staged)
                 with staged.open("rb") as stream:
@@ -84,21 +94,3 @@ def image_transaction(path, stamp, *, restore=None, allow_unclean=False):
                 os.replace(staged, path)
                 sync_directory(path.parent)
 
-
-@contextmanager
-def maintenance_signals():
-    """Let VM and staging cleanup run when a maintenance command is terminated."""
-    import signal
-
-    def interrupted(number, frame):
-        raise SystemExit(128 + number)
-
-    previous = {
-        number: signal.signal(number, interrupted)
-        for number in (signal.SIGTERM, signal.SIGHUP)
-    }
-    try:
-        yield
-    finally:
-        for number, handler in previous.items():
-            signal.signal(number, handler)

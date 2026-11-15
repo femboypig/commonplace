@@ -110,3 +110,49 @@ class ImageTransactionTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "different image"):
                 with image_transaction(path, "alias", restore=source):
                     self.fail("same-inode restore was accepted")
+
+    def test_image_lock_survives_validation_and_staging(self):
+        from offline_image import image_transaction
+
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "system.hfs"
+            self.image(path)
+            with image_transaction(path, "locked"):
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        "-c",
+                        "import fcntl,sys; "
+                        "f=open(sys.argv[1], 'r+b'); "
+                        "fcntl.lockf(f, fcntl.LOCK_SH | fcntl.LOCK_NB, 1, 100)",
+                        str(path),
+                    ],
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("BlockingIOError", result.stderr)
+
+    def test_external_changes_are_not_replaced_by_the_staged_copy(self):
+        from offline_image import image_transaction
+
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "system.hfs"
+            self.image(path)
+            with self.assertRaisesRegex(ValueError, "changed during maintenance"):
+                with image_transaction(path, "changed"):
+                    subprocess.run(
+                        [
+                            sys.executable,
+                            "-c",
+                            "import sys; "
+                            "f=open(sys.argv[1], 'r+b'); f.seek(4096); "
+                            "f.write(b'external change'); f.close()",
+                            str(path),
+                        ],
+                        check=True,
+                    )
+            with path.open("rb") as file:
+                file.seek(4096)
+                self.assertEqual(file.read(15), b"external change")
+            self.assertFalse(list(path.parent.glob("system.hfs.previous-*")))
