@@ -9,45 +9,21 @@ from pathlib import Path
 import re
 import shlex
 from offline_image import image_transaction, locked_image, maintenance_signals
-from recovery_session import recovery_image, install_script, run_script, console_for
+from recovery_session import installed_image, recovery_image, run_command, console_for
 from guest_console import PROMPT
 from rootfs_image import ROOT
 
 
 def reset_password(directory, recovery, system, user):
-    commands = [
-        "set -eu",
-        "mounted=no",
-        """finish() {
-    status=$?
-    trap - EXIT
-    if [ "$mounted" = yes ]; then
-        sync
-        umount /tmp/system || status=1
-    fi
-    if [ "$status" = 0 ]; then
-        fsck_hfs -fn -c 16m /dev/rcp1 || status=1
-    fi
-    printf 'password-recovery-status:%s\\n' "$status"
-    poweroff
-}""",
-        "trap finish EXIT",
-        "fsck_hfs -fn -c 16m /dev/rcp1",
-        "mkdir /tmp/system",
-        "mount -t hfs /dev/cp1 /tmp/system",
-        "mounted=yes",
-        "test ! -L /tmp/system/etc",
-        "test -d /tmp/system/etc",
-        "passwd -i file -l /tmp/system/etc/master.passwd -- " + shlex.quote(user),
-    ]
-    install_script(recovery, directory, "password.sh", "\n".join(commands) + "\n")
     print(
         "booting recovery; enter the new password when Apple passwd prompts", flush=True
     )
     console = console_for(directory, recovery, system)
     try:
         console.expect(PROMPT, seconds=180)
-        console.sendline("sh /tmp/password.sh")
+        console.sendline(
+            "/usr/libexec/commonplace/recover-password " + shlex.quote(user)
+        )
         console.interact()
     finally:
         console.close()
@@ -72,22 +48,28 @@ def main():
         help="interactively replace a local password",
     )
     options = parser.parse_args()
+    if options.reset_password == "":
+        parser.error("account name must not be empty")
     if options.reset_password and not os.isatty(0):
         parser.error("password recovery requires an interactive terminal")
-    path = options.path.resolve(strict=True)
+    path = installed_image(options.path)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
     evidence = ROOT / "build/recovery-checks" / stamp
     evidence.mkdir(parents=True)
     with image_transaction(path, stamp, allow_unclean=options.repair) as transaction:
-        recovery = recovery_image(evidence)
+        recovery = recovery_image(
+            evidence,
+            required=("/usr/libexec/commonplace/recover-password",)
+            if options.reset_password
+            else (),
+        )
         if options.repair:
-            install_script(
-                recovery,
+            response = run_command(
                 evidence,
-                "repair.sh",
-                "set -eu\nfsck_hfs -fy -c 16m /dev/rcp1\nfsck_hfs -fn -c 16m /dev/rcp1\necho filesystem-repaired\n",
+                recovery,
+                transaction.staged,
+                "fsck_hfs -fy -c 16m /dev/rcp1 && fsck_hfs -fn -c 16m /dev/rcp1 && echo filesystem-repaired",
             )
-            response = run_script(evidence, recovery, transaction.staged, "repair.sh")
             if "\nfilesystem-repaired\n" not in response:
                 raise ValueError("filesystem repair did not complete")
         else:

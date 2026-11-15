@@ -4,6 +4,7 @@
 import hashlib
 import json
 import tempfile
+import subprocess
 from pathlib import Path
 from rootfs_image import ROOT, build_image, system_symlinks
 
@@ -14,6 +15,18 @@ def main():
     with tempfile.TemporaryDirectory(dir=directory, prefix=".image-") as temporary:
         image = Path(temporary) / "root.hfs"
         hashes = build_image(image)
+        hfs = str(ROOT / "toolchain/bin/hfsplus")
+        for path in ("/usr/libexec", "/usr/libexec/commonplace"):
+            subprocess.run([hfs, str(image), "mkdir", path], check=True)
+        helper = ROOT / "userland/darwin/recovery/password.sh"
+        target = "/usr/libexec/commonplace/recover-password"
+        subprocess.run([hfs, str(image), "add", str(helper), target], check=True)
+        subprocess.run([hfs, str(image), "chmod", "755", target], check=True)
+        extracted = Path(temporary) / "verify-password-helper"
+        subprocess.run([hfs, str(image), "extract", target, str(extracted)], check=True)
+        if extracted.read_bytes() != helper.read_bytes():
+            raise ValueError("recovery helper round-trip verification failed")
+        hashes[target] = hashlib.sha256(helper.read_bytes()).hexdigest()
         image.replace(directory / "root.hfs")
     image = directory / "root.hfs"
     metadata = {

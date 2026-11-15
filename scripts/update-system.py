@@ -12,19 +12,33 @@ from offline_image import (
     maintenance_signals,
 )
 from rootfs_image import ROOT
-from recovery_session import recovery_image, install_script, run_script
-from system_update_plan import prepare_payload, update_commands
+from recovery_session import (
+    installed_image,
+    recovery_image,
+    install_script,
+    run_script,
+    run_command,
+)
 
 
 def recovery_check(directory, image, update):
     recovery = recovery_image(directory, current_build=update)
-    commands = ["set -eu", "fsck_hfs -fn -c 16m /dev/rcp1"]
     if update:
+        from system_update_plan import prepare_payload, update_commands
+
+        commands = ["set -eu", "fsck_hfs -fn -c 16m /dev/rcp1"]
         managed, defaults = prepare_payload(directory, recovery)
         commands.extend(update_commands(managed, defaults))
-    commands.append("echo system-image-verified")
-    install_script(recovery, directory, "update.sh", "\n".join(commands) + "\n")
-    response = run_script(directory, recovery, image, "update.sh")
+        commands.append("echo system-image-verified")
+        install_script(recovery, directory, "update.sh", "\n".join(commands) + "\n")
+        response = run_script(directory, recovery, image, "update.sh")
+    else:
+        response = run_command(
+            directory,
+            recovery,
+            image,
+            "fsck_hfs -fn -c 16m /dev/rcp1 && echo system-image-verified",
+        )
     if "\nsystem-image-verified\n" not in response:
         raise ValueError(
             "incomplete recovery transaction; diagnostics: " + str(directory)
@@ -42,7 +56,7 @@ def main():
         "--restore", type=Path, help="restore a previous full system image"
     )
     options = parser.parse_args()
-    path = options.path.resolve(strict=True)
+    path = installed_image(options.path)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
     evidence = ROOT / "build/update-checks" / stamp
     evidence.mkdir(parents=True)
