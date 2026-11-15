@@ -24,6 +24,7 @@ static void settle(void)
 static int wait_status(unsigned required, int completion, int check_error)
 {
     u_int64_t deadline;
+    unsigned quick_polls = 0;
     /* Host-backed flushes can stall while QEMU waits for the host filesystem. */
     clock_interval_to_deadline(30000, 1000000, &deadline);
     for (;;)
@@ -44,7 +45,11 @@ static int wait_status(unsigned required, int completion, int check_error)
                    status, inb(ATA_DRIVE), required, completion);
             return ETIMEDOUT;
         }
-        IOSleep(1);
+        /* Short host-backed requests often finish before a scheduler sleep. */
+        if (quick_polls++ < 32)
+            IODelay(1);
+        else
+            IOSleep(1);
     }
 }
 
