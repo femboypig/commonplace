@@ -43,7 +43,7 @@ def main():
         ],
         check=True,
     )
-    build_service_image(image)
+    build_service_image(image, console_login=False)
     hfs = str(ROOT / "toolchain/bin/hfsplus")
     subprocess.run(
         [hfs, str(image), "add", str(probe), "/bin/launchd-check"], check=True

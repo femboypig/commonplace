@@ -36,8 +36,23 @@ def system_files():
             / "build/darwin/system/libsystem_kernel.dylib",
         }
     )
+    for name, target in (
+        ("login", "/usr/bin/login"),
+        ("passwd", "/usr/bin/passwd"),
+        ("vipw", "/usr/sbin/vipw"),
+        ("pwd_mkdb", "/usr/sbin/pwd_mkdb"),
+    ):
+        programs[target] = ROOT / "build/darwin/bin" / name
+    programs["/usr/lib/libcrypt.dylib"] = ROOT / "build/darwin/system/libcrypt.dylib"
     programs["/usr/lib/libpam.2.dylib"] = ROOT / "build/darwin/system/libpam.2.dylib"
-    for name in ("pam_deny", "pam_rootok", "pam_self"):
+    for name in (
+        "pam_deny",
+        "pam_rootok",
+        "pam_self",
+        "pam_unix",
+        "pam_nologin",
+        "pam_uwtmp",
+    ):
         programs["/usr/lib/pam/" + name + ".so"] = (
             ROOT / "build/darwin/pam" / (name + ".so")
         )
@@ -131,7 +146,9 @@ def build_image(image, size_mib=64, persistent=False):
                     str(hfs),
                     str(image),
                     "chmod",
-                    "644" if destination in system_resources() else "755",
+                    "644"
+                    if destination in system_resources()
+                    else ("4755" if destination == "/usr/bin/passwd" else "755"),
                     destination,
                 ],
                 check=True,
@@ -164,6 +181,7 @@ def build_image(image, size_mib=64, persistent=False):
             )
             hashes[destination] = hashlib.sha256(configuration.read_bytes()).hexdigest()
         subprocess.run([str(hfs), str(image), "chmod", "1777", "/tmp"], check=True)
+        subprocess.run([str(hfs), str(image), "chmod", "700", "/root"], check=True)
         motd = temporary / "motd"
         motd.write_text(
             "commonplace\n"

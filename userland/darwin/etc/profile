@@ -1,0 +1,5 @@
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+EDITOR=/bin/ed
+TZ=UTC0
+PS1='\h:\w \u\$ '
+export PATH EDITOR TZ PS1

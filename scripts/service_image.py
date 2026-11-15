@@ -7,7 +7,7 @@ from pathlib import Path
 from rootfs_image import ROOT, build_image
 
 
-def build_service_image(image, size_mib=96, persistent=True):
+def build_service_image(image, size_mib=96, persistent=True, *, console_login=True):
     image = Path(image)
     build_image(image, size_mib, persistent=persistent)
     hfs = ROOT / "toolchain/bin/hfsplus"
@@ -38,6 +38,7 @@ def build_service_image(image, size_mib=96, persistent=True):
         ("notifyd", "/usr/sbin/notifyd"),
         ("syslogd", "/usr/sbin/syslogd"),
         ("syslog", "/usr/bin/syslog"),
+        ("first-login", "/usr/libexec/commonplace/first-login"),
     ):
         run("add", ROOT / "build/darwin/bin" / name, target)
         run("chmod", "755", target)
@@ -53,6 +54,12 @@ def build_service_image(image, size_mib=96, persistent=True):
         "/usr/libexec/commonplace/boot",
     )
     run("chmod", "755", "/usr/libexec/commonplace/boot")
+    if console_login:
+        run(
+            "add",
+            ROOT / "userland/darwin/services/login-console.sh",
+            "/usr/libexec/commonplace/console",
+        )
     with tempfile.TemporaryDirectory(
         dir=image.parent, prefix=".services-"
     ) as directory:
@@ -109,6 +116,11 @@ def build_service_image(image, size_mib=96, persistent=True):
             ),
             "/System/Library/CoreServices/SystemVersion.plist",
         )
+        if console_login:
+            marker = temporary / "setup-required"
+            marker.write_text("root password setup\n")
+            run("add", marker, "/etc/commonplace.setup-required")
+            run("chmod", "600", "/etc/commonplace.setup-required")
         configuration = temporary / "syslog.conf"
         configuration.write_text("*.*\t/var/log/system.log\n")
         run("add", configuration, "/etc/syslog.conf")
