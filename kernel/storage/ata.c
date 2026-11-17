@@ -1,4 +1,5 @@
 #include "ata.h"
+#include "../platform/pci-config.h"
 #include <IOKit/IOLib.h>
 #include <architecture/i386/pio.h>
 #include <kern/clock.h>
@@ -93,14 +94,11 @@ int commonplace_ata_probe(unsigned unit, u_int32_t *sectors)
     if (unit > 1)
         return ENXIO;
     /* The dedicated piix3-ide is fixed at 00:05.0 by our QEMU machine definition. */
-    outl(0xcf8, 0x80002800);
-    if (inl(0xcfc) != 0x70108086)
+    if (commonplace_pci_read32(0x2800) != 0x70108086)
         return ENXIO;
-    outl(0xcf8, 0x80002808);
-    if ((inl(0xcfc) >> 8) & 5)
+    if ((commonplace_pci_read32(0x2808) >> 8) & 5)
         return ENOTSUP; /* Require legacy channels. */
-    outl(0xcf8, 0x80002804);
-    outw(0xcfc, inw(0xcfc) | 1);
+    commonplace_pci_write16(0x2804, commonplace_pci_read16(0x2804) | 1);
     outb(ATA_CONTROL, 2); /* Polled commands: do not generate legacy IRQs. */
     outb(ATA_DRIVE, 0xa0 | (unit << 4));
     settle();

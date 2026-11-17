@@ -2,6 +2,7 @@
 #include <IOKit/IOLib.h>
 #include <libkern/libkern.h>
 #include "rtc-calendar.h"
+#include "pci-config.h"
 
 extern "C" {
 #include <machine/machine_routines.h>
@@ -32,6 +33,7 @@ bool CommonplacePlatform::start(IOService *provider)
     if (!IOPlatformExpert::start(provider))
         return false;
     ml_init_max_cpus(1);
+    if (!commonplace_pci_init()) return false;
     setProperty("platform-name", "commonplace");
     IOLog("commonplace: q35 bootstrap platform started\n");
     registerService();

@@ -1,5 +1,6 @@
 #include <IOKit/IOPlatformExpert.h>
 #include <IOKit/IOLib.h>
+#include "pci-config.h"
 extern "C" {
 #include <architecture/i386/pio.h>
 #include <machine/machine_routines.h>
@@ -21,10 +22,8 @@ int commonplace_platform_power(unsigned type)
         return -1;
     }
     /* Intel ICH9 LPC, 00:1f.0. QEMU's S5 sleep type is zero. */
-    outl(0xcf8,0x8000f800);
-    if (inl(0xcfc)!=0x29188086) return -1;
-    outl(0xcf8,0x8000f840);
-    unsigned base=inl(0xcfc)&0xff80;
+    if (commonplace_pci_read32(0xf800)!=0x29188086) return -1;
+    unsigned base=commonplace_pci_read32(0xf840)&0xff80;
     if (!base || base>0xff80) return -1;
     IOLog("commonplace: powering off q35\n");
     ml_set_interrupts_enabled(FALSE);
