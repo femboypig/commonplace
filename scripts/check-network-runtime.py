@@ -21,6 +21,8 @@ def main():
     directory = ROOT / "build/network-runtime-checks" / datetime.now(
         timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
     directory.mkdir(parents=True)
+    kernel = directory / "kernel"
+    shutil.copyfile(options.kernel.resolve(), kernel)
     recovery = directory / "recovery.hfs"
     shutil.copyfile(ROOT_IMAGE, recovery)
     obj = compile_source(ROOT / "tests/guest/network_libinfo.c",
@@ -40,9 +42,9 @@ def main():
     for target, source in resources.items():
         subprocess.run([hfs, str(recovery), "add", str(source), target], check=True)
     subprocess.run([hfs, str(recovery), "chmod", "755", "/bin/network-libinfo-check"], check=True)
-    command = command_for([options.kernel.resolve(), recovery], 1024,
+    command = command_for([kernel.relative_to(ROOT), recovery.relative_to(ROOT)], 1024,
         bounded=False) + ["-nic", "none", "-serial", "mon:stdio"]
-    console = Console(command, directory / "serial.log")
+    console = Console(command, directory / "serial.log", cwd=ROOT)
     try:
         console.expect(PROMPT, seconds=180)
         for request, expected in (
@@ -62,7 +64,7 @@ def main():
         console.close()
     (directory / "summary.json").write_text(json.dumps({
         "passed": True,
-        "kernel_sha256": hashlib.sha256(options.kernel.read_bytes()).hexdigest(),
+        "kernel_sha256": hashlib.sha256(kernel.read_bytes()).hexdigest(),
         "libsystem_sha256": hashlib.sha256((OUT / "system/libSystem.B.dylib").read_bytes()).hexdigest(),
     }, indent=2) + "\n")
     print("native network lookups and loopback passed; evidence: " + str(directory), flush=True)
