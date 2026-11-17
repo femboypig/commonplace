@@ -46,6 +46,8 @@ def main():
         "hosts",
         "account_reentrant",
         "addresses",
+        "nameinfo",
+        "network_databases",
     ):
         derived = OUT / "derived" / (name + ".c")
         derived.parent.mkdir(parents=True, exist_ok=True)
@@ -75,7 +77,7 @@ def main():
             source / "dns.subproj/herror.c", OUT / "obj/libinfo/herror.o", flags
         )
     )
-    for name in ("getifaddrs", "if_nametoindex", "if_indextoname"):
+    for name in ("getifaddrs", "if_nametoindex", "if_indextoname", "ether_addr"):
         objects.append(
             compile_source(
                 source / "gen.subproj" / (name + ".c"),
@@ -83,6 +85,8 @@ def main():
                 flags,
             )
         )
+    objects.append(compile_source(directory / "getnameinfo_link.c",
+        OUT / "obj/libinfo/getnameinfo_link.o", flags))
     archive(OUT / "lib/libsystem_info_file.a", objects)
     print("Darwin local account library: " + str(OUT / "lib/libsystem_info_file.a"))
 

@@ -172,3 +172,50 @@ extern si_mod_t *si_module_static_file(void);
 """
         + section
     )
+
+
+def nameinfo(original, network=None):
+    section = original.split("/* GETNAMEINFO */", 1)[1].split(
+        "static void\nsi_libinfo_nameinfo_callback", 1)[0]
+    return (original[:original.index("#include")] + """
+#include <si_module.h>
+#include <si_data.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdlib.h>
+#include <string.h>
+extern si_mod_t *si_module_static_file(void);
+extern int getnameinfo_link(const struct sockaddr *, socklen_t, char *, size_t, char *, size_t, int);
+#define si_search si_module_static_file
+""" + section)
+
+
+def network_databases(original, network=None):
+    preamble = original[:original.index("#include")] + """
+#include <si_module.h>
+#include <si_data.h>
+#include <thread_data.h>
+#include <netdb.h>
+#include <stddef.h>
+extern si_mod_t *si_module_static_file(void);
+#define si_search si_module_static_file
+#define si_network_byname(m,n) ((m)->vtable->sim_network_byname((m),(n)))
+#define si_network_byaddr(m,n) ((m)->vtable->sim_network_byaddr((m),(n)))
+#define si_network_all(m) ((m)->vtable->sim_network_all((m)))
+#define si_service_byname(m,n,p) ((m)->vtable->sim_service_byname((m),(n),(p)))
+#define si_service_byport(m,n,p) ((m)->vtable->sim_service_byport((m),(n),(p)))
+#define si_service_all(m) ((m)->vtable->sim_service_all((m)))
+#define si_protocol_byname(m,n) ((m)->vtable->sim_protocol_byname((m),(n)))
+#define si_protocol_bynumber(m,n) ((m)->vtable->sim_protocol_bynumber((m),(n)))
+#define si_protocol_all(m) ((m)->vtable->sim_protocol_all((m)))
+"""
+    for result, names in (
+        ("struct netent *", ("getnetbyname", "getnetbyaddr", "getnetent")),
+        ("struct servent *", ("getservbyname", "getservbyport", "getservent")),
+        ("struct protoent *", ("getprotobyname", "getprotobynumber", "getprotoent")),
+        ("void", ("setnetent", "endnetent", "setservent", "endservent", "setprotoent", "endprotoent")),
+    ):
+        for name in names:
+            signature = result + "\n" + name + "("
+            preamble += signature + original.split(signature, 1)[1].split("\n}\n", 1)[0] + "\n}\n"
+    return preamble

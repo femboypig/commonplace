@@ -1,0 +1,34 @@
+--- a/lookup.subproj/file_module.c
++++ b/lookup.subproj/file_module.c
+@@ -1571,7 +1571,16 @@
+ 		return NULL;
+ 	}
+ 
+-	xnum = atoi(tokens[1]);
++	if (cat == CATEGORY_NETWORK) {
++		in_addr_t network = inet_network(tokens[1]);
++		if (network == INADDR_NONE) {
++			free(tokens);
++			return NULL;
++		}
++		xnum = (int)network;
++	} else {
++		xnum = atoi(tokens[1]);
++	}
+ 
+ 	aliases = NULL;
+ 	if (ntokens > 2) aliases = &(tokens[2]);
+@@ -2289,6 +2298,13 @@
+ 		.sim_host_byaddr = &file_host_byaddr,
+ 		.sim_service_byname = &file_service_byname,
+ 		.sim_service_byport = &file_service_byport,
++		.sim_service_all = &file_service_all,
++		.sim_network_byname = &file_network_byname,
++		.sim_network_byaddr = &file_network_byaddr,
++		.sim_network_all = &file_network_all,
++		.sim_protocol_byname = &file_protocol_byname,
++		.sim_protocol_bynumber = &file_protocol_bynumber,
++		.sim_protocol_all = &file_protocol_all,
+ 
+ 
+ 	};
