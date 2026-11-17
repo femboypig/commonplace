@@ -136,13 +136,15 @@ darwin-userland: darwin-libraries
 	$(PYTHON) scripts/build-darwin-newfs.py
 	$(PYTHON) scripts/build-darwin-commands.py
 	$(PYTHON) scripts/build-darwin-bash.py
+	$(PYTHON) scripts/build-darwin-iokit.py
+	$(PYTHON) scripts/build-darwin-readline.py
+	$(PYTHON) scripts/build-darwin-iokit-tools.py
+	$(PYTHON) scripts/build-darwin-network.py
 
 # These targets use Apple's published service manager and isolated system image.
 darwin-services: userland
 	$(PYTHON) scripts/build-darwin-bsm.py
-	$(PYTHON) scripts/build-darwin-iokit.py
 	$(PYTHON) scripts/build-darwin-dnssd.py
-	$(PYTHON) scripts/build-darwin-readline.py
 	$(PYTHON) scripts/build-darwin-launchd.py
 	$(PYTHON) scripts/build-darwin-launchctl.py
 	$(PYTHON) scripts/build-darwin-notifyd.py

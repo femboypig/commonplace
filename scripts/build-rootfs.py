@@ -16,8 +16,6 @@ def main():
         image = Path(temporary) / "root.hfs"
         hashes = build_image(image)
         hfs = str(ROOT / "toolchain/bin/hfsplus")
-        for path in ("/usr/libexec", "/usr/libexec/commonplace"):
-            subprocess.run([hfs, str(image), "mkdir", path], check=True)
         helper = ROOT / "userland/darwin/recovery/password.sh"
         target = "/usr/libexec/commonplace/recover-password"
         subprocess.run([hfs, str(image), "add", str(helper), target], check=True)

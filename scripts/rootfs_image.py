@@ -45,6 +45,8 @@ def system_files():
         ("passwd", "/usr/bin/passwd"),
         ("vipw", "/usr/sbin/vipw"),
         ("pwd_mkdb", "/usr/sbin/pwd_mkdb"),
+        ("ioreg", "/usr/sbin/ioreg"),
+        ("register-network", "/usr/libexec/commonplace/register-network"),
     ):
         programs[target] = ROOT / "build/darwin/bin" / name
     programs["/usr/lib/libcrypt.dylib"] = ROOT / "build/darwin/system/libcrypt.dylib"
