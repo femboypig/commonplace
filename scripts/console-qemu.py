@@ -18,6 +18,8 @@ from qemu_machine import (
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--memory", type=int, default=1024)
+    parser.add_argument("--network", action=argparse.BooleanOptionalAction,
+        default=True, help="attach the supported RTL8139 adapter with QEMU user networking")
     parser.add_argument(
         "--recovery", action="store_true", help="boot the RAM recovery root"
     )
@@ -46,6 +48,7 @@ def main():
         bounded=False,
         system_disk=system_disk if system_disk.is_file() else None,
         disk_root=not options.recovery,
+        network=options.network,
     ) + ["-serial", "mon:stdio"]
     os.execvp(command[0], command)
 

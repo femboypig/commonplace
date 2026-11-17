@@ -8,10 +8,11 @@ KERNEL = ROOT / "build/xnu/obj/DEVELOPMENT_X86_64/kernel.development"
 ROOT_IMAGE = ROOT / "build/rootfs/root.hfs"
 DATA_DISK = ROOT / "build/disks/data.hfs"
 SYSTEM_DISK = ROOT / "build/disks/system.hfs"
+NETWORK_DEVICE = "rtl8139,netdev=network,bus=pcie.0,addr=06.0"
 
 
 def command_for(
-    modules, memory, disk=None, bounded=True, system_disk=None, disk_root=False
+    modules, memory, disk=None, bounded=True, system_disk=None, disk_root=False, network=False, network_backend=None
 ):
     # Invariant TSC exposes timer frequencies through CPUID 0x40000010.
     command = [
@@ -33,6 +34,12 @@ def command_for(
         "-display",
         "none",
     ]
+    if network:
+        command += ["-netdev", network_backend or "user,id=network", "-device", NETWORK_DEVICE]
+    else:
+        if network_backend is not None:
+            raise ValueError("a network backend requires an attached network device")
+        command += ["-nic", "none"]
     if disk_root:
         if system_disk is None or len(modules) != 1:
             raise ValueError(

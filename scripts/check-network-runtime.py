@@ -43,7 +43,7 @@ def main():
         subprocess.run([hfs, str(recovery), "add", str(source), target], check=True)
     subprocess.run([hfs, str(recovery), "chmod", "755", "/bin/network-libinfo-check"], check=True)
     command = command_for([kernel.relative_to(ROOT), recovery.relative_to(ROOT)], 1024,
-        bounded=False) + ["-nic", "none", "-serial", "mon:stdio"]
+        bounded=False) + ["-serial", "mon:stdio"]
     console = Console(command, directory / "serial.log", cwd=ROOT)
     try:
         console.expect(PROMPT, seconds=180)
