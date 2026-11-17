@@ -18,6 +18,10 @@ def system_files():
         "fstyp_hfs": "fstyp_hfs",
         "mount_hfs": "mount_hfs",
         "newfs_hfs": "newfs_hfs",
+        "ifconfig": "ifconfig",
+        "route": "route",
+        "arp": "arp",
+        "ping": "ping",
     }
     programs = {
         (
