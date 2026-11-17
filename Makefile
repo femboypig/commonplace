@@ -2,7 +2,7 @@
 PYTHON ?= python3
 JOBS ?= 2
 
-.PHONY: check-ata-transfer check-maintenance-failures check-recovery check-service-update check-login package-services darwin-services service-image boot-services check-launchd help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime check-dispatch check-foundation check-corefoundation check-service-runtime userland rootfs boot-init boot-console boot-recovery system-disk check-system check-hfs check-mount check-newfs check-admin-runtime update-system check-update disk-image check-storage check-storage-reliability package test
+.PHONY: check-network-runtime check-ata-transfer check-maintenance-failures check-recovery check-service-update check-login package-services darwin-services service-image boot-services check-launchd help fetch doctor tools runtime crypto check-tools xnu-headers check-xnu-host kernel check-kernel loader boot boot-bsd boot-checks rootfs-tools darwin-sdk darwin-libraries darwin-userland check-darwin check-darwin-runtime check-dispatch check-foundation check-corefoundation check-service-runtime userland rootfs boot-init boot-console boot-recovery system-disk check-system check-hfs check-mount check-newfs check-admin-runtime update-system check-update disk-image check-storage check-storage-reliability package test
 help:
 	@printf '%s\n' 'commonplace — darwin/x86_64' \
 	  'make doctor       check host tools and virtualization' \
@@ -45,6 +45,7 @@ help:
 	  'make check-mount  verify native Apple mount and unmount commands' \
 	  'make check-newfs  verify native HFS formatting and normalization' \
 	  'make check-admin-runtime verify local accounts, PAM and syslog APIs' \
+	  'make check-network-runtime verify native network lookups and loopback' \
 	  'make disk-image   create the persistent data disk without replacing it' \
 	  'make check-storage verify persistence across poweroff and reboot' \
 	  'make check-storage-reliability verify crash recovery and full disks' \
@@ -246,3 +247,6 @@ package: loader check-kernel rootfs
 
 test:
 	$(PYTHON) -m unittest discover -s tests -v
+
+check-network-runtime: loader check-kernel rootfs
+	$(PYTHON) scripts/check-network-runtime.py
