@@ -1,0 +1,33 @@
+--- a/iokit/conf/files
++++ b/iokit/conf/files
+@@ -137,3 +137,6 @@
+ external/rtl8139/RTL8139Private.cpp optional iokitcpp
+ 
+ commonplace/platform/CommonplacePCIConfig.cpp optional iokitcpp
++
++commonplace/platform/CommonplacePCI.cpp optional iokitcpp
++commonplace/platform/CommonplaceIOAPIC.cpp optional iokitcpp
+--- a/iokit/KernelConfigTables.cpp
++++ b/iokit/KernelConfigTables.cpp
+@@ -35,6 +35,21 @@
+ const char * gIOKernelConfigTables =
+ "("
+ "   {"
++"     'IOClass' = CommonplacePCI;"
++"     'IOProviderClass' = CommonplacePlatform;"
++"   },"
++"   {"
++"     'IOClass' = IONetworkStack;"
++"     'IOProviderClass' = IOResources;"
++"     'IOResourceMatch' = IOBSD;"
++"     'IOMatchCategory' = IONetworkStack;"
++"   },"
++"   {"
++"     'IOClass' = 'com_apple_driver_RTL8139';"
++"     'IOProviderClass' = IOPCIDevice;"
++"     'IOPCIMatch' = '0x813910ec';"
++"   },"
++"   {"
+ "     'IOClass'         = CommonplacePlatform;"
+ "     'IOProviderClass' = IOPlatformExpertDevice;"
+ "     'IONameMatch'     = 'commonplace,q35';"
