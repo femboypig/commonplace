@@ -3,7 +3,7 @@
 import subprocess
 import tempfile
 from pathlib import Path
-from rootfs_image import ROOT, build_image
+from rootfs_image import ROOT, build_image, system_directories
 from service_payload import DIRECTORIES, service_files, service_defaults, service_mode
 
 
@@ -15,8 +15,12 @@ def build_service_image(image, size_mib=96, persistent=True, *, console_login=Tr
     def run(*arguments):
         subprocess.run([str(hfs), str(image), *map(str, arguments)], check=True)
 
+    base_directories = system_directories()
     for path in DIRECTORIES:
-        run("mkdir", path)
+        # hfsplus mkdir recreates existing catalog records. Base image paths
+        # already exist and must retain their original directory identities.
+        if path not in base_directories:
+            run("mkdir", path)
     run("chmod", "1777", "/var/tmp")
     with tempfile.TemporaryDirectory(
         dir=image.parent, prefix=".services-"

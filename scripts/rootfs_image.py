@@ -91,6 +91,27 @@ def system_symlinks():
     }
 
 
+def system_directories(programs=None):
+    if programs is None:
+        programs = system_files()
+    directories = {
+        "/dev",
+        "/etc/pam.d",
+        "/tmp",
+        "/root",
+        "/data",
+        "/usr/bin",
+        "/usr/sbin",
+        "/var/log",
+        "/var/run",
+    }
+    for path in (*programs, *directories):
+        directories.update(
+            str(parent) for parent in Path(path).parents if str(parent) != "/"
+        )
+    return directories
+
+
 def build_image(image, size_mib=64, persistent=False):
     image = Path(image)
     image.parent.mkdir(parents=True, exist_ok=True)
@@ -122,21 +143,7 @@ def build_image(image, size_mib=64, persistent=False):
             ],
             check=True,
         )
-        directories = {
-            "/dev",
-            "/etc/pam.d",
-            "/tmp",
-            "/root",
-            "/data",
-            "/usr/bin",
-            "/usr/sbin",
-            "/var/log",
-            "/var/run",
-        }
-        for path in (*programs, *directories):
-            directories.update(
-                str(parent) for parent in Path(path).parents if str(parent) != "/"
-            )
+        directories = system_directories(programs)
         for directory in sorted(
             directories, key=lambda path: (len(Path(path).parts), path)
         ):

@@ -13,6 +13,8 @@ from service_image import build_service_image
 from guest_console import Console, PROMPT
 from qemu_machine import command_for, KERNEL
 from update_check_support import run_update
+from recovery_session import run_command
+from qemu_machine import ROOT_IMAGE
 
 ROOT_PASSWORD = "Update-root-passphrase-2026!"
 USER_PASSWORD = "Update-user-passphrase-2026!"
@@ -108,6 +110,10 @@ def main():
     directory.mkdir(parents=True)
     image = directory / "system.hfs"
     build_service_image(image, 128)
+    factory_check = directory / "factory-check"
+    factory_check.mkdir()
+    run_command(factory_check, ROOT_IMAGE, image,
+        "fsck_hfs -fn -c 16m /dev/rcp1 && echo factory-image-verified")
     hfs = str(ROOT / "toolchain/bin/hfsplus")
 
     def run(*args):
