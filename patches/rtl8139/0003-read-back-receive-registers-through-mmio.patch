@@ -1,0 +1,13 @@
+--- a/RTL8139.h
++++ b/RTL8139.h
+@@ -300,8 +300,8 @@
+     inline void csrWrite16Slow( UInt16 offset, UInt16 value )
+     {
+ 		ELG( value, offset, 'W16S', "csrWrite16Slow" );
+-		pciNub->ioWrite16( offset, value, csrMap );
+-		pciNub->ioRead16(  offset, csrMap );
++		csrWrite16( offset, value );
++		(void)csrRead16( offset );
+ 	}/* end csrWrite16Slow */
+ 
+     inline void csrWrite8(  UInt16 offset, UInt8 value )
