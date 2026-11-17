@@ -3,6 +3,8 @@
 import re
 
 PROJECTS = (
+    "bootp",
+    "configd",
     "iopci",
     "iokit_tools",
     "ionetwork",

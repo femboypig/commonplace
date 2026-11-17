@@ -373,6 +373,18 @@
       "revision": "3e36d17438ceeec79774bfc3cf1fc5c8d700c2a1",
       "url": "https://codeload.github.com/apple-oss-distributions/IOKitTools/tar.gz/3e36d17438ceeec79774bfc3cf1fc5c8d700c2a1",
       "sha256": "a2ec95bac73baafbd29e9aa3b960cd27859b5c55c7e0998a4e067eada2e679e5"
+    },
+    "bootp": {
+      "repository": "apple-oss-distributions/bootp",
+      "revision": "0c1dadfce54e3f46d5444195c141bbcfa313fc4a",
+      "url": "https://codeload.github.com/apple-oss-distributions/bootp/tar.gz/0c1dadfce54e3f46d5444195c141bbcfa313fc4a",
+      "sha256": "63a34c35a9f90088321a450a7c4162c517ec070b7590ab1097d6206afebe3d0d"
+    },
+    "configd": {
+      "repository": "apple-oss-distributions/configd",
+      "revision": "0dd3d5185349c6e535d83449e497dc89691b1f78",
+      "url": "https://codeload.github.com/apple-oss-distributions/configd/tar.gz/0dd3d5185349c6e535d83449e497dc89691b1f78",
+      "sha256": "9114404b4cbcf346ae03089cee234859cc5fd4fca9898f0e6cbd90d179de0390"
     }
   }
 }
