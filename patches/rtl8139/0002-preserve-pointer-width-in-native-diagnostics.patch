@@ -1,0 +1,37 @@
+--- a/RTL8139.cpp
++++ b/RTL8139.cpp
+@@ -1199,7 +1199,7 @@
+ 	if ( !pIn  || (inputSize < sizeof( UCRequest )) )
+ 	{
+ 		IOLog( "RTL8139UserClient::doRequest - bad argument(s) - pIn = %lx, inputSize = %ld.\n",
+-				(UInt32)pIn, inputSize );
++				(uintptr_t)pIn, inputSize );
+ 		return kIOReturnBadArgument;
+ 	}
+ 
+@@ -1291,7 +1291,7 @@
+ 	if ( !pOut || (*pOutPutSize < PAGE_SIZE) )	// actual size unknown
+ 	{
+ 		IOLog( "RTL8139UserClient::getRltkRegs - bad argument(s) - pOut = %lx, *pOutPutSize = %ld.\n",
+-				(UInt32)pOut, (UInt32)*pOutPutSize );
++				(uintptr_t)pOut, (unsigned long)*pOutPutSize );
+ 		return kIOReturnBadArgument;
+ 	}
+ 
+@@ -1331,13 +1331,14 @@
+ 							IOByteCount	inputSize,	IOByteCount	*pOutPutSize )
+ {
+ 	UCRequest	*req = (UCRequest*)pIn;
+-	UInt32		reg, value;
++	uintptr_t	reg;
++	UInt32		value;
+ 	UInt8		size = 0;		// default to bad argument
+ 
+ 	UC_ELG( (UInt32)pIn,  inputSize,    'UgWR', "RTL8139UserClient::writeOneRltkReg" );
+ 
+ 	*pOutPutSize = 0;
+-	reg		= (UInt32)req->pLogBuffer;
++	reg		= (uintptr_t)req->pLogBuffer;
+ 	value	= req->bufSize;
+ 
+ 	if ( reg == 0x100 )		// adjust the Tx early threshold being used.
