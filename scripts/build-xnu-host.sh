@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 project_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-object_root=${1:?missing xnu object directory}
+object_root=$(realpath -m -- "${1:?missing xnu object directory}")
 setup="$project_root/build/xnu-source/SETUP"
 includes="$project_root/sources/cctools/cctools/include"
+if python3 "$project_root/scripts/xnu_host_cache.py" "$object_root"; then
+    echo "HOST_TOOLS verified; unchanged"
+    exit 0
+fi
 host_flags=(-std=gnu99 -O2 -D__private_extern__= -D__DARWIN_UNIX03
     -DHAVE_BCMP=1 -DHAVE_BZERO=1 -DHAVE_BCOPY=1 -DHAVE_INDEX=1 -DHAVE_RINDEX=1
     -include bsd/stdlib.h -include bsd/unistd.h -I"$project_root/compat/host"
@@ -29,3 +33,4 @@ for source in externs main mkheaders mkioconf mkmakefile openp searchp; do
 done
 clang -std=gnu99 -O2 -DYY_NO_INPUT -I. -I"$setup/config" \
     "${source_files[@]}" lexer.yy.c parser.c -o config
+python3 "$project_root/scripts/xnu_host_cache.py" "$object_root" --record
