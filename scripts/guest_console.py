@@ -52,6 +52,8 @@ class Console:
             self.log.write(data)
             self.log.flush()
             self.pending += data.replace(b"\r", b"")
+            if re.search(rb"(?:^|\n)panic\(cpu [0-9]+ caller", self.pending):
+                raise RuntimeError("guest kernel panic: " + repr(self.pending[-3000:]))
         raise TimeoutError("guest console timed out: " + repr(self.pending[-512:]))
 
     def sendline(self, text):
