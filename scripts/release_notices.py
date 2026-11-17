@@ -4,6 +4,7 @@ import re
 
 PROJECTS = (
     "iopci",
+    "iokit_tools",
     "ionetwork",
     "rtl8139",
     "network_cmds",

@@ -367,6 +367,12 @@
       "revision": "9da7b37a27ec683a756beca9ef7aa3f0f6bf88c3",
       "url": "https://codeload.github.com/apple-oss-distributions/network_cmds/tar.gz/9da7b37a27ec683a756beca9ef7aa3f0f6bf88c3",
       "sha256": "1bab8abfdef0f67e94c27fb94a29444e7a8228918c42a9e3aeefeb016d6b4aae"
+    },
+    "iokit_tools": {
+      "repository": "apple-oss-distributions/IOKitTools",
+      "revision": "3e36d17438ceeec79774bfc3cf1fc5c8d700c2a1",
+      "url": "https://codeload.github.com/apple-oss-distributions/IOKitTools/tar.gz/3e36d17438ceeec79774bfc3cf1fc5c8d700c2a1",
+      "sha256": "a2ec95bac73baafbd29e9aa3b960cd27859b5c55c7e0998a4e067eada2e679e5"
     }
   }
 }

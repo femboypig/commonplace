@@ -1,0 +1,11 @@
+--- a/ioreg.tproj/ioreg.c
++++ b/ioreg.tproj/ioreg.c
+@@ -27,7 +27,7 @@
+ #include <IOKit/IOKitLibPrivate.h>                    // (IOServiceGetState, ...)
+ #include <IOKit/IOKitKeysPrivate.h>                   // (kIOClassNameOverrideNone, ...)
+ #include <sys/ioctl.h>                                // (TIOCGWINSZ, ...)
+-#include <term.h>                                     // (tputs, ...)
++#include <termcap.h>                                     // (tputs, ...)
+ #include <unistd.h>                                   // (getopt, ...)
+ 
+ // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
