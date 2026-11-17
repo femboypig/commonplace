@@ -1,0 +1,34 @@
+--- a/RTL8139Private.cpp
++++ b/RTL8139Private.cpp
+@@ -417,12 +417,6 @@
+ 	isr = csrRead16( RTL_ISR );
+ 	ELG( csrRead32( RTL_MPC ), isr, 'Int+', "RTL8139::interruptOccurred" );
+ 
+-	if ( fSpeed100 )
+-	{
+-		csrWrite32( RTL_TCTR, 0 );		// reset the timer.
+-		csrWrite16( RTL_IMR, fIMR );	// Mask off possible Tx ints. Reduce this PCI transaction???
+-	}
+-
+ 	if ( isr )
+ 	{
+ 		if ( isr & (R_ISR_FOVW | R_ISR_RXOVW) )	// If either FIFO or Buffer overflow,
+@@ -431,6 +425,18 @@
+ 			isr |= R_ISR_FOVW | R_ISR_RXOVW;	// ack both. /// mlj - I don't know why.
+ 		}
+ 		csrWrite16( RTL_ISR, isr );		// Acknowledge pending interrupt sources
++	}
++
++	// Clear the old timeout before arming the next one. A delayed
++	// acknowledgement must not clear a newly expired timer event.
++	if ( fSpeed100 )
++	{
++		csrWrite32( RTL_TCTR, 0 );
++		csrWrite16( RTL_IMR, fIMR );
++	}
++
++	if ( isr )
++	{
+ 
+ 		if ( isr & (R_ISR_TOK | R_ISR_TER) )
+ 		{
