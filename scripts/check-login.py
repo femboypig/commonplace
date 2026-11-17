@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Exercise first-boot password setup, Apple PAM login and unprivileged sessions."""
 
+import argparse
 from datetime import datetime, timezone
 import json
 import re
@@ -17,6 +18,9 @@ NEW_PASSWORD = "Changed-check-passphrase-2026!"
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--network", action="store_true")
+    options = parser.parse_args()
     directory = (
         ROOT
         / "build/login-checks"
@@ -40,7 +44,8 @@ def main():
         subprocess.run([hfs, str(image), "add", str(probe), "/bin/" + name], check=True)
         subprocess.run([hfs, str(image), "chmod", "755", "/bin/" + name], check=True)
     command = command_for(
-        [KERNEL], 1024, bounded=False, system_disk=image, disk_root=True
+        [KERNEL], 1024, bounded=False, system_disk=image, disk_root=True,
+        network=options.network
     ) + [
         "-serial",
         "mon:stdio",
@@ -61,6 +66,11 @@ def main():
                 console.change_password(ROOT_PASSWORD)
             console.login("root", ROOT_PASSWORD)
             console.command("id -u; id -g", rb"\n0\n0\n")
+            if options.network:
+                console.command("ifconfig en0; ifconfig lo0",
+                    rb"ether 52:54:00:12:34:56[\s\S]*inet 127\.0\.0\.1")
+                console.command("ioreg -r -c IOEthernetInterface -l -w 0",
+                    rb'"BSD Name" = "en0"')
             if phase == "setup":
                 console.command(
                     "password_runtime", rb"native password hashing:.*passed"
@@ -185,7 +195,7 @@ def main():
         ):
             raise ValueError("console echoed a password")
     (directory / "summary.json").write_text(
-        json.dumps({"passed": True, "phases": ["setup", "cold"]}, indent=2) + "\n"
+        json.dumps({"passed": True, "phases": ["setup", "cold"], "network": options.network}, indent=2) + "\n"
     )
     print("native Apple login and password lifecycle passed: " + str(directory))
 
