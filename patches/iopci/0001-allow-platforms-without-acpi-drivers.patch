@@ -1,0 +1,15 @@
+--- a/IOKit/pci/IOPCIPrivate.h
++++ b/IOKit/pci/IOPCIPrivate.h
+@@ -38,10 +38,12 @@
+ #define USE_LEGACYINTS          1
+ #endif
+ 
++#ifndef ACPI_SUPPORT
+ #if defined(__i386__) || defined(__x86_64__)
+ #define ACPI_SUPPORT            1
+ #else
+ #define ACPI_SUPPORT            0
++#endif
+ #endif
+ 
+ struct IOPCIDeviceExpansionData

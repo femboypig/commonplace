@@ -1,0 +1,38 @@
+--- a/iokit/conf/files
++++ b/iokit/conf/files
+@@ -112,3 +112,26 @@
+ commonplace/platform/CommonplaceCalendar.c standard
+ 
+ commonplace/platform/CommonplacePower.cpp standard
++
++external/iopci/IOPCIBridge.cpp optional iokitcpp
++external/iopci/IOPCIDevice.cpp optional iokitcpp
++external/iopci/IOPCIDeviceI386.cpp optional iokitcpp
++external/iopci/IOPCIDeviceMappedIO.cpp optional iokitcpp
++external/iopci/IOPCIConfigurator.cpp optional iokitcpp
++external/iopci/IOPCIRange.cpp optional iokitcpp
++external/iopci/IOPCIMessagedInterruptController.cpp optional iokitcpp
++external/ionetwork/IOEthernetController.cpp optional iokitcpp
++external/ionetwork/IOEthernetInterface.cpp optional iokitcpp
++external/ionetwork/IOKernelDebugger.cpp optional iokitcpp
++external/ionetwork/IOMbufMemoryCursor.cpp optional iokitcpp
++external/ionetwork/IONetworkController.cpp optional iokitcpp
++external/ionetwork/IONetworkData.cpp optional iokitcpp
++external/ionetwork/IONetworkInterface.cpp optional iokitcpp
++external/ionetwork/IONetworkMedium.cpp optional iokitcpp
++external/ionetwork/IONetworkStack.cpp optional iokitcpp
++external/ionetwork/IONetworkUserClient.cpp optional iokitcpp
++external/ionetwork/IOOutputQueue.cpp optional iokitcpp
++external/ionetwork/IOPacketQueue.cpp optional iokitcpp
++external/rtl8139/RTL8139.cpp optional iokitcpp
++external/rtl8139/RTL8139PHY.cpp optional iokitcpp
++external/rtl8139/RTL8139Private.cpp optional iokitcpp
+--- a/iokit/conf/Makefile.template
++++ b/iokit/conf/Makefile.template
+@@ -103,3 +103,6 @@
+ 
+ include $(MakeInc_rule)
+ include $(MakeInc_dir)
++
++APPLE_IO_OBJS = CommonplacePCI.cpo IOPCIBridge.cpo IOPCIDevice.cpo IOPCIDeviceI386.cpo IOPCIDeviceMappedIO.cpo IOPCIConfigurator.cpo IOPCIRange.cpo IOPCIMessagedInterruptController.cpo IOEthernetController.cpo IOEthernetInterface.cpo IOKernelDebugger.cpo IOMbufMemoryCursor.cpo IONetworkController.cpo IONetworkData.cpo IONetworkInterface.cpo IONetworkMedium.cpo IONetworkStack.cpo IONetworkUserClient.cpo IOOutputQueue.cpo IOPacketQueue.cpo RTL8139.cpo RTL8139PHY.cpo RTL8139Private.cpo
++$(foreach file,$(APPLE_IO_OBJS),$(eval $(file)_CFLAGS_ADD += -DACPI_SUPPORT=0 -D__PRIVATE_SPI__ -I$(COMMONPLACE_ROOT)/userland/darwin/include -I$(SRCROOT)/bsd -I$(SRCROOT)/external -I$(SRCROOT)/external/ionetwork -I$(SRCROOT)/external/iopci -Wno-error))

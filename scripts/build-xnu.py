@@ -10,6 +10,8 @@ import subprocess
 import sys
 import tempfile
 
+from xnu_external import prepare_external
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -51,6 +53,7 @@ def main():
     if not source.exists():
         shutil.copytree(ROOT / 'sources' / 'xnu', source, symlinks=True)
     apply_source_patches(source)
+    prepare_external(source, apply_source_patches)
     shutil.copytree(ROOT / 'kernel', source / 'commonplace', dirs_exist_ok=True)
     pthread_source = source / 'libpthread'
     if not pthread_source.exists():
