@@ -3,6 +3,10 @@
 import re
 
 PROJECTS = (
+    "iopci",
+    "ionetwork",
+    "rtl8139",
+    "network_cmds",
     "bash",
     "hfs",
     "cf",
