@@ -53,6 +53,9 @@ def prepare(sdk):
         "reboot.h",
     ):
         shutil.copyfile(ROOT / "sources/xnu/bsd/sys" / name, include / "sys" / name)
+    for name in ("if_bond_var.h", "if_bridgevar.h", "if_vlan_var.h", "lacp.h", "if_bond_internal.h", "network_agent.h"):
+        shutil.copyfile(ROOT / "sources/xnu/bsd/net" / name, include / "net" / name)
+    headers(ROOT / "sources/xnu/bsd/net/pktsched", include / "net/pktsched")
     (include / "System/machine").mkdir(parents=True, exist_ok=True)
     shutil.copyfile(
         ROOT / "sources/xnu/osfmk/machine/cpu_capabilities.h",

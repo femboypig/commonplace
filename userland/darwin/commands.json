@@ -388,6 +388,46 @@
       "include_projects": [
         "libutil_numbers"
       ]
+    },
+    "ifconfig": {
+      "sources": [
+        "network_cmds/ifconfig.tproj/af_inet.c",
+        "network_cmds/ifconfig.tproj/af_inet6.c",
+        "network_cmds/ifconfig.tproj/af_link.c",
+        "network_cmds/ifconfig.tproj/ifbond.c",
+        "network_cmds/ifconfig.tproj/ifbridge.c",
+        "network_cmds/ifconfig.tproj/ifclone.c",
+        "network_cmds/ifconfig.tproj/ifconfig.c",
+        "network_cmds/ifconfig.tproj/ifmedia.c",
+        "network_cmds/ifconfig.tproj/ifvlan.c"
+      ],
+      "flags": [
+        "-DPRIVATE"
+      ]
+    },
+    "ping": {
+      "sources": [
+        "network_cmds/ping.tproj/ping.c"
+      ],
+      "flags": [
+        "-DPRIVATE"
+      ]
+    },
+    "route": {
+      "sources": [
+        "network_cmds/route.tproj/route.c"
+      ],
+      "flags": [
+        "-DPRIVATE"
+      ]
+    },
+    "arp": {
+      "sources": [
+        "network_cmds/arp.tproj/arp.c"
+      ],
+      "flags": [
+        "-DPRIVATE"
+      ]
     }
   }
 }
