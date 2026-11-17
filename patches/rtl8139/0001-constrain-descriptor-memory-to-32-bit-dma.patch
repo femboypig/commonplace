@@ -1,0 +1,18 @@
+--- a/RTL8139Private.cpp
++++ b/RTL8139Private.cpp
+@@ -295,10 +295,11 @@
+ 
+ 	ELG( 0, size, 'AlDM', "RTL8139::allocateDescriptorMemory - size" );
+ 
+-    fpTxRxMD = IOBufferMemoryDescriptor::withOptions( 
+-								/* options   */	kIOMemoryPhysicallyContiguous,
+-								/* capacity  */	size,
+-								/* alignment */	PAGE_SIZE );
++    // RTL8139 exposes 32-bit DMA addresses. Constrain the entire contiguous
++    // receive ring and transmit buffers rather than truncating a high address.
++    fpTxRxMD = IOBufferMemoryDescriptor::inTaskWithPhysicalMask(
++        kernel_task, kIOMemoryPhysicallyContiguous | kIODirectionInOut,
++        size, 0x00000000fffff000ULL);
+ 
+     if ( !fpTxRxMD || fpTxRxMD->prepare() != kIOReturnSuccess )
+     {
