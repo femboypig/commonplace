@@ -40,6 +40,9 @@ def boot(directory, memory, output, prepare=False, *, password=PASSWORD):
         if b"BSD root: cp1," not in boot_log or b"Added memory device md0" in boot_log:
             raise ValueError("release did not boot directly from its persistent root")
         duration = round(time.monotonic() - started, 3)
+        if manifest.get("profile") == "apple-services":
+            console.command("ifconfig en0", rb"ether 52:54:00:12:34:56")
+            console.command("ifconfig lo0", rb"inet 127\.0\.0\.1")
         if prepare:
             console.command("ls /data", rb"\Als /data\n" + PROMPT)
             console.command(
@@ -76,6 +79,26 @@ def boot(directory, memory, output, prepare=False, *, password=PASSWORD):
         }
     finally:
         console.close()
+
+
+def check_factory(directory, output):
+    system = directory / "build/disks/system.hfs"
+    before = hashlib.sha256(system.read_bytes()).hexdigest()
+    console = Console(
+        [str(directory / "run.sh"), "--recovery", "--no-network"], output
+    )
+    try:
+        console.expect(PROMPT, seconds=180)
+        console.sendline("fsck_hfs -fn -c 16m /dev/rcp1; echo factory-status:$?")
+        response = console.expect(PROMPT, seconds=180)
+        if b"\nfactory-status:0\n" not in response:
+            raise ValueError("packaged factory filesystem failed native verification")
+        console.poweroff()
+    finally:
+        console.close()
+    if hashlib.sha256(system.read_bytes()).hexdigest() != before:
+        raise ValueError("factory verification changed the installed system")
+    return {"passed": True, "system_sha256": before}
 
 
 def packaged_recovery(directory, output):
@@ -172,6 +195,7 @@ def main():
         ["python3", str(directory / "scripts/verify-release.py"), str(directory)],
         check=True,
     )
+    factory = check_factory(directory, output / "factory.log")
     results = [
         boot(directory, 512, output / "warm.log", prepare=True),
         boot(directory, 2048, output / "cold.log"),
@@ -184,7 +208,8 @@ def main():
         check=True,
     )
     manifest = json.loads((directory / "manifest.json").read_text())
-    summary = {"passed": True, "revision": manifest["revision"], "boots": results}
+    summary = {"passed": True, "revision": manifest["revision"],
+        "factory": factory, "boots": results}
     (output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     print(
         "packaged boot, persistence and standalone recovery passed; evidence: "
