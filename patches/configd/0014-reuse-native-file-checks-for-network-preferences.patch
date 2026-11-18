@@ -1,0 +1,77 @@
+--- a/SystemConfiguration.fproj/SCP.c
++++ b/SystemConfiguration.fproj/SCP.c
+@@ -179,7 +179,7 @@
+ 			       kCFCompareBackwards);
+ 
+ 	newURL = CFURLCreateWithFileSystemPath(NULL, newPath, kCFURLPOSIXPathStyle, FALSE);
+-	if (CFURLResourceIsReachable(newURL, NULL) == FALSE) {
++	if (_SCNetworkConfigurationMigrateIsFilePresent(newURL) == FALSE) {
+ 		ni_prefs = __SCNetworkCreateDefaultNIPrefs(newPath);
+ 	}
+ 	else {
+--- a/SystemConfiguration.fproj/SCNetworkMigration.c
++++ b/SystemConfiguration.fproj/SCNetworkMigration.c
+@@ -559,7 +559,7 @@
+ 	return paths;
+ }
+ 
+-static Boolean
++__private_extern__ Boolean
+ _SCNetworkConfigurationMigrateIsFilePresent(CFURLRef filePath)
+ {
+ 	Boolean fileExists = false;
+@@ -3766,14 +3766,14 @@
+ 	baseConfigURL = CFURLCreateWithFileSystemPathRelativeToBase(NULL, PREFS_DEFAULT_DIR_RELATIVE, kCFURLPOSIXPathStyle, TRUE, configurationURL);
+ 	configPreferencesURL = CFURLCreateFromFileSystemRepresentationRelativeToBase(NULL, (const UInt8*) PREFS_DEFAULT_CONFIG_PLIST, sizeof(PREFS_DEFAULT_CONFIG_PLIST), FALSE, baseConfigURL);
+ 
+-	if (CFURLResourceIsReachable(configPreferencesURL, NULL) == FALSE) {
++	if (_SCNetworkConfigurationMigrateIsFilePresent(configPreferencesURL) == FALSE) {
+ 		SC_log(LOG_INFO, "No preferences.plist file");
+ 		goto done;
+ 	}
+ 
+ 	configNetworkInterfacesURL = CFURLCreateFromFileSystemRepresentationRelativeToBase(NULL, (const UInt8*)NETWORK_INTERFACES_PREFS_PLIST, sizeof(NETWORK_INTERFACES_PREFS_PLIST), FALSE, baseConfigURL);
+ 
+-	if (CFURLResourceIsReachable(configNetworkInterfacesURL, NULL) == FALSE) {
++	if (_SCNetworkConfigurationMigrateIsFilePresent(configNetworkInterfacesURL) == FALSE) {
+ 		SC_log(LOG_INFO, "No NetworkInterfaces.plist file");
+ 		goto done;
+ 	}
+@@ -3790,14 +3790,14 @@
+ 	baseExpectedConfigURL = CFURLCreateWithFileSystemPathRelativeToBase(NULL, PREFS_DEFAULT_DIR_RELATIVE, kCFURLPOSIXPathStyle, TRUE, expectedConfigurationURL);
+ 	expectedPreferencesURL = CFURLCreateFromFileSystemRepresentationRelativeToBase(NULL, (const UInt8*)PREFS_DEFAULT_CONFIG_PLIST, sizeof(PREFS_DEFAULT_CONFIG_PLIST), FALSE, baseExpectedConfigURL);
+ 
+-	if (CFURLResourceIsReachable(expectedPreferencesURL, NULL) == FALSE) {
++	if (_SCNetworkConfigurationMigrateIsFilePresent(expectedPreferencesURL) == FALSE) {
+ 		SC_log(LOG_INFO, "No expected preferences.plist file");
+ 		goto done;
+ 	}
+ 
+ 	expectedNetworkInterfaceURL = CFURLCreateFromFileSystemRepresentationRelativeToBase(NULL, (const UInt8*)NETWORK_INTERFACES_PREFS_PLIST, sizeof(NETWORK_INTERFACES_PREFS_PLIST), FALSE, baseExpectedConfigURL);
+ 
+-	if (CFURLResourceIsReachable(expectedNetworkInterfaceURL, NULL) == FALSE) {
++	if (_SCNetworkConfigurationMigrateIsFilePresent(expectedNetworkInterfaceURL) == FALSE) {
+ 		SC_log(LOG_INFO, "No expected NetworkInterfaces.plist file");
+ 		goto done;
+ 	}
+@@ -3896,7 +3896,7 @@
+ 		targetFile = CFURLCreateFromFileSystemRepresentationRelativeToBase(NULL, (const UInt8*)filePath,
+ 		strnlen(filePath, sizeof(filePath)), FALSE, targetDir);
+ 
+-		if (CFURLResourceIsReachable(targetFile, NULL) == FALSE) {
++		if (_SCNetworkConfigurationMigrateIsFilePresent(targetFile) == FALSE) {
+ 			CFArrayAppendValue(toBeRemoved, affectedURL);
+ 		}
+ 		CFRelease(targetFile);
+--- a/SystemConfiguration.fproj/SCNetworkConfigurationInternal.h
++++ b/SystemConfiguration.fproj/SCNetworkConfigurationInternal.h
+@@ -33,6 +33,9 @@
+ #include <SystemConfiguration/SCNetworkConfigurationPrivate.h>
+ #include <IOKit/IOKitLib.h>
+ 
++__private_extern__ Boolean
++_SCNetworkConfigurationMigrateIsFilePresent(CFURLRef filePath);
++
+ #if	!TARGET_IPHONE_SIMULATOR
+ #include "IPMonitorControl.h"
+ #endif	// !TARGET_IPHONE_SIMULATOR
