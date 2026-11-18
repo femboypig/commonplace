@@ -22,6 +22,11 @@ def main():
         "IOMIGMachPort.h",
     ):
         shutil.copyfile(source / name, private / "IOKit" / name)
+    for component, name in (("pwr_mgt.subproj", "pwr_mgt"), ("ps.subproj", "ps")):
+        directory = private / "IOKit" / name
+        directory.mkdir(exist_ok=True)
+        for header in (source / component).glob("*.h"):
+            shutil.copyfile(header, directory / header.name)
     shutil.copyfile(
         ROOT / "sources/xnu/iokit/IOKit/IOKitKeysPrivate.h",
         private / "IOKit/IOKitKeysPrivate.h",
