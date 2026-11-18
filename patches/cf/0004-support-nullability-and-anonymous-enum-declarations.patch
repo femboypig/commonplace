@@ -1,0 +1,37 @@
+--- a/CFAvailability.h
++++ b/CFAvailability.h
+@@ -193,18 +193,32 @@
+ #define CF_ENUM_DEPRECATED_IOS(_iosIntro, _iosDep, ...)
+ #endif
+ 
++// Nullability annotations affect declarations only, never the runtime ABI.
++#if __has_feature(assume_nonnull)
++#define CF_ASSUME_NONNULL_BEGIN _Pragma("clang assume_nonnull begin")
++#define CF_ASSUME_NONNULL_END _Pragma("clang assume_nonnull end")
++#else
++#define CF_ASSUME_NONNULL_BEGIN
++#define CF_ASSUME_NONNULL_END
++#endif
++
+ // Enums and Options
++#define __CF_ENUM_GET_MACRO(_1, _2, NAME, ...) NAME
+ #if (__cplusplus && __cplusplus >= 201103L && (__has_extension(cxx_strong_enums) || __has_feature(objc_fixed_enum))) || (!__cplusplus && __has_feature(objc_fixed_enum))
+-#define CF_ENUM(_type, _name) enum _name : _type _name; enum _name : _type
++#define __CF_NAMED_ENUM(_type, _name) enum _name : _type _name; enum _name : _type
++#define __CF_ANON_ENUM(_type) enum : _type
+ #if (__cplusplus)
+ #define CF_OPTIONS(_type, _name) _type _name; enum : _type
+ #else
+ #define CF_OPTIONS(_type, _name) enum _name : _type _name; enum _name : _type
+ #endif
+ #else
+-#define CF_ENUM(_type, _name) _type _name; enum
++#define __CF_NAMED_ENUM(_type, _name) _type _name; enum
++#define __CF_ANON_ENUM(_type) enum
+ #define CF_OPTIONS(_type, _name) _type _name; enum
+ #endif
++
++#define CF_ENUM(...) __CF_ENUM_GET_MACRO(__VA_ARGS__, __CF_NAMED_ENUM, __CF_ANON_ENUM, )(__VA_ARGS__)
+ 
+ // Extension availability macros
+ #define CF_EXTENSION_UNAVAILABLE(_msg)      __OS_EXTENSION_UNAVAILABLE(_msg)
