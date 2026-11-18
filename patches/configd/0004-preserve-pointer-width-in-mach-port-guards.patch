@@ -1,0 +1,58 @@
+--- a/SystemConfiguration.fproj/SCDNotifierInformViaCallback.c
++++ b/SystemConfiguration.fproj/SCDNotifierInformViaCallback.c
+@@ -141,7 +141,7 @@
+ 		bzero(&opts, sizeof(opts));
+ 		opts.flags = MPO_CONTEXT_AS_GUARD|MPO_INSERT_SEND_RIGHT;
+ 
+-		kr = mach_port_construct(mach_task_self(), &opts, store, &port);
++		kr = mach_port_construct(mach_task_self(), &opts, (mach_port_context_t)(uintptr_t)store, &port);
+ #else	// HAVE_MACHPORT_GUARDS
+ 		kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &port);
+ #endif	// HAVE_MACHPORT_GUARDS
+@@ -214,7 +214,7 @@
+ 
+ 			/* remove our receive right  */
+ #ifdef	HAVE_MACHPORT_GUARDS
+-			(void) mach_port_destruct(mach_task_self(), port, 0, store);
++			(void) mach_port_destruct(mach_task_self(), port, 0, (mach_port_context_t)(uintptr_t)store);
+ #else	// HAVE_MACHPORT_GUARDS
+ 			(void) mach_port_mod_refs(mach_task_self(), port, MACH_PORT_RIGHT_RECEIVE, -1);
+ #endif	// HAVE_MACHPORT_GUARDS
+@@ -224,7 +224,7 @@
+ 		if (sc_status != kSCStatusOK) {
+ 			/* something [else] didn't work, remove our receive right  */
+ #ifdef	HAVE_MACHPORT_GUARDS
+-			(void) mach_port_destruct(mach_task_self(), port, 0, store);
++			(void) mach_port_destruct(mach_task_self(), port, 0, (mach_port_context_t)(uintptr_t)store);
+ #else	// HAVE_MACHPORT_GUARDS
+ 			(void) mach_port_mod_refs(mach_task_self(), port, MACH_PORT_RIGHT_RECEIVE, -1);
+ #endif	// HAVE_MACHPORT_GUARDS
+@@ -323,7 +323,7 @@
+ 
+ 			/* and, finally, remove our receive right  */
+ #ifdef	HAVE_MACHPORT_GUARDS
+-			(void) mach_port_destruct(mach_task_self(), mp, 0, store);
++			(void) mach_port_destruct(mach_task_self(), mp, 0, (mach_port_context_t)(uintptr_t)store);
+ #else	// HAVE_MACHPORT_GUARDS
+ 			(void) mach_port_mod_refs(mach_task_self(), mp, MACH_PORT_RIGHT_RECEIVE, -1);
+ #endif	// HAVE_MACHPORT_GUARDS
+--- a/configd.tproj/session.c
++++ b/configd.tproj/session.c
+@@ -212,7 +212,7 @@
+ 		bzero(&opts, sizeof(opts));
+ 		opts.flags = MPO_CONTEXT_AS_GUARD;
+ 
+-		kr = mach_port_construct(mach_task_self(), &opts, newSession, &mp);
++		kr = mach_port_construct(mach_task_self(), &opts, (mach_port_context_t)(uintptr_t)newSession, &mp);
+ #else	// HAVE_MACHPORT_GUARDS
+ 		kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &mp);
+ #endif	// HAVE_MACHPORT_GUARDS
+@@ -316,7 +316,7 @@
+ 			 * Our send right has already been removed. Remove our receive right.
+ 			 */
+ #ifdef	HAVE_MACHPORT_GUARDS
+-			(void) mach_port_destruct(mach_task_self(), server, 0, thisSession);
++			(void) mach_port_destruct(mach_task_self(), server, 0, (mach_port_context_t)(uintptr_t)thisSession);
+ #else	// HAVE_MACHPORT_GUARDS
+ 			(void) mach_port_mod_refs(mach_task_self(), server, MACH_PORT_RIGHT_RECEIVE, -1);
+ #endif	// HAVE_MACHPORT_GUARDS
