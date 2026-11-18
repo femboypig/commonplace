@@ -272,3 +272,7 @@ check-iokit: loader check-kernel rootfs
 .PHONY: check-mach
 check-mach: loader check-kernel rootfs
 	$(PYTHON) scripts/check-mach.py
+
+.PHONY: check-configd
+check-configd: loader check-kernel darwin-services rootfs-tools
+	$(PYTHON) scripts/check-configd.py
