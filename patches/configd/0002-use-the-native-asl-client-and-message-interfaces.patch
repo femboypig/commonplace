@@ -1,0 +1,147 @@
+--- a/SystemConfiguration.fproj/SCD.c
++++ b/SystemConfiguration.fproj/SCD.c
+@@ -49,7 +49,12 @@
+ #define INSTALL_ENVIRONMENT	"__OSINSTALL_ENVIRONMENT"
+ 
+ // LIBASL SPI
+-extern asl_object_t	_asl_server_control_query(void);
++#ifndef HAVE_ASL_CONTROL_QUERY
++#define HAVE_ASL_CONTROL_QUERY 1
++#endif
++#if HAVE_ASL_CONTROL_QUERY
++extern aslmsg	_asl_server_control_query(void);
++#endif
+ 
+ /* framework variables */
+ int	_sc_debug	= FALSE;	/* non-zero if debugging enabled */
+@@ -73,7 +78,7 @@
+ 	__SCThreadSpecificDataRef	tsd = (__SCThreadSpecificDataRef)arg;
+ 
+ 	if (tsd != NULL) {
+-		if (tsd->_asl != NULL) asl_release(tsd->_asl);
++		if (tsd->_asl != NULL) asl_close(tsd->_asl);
+ 		if (tsd->_sc_store != NULL) CFRelease(tsd->_sc_store);
+ 		CFAllocatorDeallocate(kCFAllocatorSystemDefault, tsd);
+ 	}
+@@ -395,7 +400,7 @@
+ }
+ 
+ static void
+-__SCLog(asl_object_t asl, asl_object_t msg, int level, CFStringRef formatString, va_list formatArguments)
++__SCLog(aslclient asl, aslmsg msg, int level, CFStringRef formatString, va_list formatArguments)
+ {
+ 	CFDataRef	line;
+ 	CFArrayRef	lines;
+@@ -560,7 +565,7 @@
+ 
+ 
+ void
+-SCLOG(asl_object_t asl, asl_object_t msg, int level, CFStringRef formatString, ...)
++SCLOG(aslclient asl, aslmsg msg, int level, CFStringRef formatString, ...)
+ {
+ 	va_list		formatArguments;
+ 	va_list		formatArguments_print;
+@@ -659,8 +664,8 @@
+ 
+ 	char *			loggerID;	// LoggerID
+ 	SCLoggerFlags		flags;
+-	asl_object_t		aslc;
+-	asl_object_t		aslm;
++	aslclient		aslc;
++	aslmsg		aslm;
+ 	ModuleStatus		module_status;
+ 	pthread_mutex_t		lock;
+ };
+@@ -699,7 +704,9 @@
+ static void		SCLoggerSetLoggerID(SCLoggerRef logger, CFStringRef loggerID);
+ static void		SCLoggerSendMessageToModuleOnly(SCLoggerRef logger, Boolean isPrivate);
+ static void		SCLoggerSendASLControl(SCLoggerRef logger, LoggerASLControl control);
++#if HAVE_ASL_CONTROL_QUERY
+ static ModuleStatus	GetModuleStatus(const char * loggerID);
++#endif
+ 
+ static void
+ __SCLoggerRegisterClass(void)
+@@ -743,11 +750,11 @@
+ 			logger->loggerID = NULL;
+ 		}
+ 		if (logger->aslm != NULL) {
+-			asl_release(logger->aslm);
++			asl_free(logger->aslm);
+ 			logger->aslm = NULL;
+ 		}
+ 		if (logger->aslc != NULL) {
+-			asl_release(logger->aslc);
++			asl_close(logger->aslc);
+ 			logger->aslc = NULL;
+ 		}
+ 	}
+@@ -783,7 +790,9 @@
+ 	}
+ 	pthread_mutex_lock(&(logger->lock));
+ 	if (flags != kSCLoggerFlagsNone) {
++#if HAVE_ASL_CONTROL_QUERY
+ 		logger->module_status = GetModuleStatus(logger->loggerID);
++#endif
+ 		if (logger->module_status == kModuleStatusDoesNotExist) {
+ 			goto done;
+ 		}
+@@ -828,17 +837,20 @@
+ 		= _SC_cfstring_to_cstring(loggerID, NULL, 0,
+ 					  kCFStringEncodingUTF8);
+ 	// Enable the module if disabled
++#if HAVE_ASL_CONTROL_QUERY
+ 	logger->module_status = GetModuleStatus(logger->loggerID);
++#endif
+ 	if (logger->module_status == kModuleStatusDisabled) {
+ 		SCLoggerSendASLControl(logger, kLoggerASLControlEnableModule);
+ 	}
+ }
+ 
++#if HAVE_ASL_CONTROL_QUERY
+ static ModuleStatus
+ GetModuleStatus(const char * loggerID)
+ {
+ 	ModuleStatus	moduleStatus	= kModuleStatusDoesNotExist;
+-	asl_object_t	response	= NULL;
++	aslmsg	response	= NULL;
+ 	const char*	value		= NULL;
+ 
+ 	if (loggerID != NULL) {
+@@ -860,10 +872,11 @@
+ 		}
+ 	}
+ done:
+-	asl_release(response);
++	asl_free(response);
+ 
+ 	return moduleStatus;
+ }
++#endif
+ 
+ static void
+ SCLoggerSendMessageToModuleOnly(SCLoggerRef logger, Boolean isPrivate)
+@@ -946,8 +959,8 @@
+ SCLoggerVLog(SCLoggerRef logger, int loglevel, CFStringRef formatString,
+ 	     va_list args)
+ {
+-	asl_object_t	aslc;
+-	asl_object_t	aslm;
++	aslclient	aslc;
++	aslmsg	aslm;
+ 
+ 	if (logger == NULL
+ 	    || logger->module_status == kModuleStatusDoesNotExist) {
+--- a/SystemConfiguration.fproj/SCPrivate.h
++++ b/SystemConfiguration.fproj/SCPrivate.h
+@@ -479,8 +479,8 @@
+ 	@result The specified message will be written to the system message
+ 		logger (See syslogd(8)).
+  */
+-void		SCLOG				(asl_object_t		asl,
+-						 asl_object_t		msg,
++void		SCLOG				(aslclient		asl,
++						 aslmsg		msg,
+ 						 int			level,
+ 						 CFStringRef		formatString,
+ 						 ...)	CF_FORMAT_FUNCTION(4, 5);
