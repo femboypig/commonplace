@@ -18,6 +18,7 @@ struct notification {
 };
 
 int check_preferences(const char *mode);
+int check_network_configuration(const char *mode);
 
 static void changed(SCDynamicStoreRef store, CFArrayRef keys, void *context)
 {
@@ -113,6 +114,8 @@ static void check_session_cleanup(SCDynamicStoreRef store, CFStringRef key)
 
 int main(int argc, char **argv)
 {
+    if (argc == 2 && !strncmp(argv[1], "network-", 8))
+        return check_network_configuration(argv[1]);
     if (argc == 2 && !strncmp(argv[1], "preferences-", 12))
         return check_preferences(argv[1]);
     if (argc == 4 && !strcmp(argv[1], "session")) {
