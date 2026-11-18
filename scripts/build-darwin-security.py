@@ -10,6 +10,8 @@ def main():
     include = OUT / "include/security"
     public = include / "Security"
     public.mkdir(parents=True, exist_ok=True)
+    for name in ("MacTypes.h", "ConditionalMacros.h", "AssertMacros.h", "Endian.h"):
+        shutil.copyfile(ROOT / "sources/carbon_headers" / name, include / name)
     for library in ("codesigning", "cssm", "keychain", "authorization", "transform"):
         for header in (source / ("libsecurity_" + library) / "lib").glob("*.h"):
             shutil.copyfile(header, public / header.name)
