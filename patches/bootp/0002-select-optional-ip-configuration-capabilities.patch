@@ -1,0 +1,215 @@
+--- a/IPConfiguration.bproj/ipconfigd.c
++++ b/IPConfiguration.bproj/ipconfigd.c
+@@ -145,6 +145,19 @@
+  * - added support for IPv6 configuration
+  */
+ 
++#ifndef HAVE_CGA
++#define HAVE_CGA 1
++#endif
++#ifndef HAVE_POWERD
++#define HAVE_POWERD 1
++#endif
++#ifndef HAVE_USER_NOTIFICATIONS
++#define HAVE_USER_NOTIFICATIONS 1
++#endif
++#ifndef HAVE_6TO4
++#define HAVE_6TO4 1
++#endif
++
+ #include <stdlib.h>
+ #include <unistd.h>
+ #include <string.h>
+@@ -184,7 +197,9 @@
+ #include <Availability.h>
+ #if ! TARGET_OS_EMBEDDED
+ #include <CoreFoundation/CFUserNotification.h>
++#if HAVE_USER_NOTIFICATIONS
+ #include <CoreFoundation/CFUserNotificationPriv.h>
++#endif
+ #include <IOKit/pwr_mgt/IOPMLibPrivate.h>
+ #endif /* ! TARGET_OS_EMBEDDED */
+ 
+@@ -1285,6 +1300,7 @@
+ 
+ #define WAKE_ID_PREFIX		"com.apple.networking.IPConfiguration"
+ 
++#if HAVE_POWERD
+ STATIC void
+ CleanupWakeEvents(void)
+ {
+@@ -1315,6 +1331,8 @@
+     CFRelease(events);
+     return;
+ }
++
++#endif
+ 
+ /**
+  ** DisableUntilNeeded functions
+@@ -4463,11 +4481,13 @@
+ 	    func = rtadv_thread;
+ 	}
+ 	break;
++#if HAVE_6TO4
+     case ipconfig_method_stf_e:
+ 	if (S_configure_ipv6) {
+ 	    func = stf_thread;
+ 	}
+ 	break;
++#endif
+     case ipconfig_method_manual_v6_e:
+ 	if (S_configure_ipv6) {
+ 	    func = manual_v6_thread;
+@@ -6747,7 +6767,7 @@
+     return (power_connection);
+ }
+ 
+-#if ! TARGET_OS_EMBEDDED
++#if ! TARGET_OS_EMBEDDED && HAVE_POWERD
+ #define POWER_INTEREST	(kIOPMEarlyWakeNotification	\
+ 			 | kIOPMCapabilityNetwork	\
+ 			 | kIOPMCapabilityCPU)
+@@ -6869,7 +6889,7 @@
+     configure_from_cache(session);
+ 
+     /* register for sleep/wake */
+-#if ! TARGET_OS_EMBEDDED
++#if ! TARGET_OS_EMBEDDED && HAVE_POWERD
+     if (S_use_maintenance_wake) {
+ 	new_power_notification_init();
+     }
+@@ -7449,7 +7469,7 @@
+     return;
+ }
+ 
+-#if ! TARGET_OS_EMBEDDED
++#if ! TARGET_OS_EMBEDDED && HAVE_USER_NOTIFICATIONS
+ 
+ static void
+ user_confirm(CFUserNotificationRef userNotification, 
+@@ -8113,7 +8133,9 @@
+     ipconfigd_create_paths();
+ 
+     /* initialize CGA */
++#if HAVE_CGA
+     CGAInit();
++#endif
+ 
+     /* set globals */
+     S_set_globals();
+@@ -8172,7 +8194,9 @@
+     }
+     dynarray_init(&S_ifstate_list, IFState_free, NULL);
+ 
++#if HAVE_POWERD
+     CleanupWakeEvents();
++#endif
+ 
+     /* set the loopback interface address */
+     set_loopback();
+--- a/IPConfiguration.bproj/ifutil.c
++++ b/IPConfiguration.bproj/ifutil.c
+@@ -33,6 +33,10 @@
+  * - split out from ipconfigd.c
+  */
+ 
++
++#ifndef HAVE_CGA
++#define HAVE_CGA 1
++#endif
+ 
+ #include <stdlib.h>
+ #include <unistd.h>
+@@ -384,6 +388,9 @@
+ STATIC int
+ ll_start(int s, const char * name, boolean_t use_cga)
+ {
++#if !HAVE_CGA
++    return (siocll_start(s, name));
++#else
+     struct in6_llstartreq	req;
+ 
+     if (use_cga == FALSE || !CGAIsEnabled()) {
+@@ -395,6 +402,7 @@
+     req.llsr_lifetime.ia6t_vltime = -1;
+     req.llsr_lifetime.ia6t_pltime = -1;
+     return (ioctl(s, SIOCLL_CGASTART, &req));
++#endif
+ }
+ 
+ STATIC int
+--- a/IPConfiguration.bproj/dhcp.c
++++ b/IPConfiguration.bproj/dhcp.c
+@@ -39,6 +39,10 @@
+  * February 1, 2002	Dieter Siegmund (dieter@apple.com)
+  * - changes for NetBoot
+  */
++
++#ifndef HAVE_POWERD
++#define HAVE_POWERD 1
++#endif
+ 
+ #include <stdlib.h>
+ #include <unistd.h>
+@@ -1665,6 +1669,7 @@
+     return (ret);
+ }
+ 
++#if HAVE_POWERD
+ STATIC void
+ dhcp_handle_active_during_sleep(ServiceRef service_p,
+ 				active_during_sleep_t * active_p)
+@@ -1809,6 +1814,7 @@
+     }
+     return;
+ }
++#endif
+ 
+ PRIVATE_EXTERN ipconfig_status_t
+ dhcp_thread(ServiceRef service_p, IFEventID_t event_id, void * event_data)
+@@ -2165,8 +2171,12 @@
+ 	  break;	
+       }
+       case IFEventID_active_during_sleep_e:
+-	  dhcp_handle_active_during_sleep(service_p, 
++#if HAVE_POWERD
++	  dhcp_handle_active_during_sleep(service_p,
+ 					  (active_during_sleep_t *)event_data);
++#else
++          ((active_during_sleep_t *)event_data)->supported = FALSE;
++#endif
+ 	  break;
+       default:
+ 	  break;
+--- a/IPConfiguration.bproj/ipconfigd_threads.h
++++ b/IPConfiguration.bproj/ipconfigd_threads.h
+@@ -25,6 +25,10 @@
+  * ipconfigd_threads.h
+  * - definitions required by the configuration threads
+  */
++
++#ifndef HAVE_USER_NOTIFICATIONS
++#define HAVE_USER_NOTIFICATIONS 1
++#endif
+ 
+ #ifndef _S_IPCONFIGD_THREADS_H
+ #define _S_IPCONFIGD_THREADS_H
+@@ -298,7 +302,7 @@
+ 			 const struct in6_addr * addr_p, int prefix_length);
+ 
+ 
+-#if TARGET_OS_EMBEDDED
++#if TARGET_OS_EMBEDDED || !HAVE_USER_NOTIFICATIONS
+ static __inline__ void
+ ServiceReportIPv6AddressConflict(ServiceRef service_p,
+ 				 const struct in6_addr * addr_p)
+@@ -318,7 +322,7 @@
+ service_publish_failure_sync(ServiceRef service_p, ipconfig_status_t status,
+ 			     boolean_t sync);
+ 
+-#if TARGET_OS_EMBEDDED
++#if TARGET_OS_EMBEDDED || !HAVE_USER_NOTIFICATIONS
+ static __inline__ void
+ ServiceReportIPv4AddressConflict(ServiceRef service_p, struct in_addr ip)
+ {
