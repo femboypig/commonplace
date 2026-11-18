@@ -281,3 +281,7 @@ check-configd: loader check-kernel darwin-services rootfs-tools
 .PHONY: check-backtrace
 check-backtrace: loader check-kernel rootfs
 	$(PYTHON) scripts/check-backtrace.py
+
+.PHONY: check-dhcp
+check-dhcp: loader check-kernel darwin-services rootfs-tools
+	$(PYTHON) scripts/check-dhcp.py
