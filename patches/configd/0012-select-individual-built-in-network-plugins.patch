@@ -1,0 +1,74 @@
+--- a/configd.tproj/plugin_support.c
++++ b/configd.tproj/plugin_support.c
+@@ -136,8 +136,23 @@
+ #ifndef HAVE_BUILTIN_PLUGINS
+ #define HAVE_BUILTIN_PLUGINS 1
+ #endif
++#ifndef HAVE_BUILTIN_IPMONITOR
++#define HAVE_BUILTIN_IPMONITOR HAVE_BUILTIN_PLUGINS
++#endif
++#ifndef HAVE_BUILTIN_INTERFACENAMER
++#define HAVE_BUILTIN_INTERFACENAMER HAVE_BUILTIN_PLUGINS
++#endif
++#ifndef HAVE_BUILTIN_KERNELEVENTMONITOR
++#define HAVE_BUILTIN_KERNELEVENTMONITOR HAVE_BUILTIN_PLUGINS
++#endif
++#ifndef HAVE_BUILTIN_LINKCONFIGURATION
++#define HAVE_BUILTIN_LINKCONFIGURATION HAVE_BUILTIN_PLUGINS
++#endif
++#ifndef HAVE_BUILTIN_PREFERENCESMONITOR
++#define HAVE_BUILTIN_PREFERENCESMONITOR HAVE_BUILTIN_PLUGINS
++#endif
+ static const builtin builtin_plugins[] = {
+-#if HAVE_BUILTIN_PLUGINS
++#if HAVE_BUILTIN_IPMONITOR
+ 	{
+ 		CFSTR("com.apple.SystemConfiguration.IPMonitor"),
+ 		&load_IPMonitor,
+@@ -145,7 +160,9 @@
+ 		&prime_IPMonitor,
+ 		NULL
+ 	},
++#endif
+ #if	!TARGET_IPHONE_SIMULATOR
++#if HAVE_BUILTIN_INTERFACENAMER
+ 	{
+ 		CFSTR("com.apple.SystemConfiguration.InterfaceNamer"),
+ 		&load_InterfaceNamer,
+@@ -153,6 +170,8 @@
+ 		NULL,
+ 		NULL
+ 	},
++#endif
++#if HAVE_BUILTIN_KERNELEVENTMONITOR
+ 	{
+ 		CFSTR("com.apple.SystemConfiguration.KernelEventMonitor"),
+ 		&load_KernelEventMonitor,
+@@ -160,6 +179,8 @@
+ 		&prime_KernelEventMonitor,
+ 		NULL
+ 	},
++#endif
++#if HAVE_BUILTIN_LINKCONFIGURATION
+ 	{
+ 		CFSTR("com.apple.SystemConfiguration.LinkConfiguration"),
+ 		&load_LinkConfiguration,
+@@ -167,6 +188,8 @@
+ 		NULL,
+ 		NULL
+ 	},
++#endif
++#if HAVE_BUILTIN_PREFERENCESMONITOR
+ 	{
+ 		CFSTR("com.apple.SystemConfiguration.PreferencesMonitor"),
+ 		&load_PreferencesMonitor,
+@@ -174,8 +197,8 @@
+ 		&prime_PreferencesMonitor,
+ 		NULL
+ 	},
++#endif
+ #endif	// !TARGET_IPHONE_SIMULATOR
+-#endif
+ 	{ NULL, NULL, NULL, NULL, NULL }
+ };
+ 
