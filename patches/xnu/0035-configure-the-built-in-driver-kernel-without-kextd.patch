@@ -1,0 +1,26 @@
+--- a/config/MASTER.x86_64
++++ b/config/MASTER.x86_64
+@@ -32,7 +32,7 @@
+ #  PKTSCHED =       [ pktsched_cbq pktsched_fairq pktsched_hfsc pktsched_priq ]
+ #  CLASSQ =         [ classq_blue classq_red classq_rio ]
+ #  MULTIPATH =      [ multipath mptcp ]
+-#  IOKIT_BASE =     [ iokit iokitcpp hibernation config_sleep iokitstats hypervisor ]
++#  IOKIT_BASE =     [ iokit iokitcpp hibernation config_sleep iokitstats hypervisor no_kextd ]
+ #  IOKIT_RELEASE =  [ IOKIT_BASE ]
+ #  IOKIT_DEV =      [ IOKIT_BASE iotracking ]
+ #  IOKIT_DEBUG =    [ IOKIT_BASE iotracking ]
+--- a/libsa/bootstrap.cpp
++++ b/libsa/bootstrap.cpp
+@@ -391,7 +391,12 @@
+             OSNumber *lengthNum = OSDynamicCast(OSNumber,
+                 infoDict->getObject(kPrelinkExecutableSizeKey));
+             if (addressNum && lengthNum) {
++#if defined(__x86_64__)
++                ml_static_mfree((vm_offset_t)addressNum->unsigned64BitValue(),
++                    (vm_size_t)lengthNum->unsigned64BitValue());
++#else
+ #error Pick the right way to free prelinked data on this arch
++#endif
+             }
+ 
+             infoDictArray->removeObject(i--);

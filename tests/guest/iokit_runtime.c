@@ -20,6 +20,9 @@ int main(void)
     CFRelease(bundle);
     CFRelease(url);
 
+    mach_timespec_t timeout = {5, 0};
+    CHECK(IOKitWaitQuiet(kIOMasterPortDefault, &timeout) == KERN_SUCCESS);
+
     io_registry_entry_t root = IORegistryGetRootEntry(kIOMasterPortDefault);
     CHECK(root);
     uint64_t identifier = 0;
