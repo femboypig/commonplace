@@ -24,7 +24,10 @@ def check_network(console, manifest):
     console.command("ifconfig en0", rb"ether 52:54:00:12:34:56")
     console.command("ifconfig lo0", rb"inet 127\.0\.0\.1")
     if manifest.get("address_configuration") == "dhcp":
-        console.command("ipconfig getifaddr en0; echo dhcp-status:$?",
+        console.command(
+            "attempt=0; while ! ipconfig getifaddr en0; do "
+            "attempt=$((attempt + 1)); [ \"$attempt\" -lt 30 ] || break; sleep 1; done; "
+            "ipconfig getifaddr en0; echo dhcp-status:$?",
             rb"10\.0\.2\.15[\s\S]*dhcp-status:0")
         console.command("ipconfig getoption en0 server_identifier; echo server-status:$?",
             rb"10\.0\.2\.2[\s\S]*server-status:0")
