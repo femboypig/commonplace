@@ -17,6 +17,8 @@ def main():
     for name in (
         "IOKitLib.h",
         "IOKitLibPrivate.h",
+        "IOCFBundle.h",
+        "IOCFPlugIn.h",
         "IOCFSerialize.h",
         "IOCFUnserialize.h",
         "IOMIGMachPort.h",
@@ -26,6 +28,16 @@ def main():
         directory = private / "IOKit" / name
         directory.mkdir(exist_ok=True)
         for header in (source / component).glob("*.h"):
+            shutil.copyfile(header, directory / header.name)
+    for component, source_directory in (
+        ("network", ROOT / "sources/ionetwork"),
+        ("serial", ROOT / "sources/ioserial/IOSerialFamily.kmodproj"),
+        ("storage", ROOT / "sources/iostorage"),
+        ("usb", ROOT / "sources/iousb_headers/IOUSBFamily/Headers"),
+    ):
+        directory = private / "IOKit" / component
+        directory.mkdir(exist_ok=True)
+        for header in source_directory.glob("*.h"):
             shutil.copyfile(header, directory / header.name)
     shutil.copyfile(
         ROOT / "sources/xnu/iokit/IOKit/IOKitKeysPrivate.h",
