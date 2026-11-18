@@ -1,0 +1,27 @@
+--- a/Plugins/InterfaceNamer/ifnamer.c
++++ b/Plugins/InterfaceNamer/ifnamer.c
+@@ -71,7 +71,6 @@
+ #include <net/if_types.h>
+ #include <pthread.h>
+ 
+-#include <CommonCrypto/CommonDigest.h>
+ 
+ #include <CoreFoundation/CoreFoundation.h>
+ 
+@@ -250,14 +249,14 @@
+ static void
+ reportIssue(const char *signature, CFStringRef issue)
+ {
+-    asl_object_t  m;
++    aslmsg  m;
+ 
+     m = asl_new(ASL_TYPE_MSG);
+     asl_set(m, "com.apple.message.domain", "com.apple.SystemConfiguration." MY_PLUGIN_NAME);
+     asl_set(m, "com.apple.message.signature", signature);
+     asl_set(m, "com.apple.message.result", "failure");
+     SCLOG(NULL, m, ~ASL_LEVEL_ERR, CFSTR("%s\n%@"), signature, issue);
+-    asl_release(m);
++    asl_free(m);
+ 
+     return;
+ }
