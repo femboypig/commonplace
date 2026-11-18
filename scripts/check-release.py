@@ -18,6 +18,18 @@ PASSWORD = "Release-check-passphrase-2026!"
 RESET_PASSWORD = "Release-recovered-passphrase-2026!"
 
 
+def check_network(console, manifest):
+    if manifest.get("profile") != "apple-services":
+        return
+    console.command("ifconfig en0", rb"ether 52:54:00:12:34:56")
+    console.command("ifconfig lo0", rb"inet 127\.0\.0\.1")
+    if manifest.get("address_configuration") == "dhcp":
+        console.command("ipconfig getifaddr en0; echo dhcp-status:$?",
+            rb"10\.0\.2\.15[\s\S]*dhcp-status:0")
+        console.command("ipconfig getoption en0 server_identifier; echo server-status:$?",
+            rb"10\.0\.2\.2[\s\S]*server-status:0")
+
+
 def boot(directory, memory, output, prepare=False, *, password=PASSWORD):
     manifest = json.loads((directory / "manifest.json").read_text())
     timeout = 180 if manifest.get("profile") == "apple-services" else 60
@@ -40,9 +52,7 @@ def boot(directory, memory, output, prepare=False, *, password=PASSWORD):
         if b"BSD root: cp1," not in boot_log or b"Added memory device md0" in boot_log:
             raise ValueError("release did not boot directly from its persistent root")
         duration = round(time.monotonic() - started, 3)
-        if manifest.get("profile") == "apple-services":
-            console.command("ifconfig en0", rb"ether 52:54:00:12:34:56")
-            console.command("ifconfig lo0", rb"inet 127\.0\.0\.1")
+        check_network(console, manifest)
         if prepare:
             console.command("ls /data", rb"\Als /data\n" + PROMPT)
             console.command(
@@ -65,6 +75,8 @@ def boot(directory, memory, output, prepare=False, *, password=PASSWORD):
                 console.login("root", password, seconds=timeout)
             else:
                 console.expect(PROMPT, seconds=timeout)
+        if prepare:
+            check_network(console, manifest)
         console.command("cat /data/probe", rb"\nrelease-ok\n")
         console.command("/usr/bin/persisted executable-ok", rb"\nexecutable-ok\n")
         console.command(
