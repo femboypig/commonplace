@@ -1,0 +1,39 @@
+--- a/SystemConfiguration.fproj/BondConfiguration.c
++++ b/SystemConfiguration.fproj/BondConfiguration.c
+@@ -49,10 +49,8 @@
+ #include <sys/socket.h>
+ #include <sys/sysctl.h>
+ #include <net/ethernet.h>
+-#define	KERNEL_PRIVATE
+ #include <net/if.h>
+ #include <net/if_var.h>
+-#undef	KERNEL_PRIVATE
+ #include <net/if_bond_var.h>
+ #include <net/if_types.h>
+ #include <net/if_media.h>
+--- a/SystemConfiguration.fproj/BridgeConfiguration.c
++++ b/SystemConfiguration.fproj/BridgeConfiguration.c
+@@ -46,10 +46,8 @@
+ #include <sys/socket.h>
+ #include <sys/sysctl.h>
+ #include <net/ethernet.h>
+-#define	KERNEL_PRIVATE
+ #include <net/if.h>
+ #include <net/if_var.h>
+-#undef	KERNEL_PRIVATE
+ #include <net/if_types.h>
+ #include <net/if_media.h>
+ #include <net/route.h>
+--- a/SystemConfiguration.fproj/VLANConfiguration.c
++++ b/SystemConfiguration.fproj/VLANConfiguration.c
+@@ -48,10 +48,8 @@
+ #include <sys/ioctl.h>
+ #include <sys/socket.h>
+ #include <net/ethernet.h>
+-#define	KERNEL_PRIVATE
+ #include <net/if.h>
+ #include <net/if_var.h>
+-#undef	KERNEL_PRIVATE
+ #include <net/if_vlan_var.h>
+ #include <net/if_types.h>
+ 
