@@ -147,6 +147,7 @@ darwin-services: userland
 	$(PYTHON) scripts/build-darwin-bsm.py
 	$(PYTHON) scripts/build-darwin-security.py
 	$(PYTHON) scripts/build-darwin-configd.py
+	$(PYTHON) scripts/build-darwin-ipconfiguration.py
 	$(PYTHON) scripts/build-darwin-dnssd.py
 	$(PYTHON) scripts/build-darwin-launchd.py
 	$(PYTHON) scripts/build-darwin-launchctl.py
