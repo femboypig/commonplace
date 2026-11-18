@@ -1,0 +1,29 @@
+--- a/SystemConfiguration.fproj/SCDPrivate.c
++++ b/SystemConfiguration.fproj/SCDPrivate.c
+@@ -1406,7 +1406,7 @@
+ 
+ 
+ /* CrashReporter info */
+-#if	!TARGET_OS_IPHONE
++#if	!TARGET_OS_IPHONE && HAVE_CRASHREPORTER
+ #include <CrashReporterClient.h>
+ #else	// !TARGET_OS_IPHONE
+ const char *__crashreporter_info__ = NULL;
+@@ -1488,7 +1488,7 @@
+ 	Boolean	ok	= FALSE;
+ 
+ 	if (crash_info != NULL) {
+-#if	!TARGET_OS_IPHONE
++#if	!TARGET_OS_IPHONE && HAVE_CRASHREPORTER
+ 		CRSetCrashLogMessage(crash_info);
+ #else	// !TARGET_OS_IPHONE
+ 		__crashreporter_info__ = crash_info;
+@@ -1508,7 +1508,7 @@
+ #endif	// DO_NOT_CRASH
+ 	}
+ 
+-#if	!TARGET_OS_IPHONE
++#if	!TARGET_OS_IPHONE && HAVE_CRASHREPORTER
+ 	CRSetCrashLogMessage(NULL);
+ #else	// !TARGET_OS_IPHONE
+ 	__crashreporter_info__ = NULL;
