@@ -2,7 +2,8 @@
 """Build Apple's C IOKit clients with the native 64-bit kernel protocol."""
 
 import shutil
-from darwin_build import ROOT, OUT, compile_source, archive, prepare_source
+import subprocess
+from darwin_build import ROOT, OUT, LD, compile_source, archive, prepare_source
 from mach_interface import generate_interface
 
 
@@ -63,7 +64,18 @@ def main():
         compile_source(path, OUT / "obj/iokit" / (path.name + ".o"), flags)
         for path in paths
     ]
+    objects.append(compile_source(source / "IOTrap.s", OUT / "obj/iokit/IOTrap.o",
+        ["-x", "assembler-with-cpp", "-DPRIVATE"]))
     archive(OUT / "lib/libIOKit.a", objects)
+    subprocess.run([
+        str(LD), "-L" + str(OUT / "system"), "-Z", "-fatal_warnings",
+        "-dylib", "-arch", "x86_64", "-macosx_version_min", "10.11",
+        "-install_name", "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+        "-compatibility_version", "1.0", "-current_version", "1179.50.2",
+        "-no_uuid", "-dead_strip", "-o", str(OUT / "system/IOKit"),
+        *map(str, objects), str(OUT / "system/CoreFoundation"),
+        str(OUT / "system/libSystem.B.dylib"),
+    ], check=True)
 
 
 if __name__ == "__main__":

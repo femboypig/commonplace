@@ -12,7 +12,7 @@ def main():
             "-fblocks", "-Wall", "-Wextra", "-Werror",
         ])
     link_program(OUT / "bin/register-network", [obj], [
-        OUT / "lib/libIOKit.a", OUT / "system/CoreFoundation",
+        OUT / "system/IOKit", OUT / "system/CoreFoundation",
     ])
 
 

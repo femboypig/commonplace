@@ -264,3 +264,7 @@ check-security: loader check-kernel rootfs
 	$(PYTHON) scripts/build-darwin-security.py
 	$(PYTHON) scripts/check-security.py
 
+.PHONY: check-iokit
+check-iokit: loader check-kernel rootfs
+	$(PYTHON) scripts/check-iokit.py
+

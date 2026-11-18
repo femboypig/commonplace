@@ -68,6 +68,9 @@ def system_files():
     programs[
         "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation"
     ] = ROOT / "build/darwin/system/CoreFoundation"
+    programs[
+        "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit"
+    ] = ROOT / "build/darwin/system/IOKit"
     programs.update(system_resources())
     return programs
 
@@ -78,19 +81,19 @@ def system_resources():
         "/usr/share/icu/icudt55l.dat": ROOT / "build/darwin/resources/icu/icudt55l.dat",
         "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Resources/Info.plist": ROOT
         / "build/darwin/resources/CoreFoundation/Info.plist",
+        "/System/Library/Frameworks/IOKit.framework/Versions/A/Resources/Info.plist": ROOT
+        / "sources/iokit_user/CustomInfo.plist",
     }
 
 
 def system_symlinks():
-    framework = "/System/Library/Frameworks/CoreFoundation.framework/"
-    return {
-        framework + path: target
-        for path, target in (
-            ("Versions/Current", "A"),
-            ("CoreFoundation", "Versions/Current/CoreFoundation"),
-            ("Resources", "Versions/Current/Resources"),
-        )
-    }
+    links = {}
+    for name in ("CoreFoundation", "IOKit"):
+        framework = "/System/Library/Frameworks/" + name + ".framework/"
+        links[framework + "Versions/Current"] = "A"
+        links[framework + name] = "Versions/Current/" + name
+        links[framework + "Resources"] = "Versions/Current/Resources"
+    return links
 
 
 def system_directories(programs=None):

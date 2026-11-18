@@ -14,7 +14,7 @@ def main():
             "-DPRIVATE", "-fblocks", "-Wno-deprecated-declarations",
         ])
     link_program(OUT / "bin/ioreg", [obj], [
-        OUT / "lib/libIOKit.a", OUT / "bash/lib/termcap/libtermcap.a",
+        OUT / "system/IOKit", OUT / "bash/lib/termcap/libtermcap.a",
         OUT / "system/CoreFoundation",
     ])
 
