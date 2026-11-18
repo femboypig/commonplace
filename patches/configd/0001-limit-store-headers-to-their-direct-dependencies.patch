@@ -1,0 +1,59 @@
+--- a/SystemConfiguration.fproj/SCPrivate.h
++++ b/SystemConfiguration.fproj/SCPrivate.h
+@@ -30,11 +30,10 @@
+ #include <asl.h>
+ #include <sys/syslog.h>
+ #include <mach/message.h>
+-#include <os/activity.h>
+-#include <os/log.h>
+ #include <sys/sysctl.h>
+ 
+ #include <CoreFoundation/CoreFoundation.h>
++#include <CoreFoundation/CFMachPort.h>
+ 
+ /* SCDynamicStore SPIs */
+ #include <SystemConfiguration/SCDynamicStorePrivate.h>
+@@ -51,12 +50,6 @@
+ 
+ /* SCNetworkConfiguration SPIs */
+ #include <SystemConfiguration/SCNetworkConfigurationPrivate.h>
+-
+-/* SCNetworkConnection SPIs */
+-#include <SystemConfiguration/SCNetworkConnectionPrivate.h>
+-
+-/* Keychain SPIs */
+-#include <SystemConfiguration/SCPreferencesKeychainPrivate.h>
+ 
+ /*!
+ 	@header SCPrivate
+--- a/SystemConfiguration.fproj/SCDynamicStoreInternal.h
++++ b/SystemConfiguration.fproj/SCDynamicStoreInternal.h
+@@ -33,6 +33,7 @@
+ #include <pthread.h>
+ #include <regex.h>
+ #include <CoreFoundation/CoreFoundation.h>
++#include <CoreFoundation/CFMachPort.h>
+ #include <CoreFoundation/CFRuntime.h>
+ #include <SystemConfiguration/SCDynamicStore.h>
+ 
+--- a/SystemConfiguration.fproj/SCPreferences.h
++++ b/SystemConfiguration.fproj/SCPreferences.h
+@@ -35,7 +35,7 @@
+ #include <SystemConfiguration/SCDynamicStore.h>
+ 
+ #if	!TARGET_OS_IPHONE
+-#include <Security/Security.h>
++#include <Security/Authorization.h>
+ #else	// !TARGET_OS_IPHONE
+ typedef const struct AuthorizationOpaqueRef *	AuthorizationRef;
+ #endif	// !TARGET_OS_IPHONE
+--- a/SystemConfiguration.fproj/SCDHostName.c
++++ b/SystemConfiguration.fproj/SCDHostName.c
+@@ -37,7 +37,6 @@
+ #include <SystemConfiguration/SystemConfiguration.h>
+ #include <SystemConfiguration/SCValidation.h>
+ #include <SystemConfiguration/SCPrivate.h>
+-#include "dy_framework.h"
+ 
+ 
+ #pragma mark ComputerName
