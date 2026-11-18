@@ -1,0 +1,33 @@
+--- a/libsecurity_codesigning/lib/SecTask.c
++++ b/libsecurity_codesigning/lib/SecTask.c
+@@ -123,6 +123,7 @@
+ 	SecTaskRef task = (SecTaskRef) _CFRuntimeCreateInstance(allocator, SecTaskGetTypeID(), extra, NULL);
+ 	if (task != NULL) {
+ 		task->pid = pid;
++		task->token = NULL;
+ 		task->entitlementsLoaded = false;
+ 		task->entitlements = NULL;
+ 	}
+@@ -138,10 +139,8 @@
+ 	audit_token_to_au32(token, NULL, NULL, NULL, NULL, NULL, &pid, NULL, NULL);
+ 	task = SecTaskCreateWithPID(allocator, pid);
+ 	if (task != NULL) {
+-#if 0
+ 		task->token_storage = token;
+ 		task->token = &task->token_storage;
+-#endif
+ 	}
+ 
+ 	return task;
+@@ -196,11 +195,9 @@
+ static int
+ csops_task(SecTaskRef task, int ops, void *blob, size_t size)
+ {
+-#if 0
+ 	if (task->token)
+ 		return csops_audittoken(task->pid, ops, blob, size, task->token);
+ 	else
+-#endif
+ 		return csops(task->pid, ops, blob, size);
+ }
+ 

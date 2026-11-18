@@ -258,3 +258,9 @@ check-network-runtime: loader check-kernel rootfs
 check-network: loader check-kernel rootfs
 	$(PYTHON) scripts/check-network.py
 
+.PHONY: check-security
+check-security: loader check-kernel rootfs
+	$(PYTHON) scripts/build-darwin-bsm.py
+	$(PYTHON) scripts/build-darwin-security.py
+	$(PYTHON) scripts/check-security.py
+
