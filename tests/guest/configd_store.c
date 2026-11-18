@@ -17,6 +17,8 @@ struct notification {
     unsigned count;
 };
 
+int check_preferences(const char *mode);
+
 static void changed(SCDynamicStoreRef store, CFArrayRef keys, void *context)
 {
     (void)store;
@@ -111,6 +113,8 @@ static void check_session_cleanup(SCDynamicStoreRef store, CFStringRef key)
 
 int main(int argc, char **argv)
 {
+    if (argc == 2 && !strncmp(argv[1], "preferences-", 12))
+        return check_preferences(argv[1]);
     if (argc == 4 && !strcmp(argv[1], "session")) {
         CFStringRef key = CFStringCreateWithCString(NULL, argv[2], kCFStringEncodingUTF8);
         SCDynamicStoreRef temporary = open_store(NULL, NULL);
