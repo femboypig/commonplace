@@ -1,0 +1,40 @@
+--- a/SystemConfiguration.fproj/SCPLock.c
++++ b/SystemConfiguration.fproj/SCPLock.c
+@@ -187,7 +187,7 @@
+ static void
+ reportDelay(SCPreferencesRef prefs, struct timeval *delay, Boolean isStale)
+ {
+-	asl_object_t		m;
++	aslmsg		m;
+ 	SCPreferencesPrivateRef	prefsPrivate	= (SCPreferencesPrivateRef)prefs;
+ 	char			str[256];
+ 
+@@ -209,7 +209,7 @@
+ 	      (int)delay->tv_sec,
+ 	      delay->tv_usec / 1000,
+ 	      isStale ? " (stale)" : "");
+-	asl_release(m);
++	asl_free(m);
+ 
+ 	return;
+ }
+--- a/SystemConfiguration.fproj/SCPUnlock.c
++++ b/SystemConfiguration.fproj/SCPUnlock.c
+@@ -89,7 +89,7 @@
+ static void
+ reportDelay(SCPreferencesRef prefs, struct timeval *delay)
+ {
+-	asl_object_t		m;
++	aslmsg		m;
+ 	SCPreferencesPrivateRef	prefsPrivate	= (SCPreferencesPrivateRef)prefs;
+ 	char			str[256];
+ 
+@@ -110,7 +110,7 @@
+ 	      prefsPrivate->prefsID,
+ 	      (int)delay->tv_sec,
+ 	      delay->tv_usec / 1000);
+-	asl_release(m);
++	asl_free(m);
+ 
+ 	return;
+ }
