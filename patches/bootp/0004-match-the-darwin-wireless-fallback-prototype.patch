@@ -1,0 +1,11 @@
+--- a/IPConfiguration.bproj/ipconfigd.c
++++ b/IPConfiguration.bproj/ipconfigd.c
+@@ -7046,7 +7046,7 @@
+ #else /* NO_WIRELESS */
+ 
+ static CFStringRef
+-S_copy_ssid_bssid(CFStringRef ifname, struct ether_addr * ap_mac)
++S_copy_ssid_bssid(IFStateRef ifstate, struct ether_addr * ap_mac)
+ {
+     return (NULL);
+ }
