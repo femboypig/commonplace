@@ -145,6 +145,7 @@ darwin-userland: darwin-libraries
 # These targets use Apple's published service manager and isolated system image.
 darwin-services: userland
 	$(PYTHON) scripts/build-darwin-bsm.py
+	$(PYTHON) scripts/build-darwin-security.py
 	$(PYTHON) scripts/build-darwin-dnssd.py
 	$(PYTHON) scripts/build-darwin-launchd.py
 	$(PYTHON) scripts/build-darwin-launchctl.py
@@ -256,3 +257,4 @@ check-network-runtime: loader check-kernel rootfs
 
 check-network: loader check-kernel rootfs
 	$(PYTHON) scripts/check-network.py
+

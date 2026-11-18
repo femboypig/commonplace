@@ -1,0 +1,15 @@
+--- a/libsecurity_codesigning/lib/SecTask.c
++++ b/libsecurity_codesigning/lib/SecTask.c
+@@ -133,8 +133,10 @@
+ SecTaskRef SecTaskCreateWithAuditToken(CFAllocatorRef allocator, audit_token_t token)
+ {
+ 	SecTaskRef task;
+-
+-	task = SecTaskCreateWithPID(allocator, audit_token_to_pid(token));
++	pid_t pid;
++
++	audit_token_to_au32(token, NULL, NULL, NULL, NULL, NULL, &pid, NULL, NULL);
++	task = SecTaskCreateWithPID(allocator, pid);
+ 	if (task != NULL) {
+ #if 0
+ 		task->token_storage = token;
