@@ -8,8 +8,10 @@ fi
 if [ -b /dev/cp0 ]; then
     mount -t hfs /dev/cp0 /data
 fi
-if ! /usr/libexec/commonplace/register-network; then
-    echo 'commonplace: network interface registration failed' >&2
+if [ ! -x /usr/libexec/configd ]; then
+    if ! /usr/libexec/commonplace/register-network; then
+        echo 'commonplace: network interface registration failed' >&2
+    fi
 fi
 if ! ifconfig lo0 inet 127.0.0.1 netmask 255.0.0.0 up; then
     echo 'commonplace: loopback configuration failed' >&2

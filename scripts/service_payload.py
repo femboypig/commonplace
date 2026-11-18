@@ -5,9 +5,21 @@ import plistlib
 from rootfs_image import ROOT
 
 PROFILE = "/usr/share/commonplace/profile"
+CONFIGURATION_FRAMEWORK = "/System/Library/Frameworks/SystemConfiguration.framework"
+CONFIGURATION_PLUGINS = ("InterfaceNamer", "PreferencesMonitor", "KernelEventMonitor", "LinkConfiguration")
+CONFIGURATION_BUNDLES = "/System/Library/SystemConfiguration"
 DIRECTORIES = (
     "/Library",
     "/Library/LaunchDaemons",
+    "/Library/Preferences",
+    "/Library/Preferences/SystemConfiguration",
+    CONFIGURATION_FRAMEWORK,
+    CONFIGURATION_FRAMEWORK + "/Resources",
+    CONFIGURATION_BUNDLES,
+    *(path for name in CONFIGURATION_PLUGINS for path in (
+        CONFIGURATION_BUNDLES + "/" + name + ".bundle",
+        CONFIGURATION_BUNDLES + "/" + name + ".bundle/Contents",
+    )),
     "/System/Library/LaunchDaemons",
     "/System/Library/CoreServices",
     "/var/db",
@@ -31,10 +43,17 @@ def service_files():
             ("notifyd", "/usr/sbin/notifyd"),
             ("syslogd", "/usr/sbin/syslogd"),
             ("syslog", "/usr/bin/syslog"),
+            ("configd", "/usr/libexec/configd"),
             ("first-login", "/usr/libexec/commonplace/first-login"),
         )
     }
     files["/usr/libexec/commonplace/boot"] = ROOT / "userland/darwin/services/boot.sh"
+    for name in CONFIGURATION_PLUGINS:
+        files[CONFIGURATION_BUNDLES + "/" + name + ".bundle/Contents/Info.plist"] = (
+            ROOT / "sources/configd/Plugins" / name / "Info.plist")
+    for name in ("Info.plist", "NetworkConfiguration.plist"):
+        files[CONFIGURATION_FRAMEWORK + "/Resources/" + name] = (
+            ROOT / "sources/configd/SystemConfiguration.fproj" / name)
     files[PROFILE] = ROOT / "userland/darwin/services/profile"
     return files
 
@@ -73,6 +92,7 @@ def service_defaults(directory, *, console_login=True):
     for component, relative in (
         ("libnotify", "notifyd/com.apple.notifyd.plist"),
         ("syslog_services", "syslogd.tproj/com.apple.syslogd.plist"),
+        ("configd", "configd.tproj/com.apple.configd.plist"),
     ):
         value = plistlib.loads((ROOT / "sources" / component / relative).read_bytes())
         # The published manager uses shared-memory transactions; our newer vproc
