@@ -5,6 +5,10 @@ import re
 PROJECTS = (
     "bootp",
     "configd",
+    "eap8021x",
+    "ioserial",
+    "iostorage",
+    "iousb_headers",
     "iopci",
     "iokit_tools",
     "ionetwork",

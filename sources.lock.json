@@ -391,6 +391,31 @@
       "revision": "4f36c5f47ec9f03c406c088d2c427bd5582b2631",
       "url": "https://codeload.github.com/apple-oss-distributions/Security/tar.gz/4f36c5f47ec9f03c406c088d2c427bd5582b2631",
       "sha256": "6aff1ce91add4ab649aa2969bd6e7d665c89427e45a52f2508c9846b9fd43e11"
+    },
+    "ioserial": {
+      "repository": "apple-oss-distributions/IOSerialFamily",
+      "revision": "2c9a562a7244ec716a81d784799dbefdfe8a6798",
+      "url": "https://codeload.github.com/apple-oss-distributions/IOSerialFamily/tar.gz/2c9a562a7244ec716a81d784799dbefdfe8a6798",
+      "sha256": "0de594d8d25e60c22c05b34ba83ce44d860cd2cf08a7854eb8801a142466a08a"
+    },
+    "iostorage": {
+      "repository": "apple-oss-distributions/IOStorageFamily",
+      "revision": "c95d31401f0ff950a883727f5e47d313685fde33",
+      "url": "https://codeload.github.com/apple-oss-distributions/IOStorageFamily/tar.gz/c95d31401f0ff950a883727f5e47d313685fde33",
+      "sha256": "cd3cf1541dc50eb52044a49768c487976f662e56dd7d2b2168f1abb29004bb34"
+    },
+    "eap8021x": {
+      "repository": "apple-oss-distributions/eap8021x",
+      "revision": "aaa8112641ffc9326297227d6622115e9b664a8d",
+      "url": "https://codeload.github.com/apple-oss-distributions/eap8021x/tar.gz/aaa8112641ffc9326297227d6622115e9b664a8d",
+      "sha256": "1417e94e0a6948e7e52192be3ec4495db233bcd625c32546cbd2acbbee37fdb9"
+    },
+    "iousb_headers": {
+      "repository": "apple-oss-distributions/IOUSBFamily",
+      "tag": "IOUSBFamily-560.4.2",
+      "revision": "aa1bde6708ab287ab8d5098287a957f5d34df372",
+      "url": "https://codeload.github.com/apple-oss-distributions/IOUSBFamily/tar.gz/aa1bde6708ab287ab8d5098287a957f5d34df372",
+      "sha256": "ff8461417cdb18c1585072d6fa8b3e26fa9a0fd644c0884e9f13f22e38f921de"
     }
   }
 }
