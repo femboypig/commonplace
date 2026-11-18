@@ -17,11 +17,15 @@ def main():
     generated = OUT / "configd"
     interface = generate_interface("config", framework / "config.defs", generated,
         arch="x86_64", defines=("__LP64__",))
+    helper = generate_interface("helper", framework / "helper/helper.defs", generated,
+        arch="x86_64", defines=("__LP64__",))
     flags = [
         "-I" + str(include),
         "-I" + str(OUT / "include/security"),
         "-I" + str(OUT / "include/iokit-client"),
         "-I" + str(framework), "-I" + str(generated),
+        "-I" + str(framework / "helper"),
+        "-I" + str(source / "IPMonitorControl"),
         "-fblocks", "-DPRIVATE",
         "-DDEPLOYMENT_TARGET_MACOSX=1",
         "-DHAVE_OS_ACTIVITY=0",
@@ -33,8 +37,11 @@ def main():
         "-idirafter", str(prepare_source("openbsm", "openbsm") / "sys"),
         "-Wno-deprecated-declarations", "-Wno-deprecated-non-prototype",
     ]
-    paths = [*sorted(framework.glob("SCD*.c")), interface["user"],
-        framework / "SCSchemaDefinitions.c"]
+    preferences = [framework / "SCP.c", *sorted(framework.glob("SCP[A-Z]*.c")),
+        *sorted(framework.glob("SCPreferences*.c"))]
+    paths = [*sorted(framework.glob("SCD*.c")), *preferences,
+        interface["user"], helper["user"], framework / "helper/SCHelper_client.c",
+        framework / "SCSchemaDefinitions.c", framework / "dy_framework.c"]
     objects = [compile_source(path, OUT / "obj/configd-store" / (path.name + ".o"),
         flags) for path in paths]
     archive(OUT / "lib/libconfigd_store.a", objects)
