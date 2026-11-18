@@ -1,0 +1,20 @@
+--- a/SystemConfiguration.fproj/SCNetworkConfigurationInternal.c
++++ b/SystemConfiguration.fproj/SCNetworkConfigurationInternal.c
+@@ -33,6 +33,7 @@
+ #include <SystemConfiguration/SystemConfiguration.h>
+ #include <SystemConfiguration/SCValidation.h>
+ #include <SystemConfiguration/SCPrivate.h>
++#include <SystemConfiguration/SCPreferencesKeychainPrivate.h>
+ 
+ #include <sys/ioctl.h>
+ #include <net/if.h>
+--- a/SystemConfiguration.fproj/SCNetworkInterface.c
++++ b/SystemConfiguration.fproj/SCNetworkInterface.c
+@@ -41,6 +41,7 @@
+ #include "SCNetworkConfigurationInternal.h"
+ #include <SystemConfiguration/SCValidation.h>
+ #include <SystemConfiguration/SCPrivate.h>
++#include <SystemConfiguration/SCPreferencesKeychainPrivate.h>
+ #include "SCPreferencesInternal.h"
+ #include "SCHelper_client.h"
+ 
