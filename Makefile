@@ -268,3 +268,7 @@ check-security: loader check-kernel rootfs
 check-iokit: loader check-kernel rootfs
 	$(PYTHON) scripts/check-iokit.py
 
+.PHONY: check-mach
+check-mach: loader check-kernel rootfs
+	$(PYTHON) scripts/check-mach.py
+

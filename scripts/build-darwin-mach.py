@@ -3,6 +3,7 @@
 
 import subprocess
 import hashlib
+from pathlib import Path
 from darwin_build import ROOT, OUT, SDK, compile_source, archive, prepare_source
 
 
@@ -10,6 +11,8 @@ def main():
     source = prepare_source("xnu", "libsyscall", "libsyscall")
     generated = OUT / "mach"
     generated.mkdir(parents=True, exist_ok=True)
+    native = generated / "native"
+    native.mkdir(exist_ok=True)
     interfaces = (
         "mach_vm",
         "vm_map",
@@ -24,7 +27,9 @@ def main():
     )
     internal = {"mach_vm", "vm_map", "mach_port", "thread_act"}
     signature = hashlib.sha256()
+    signature.update(Path(__file__).read_bytes())
     for directory in (
+        source / "mach",
         ROOT / "sources/xnu/osfmk/mach",
         ROOT / "sources/xnu/bsd",
         SDK / "usr/include",
@@ -34,21 +39,25 @@ def main():
                 signature.update(str(path).encode())
                 signature.update(path.read_bytes())
     signature.update((ROOT / "toolchain/bin/mig").read_bytes())
+    signature.update((ROOT / "toolchain/libexec/migcom").read_bytes())
     fingerprint = signature.hexdigest()
     stamp = generated / ".inputs.sha256"
     regenerate = not stamp.exists() or stamp.read_text() != fingerprint
     objects = []
     for name in interfaces:
-        definition = ROOT / "sources/xnu/osfmk/mach" / f"{name}.defs"
-        header = generated / (name + "_internal.h" if name in internal else name + ".h")
-        user = generated / f"{name}User.c"
-        if regenerate or not header.exists() or not user.exists():
+        definition = source / "mach" / f"{name}.defs"
+        filename = name + "_internal.h" if name in internal else name + ".h"
+        header = native / filename
+        private_header = generated / filename
+        user = native / f"{name}User.c"
+        if regenerate or not header.exists() or not private_header.exists() or not user.exists():
             subprocess.run(
                 [
                     str(ROOT / "toolchain/bin/mig"),
                     "-novouchers",
                     "-arch",
-                    "i386",
+                    "x86_64",
+                    "-D__LP64__",
                     "-I" + str(ROOT / "sources/xnu/osfmk"),
                     "-I" + str(ROOT / "sources/xnu/bsd"),
                     "-I" + str(SDK / "usr/include"),
@@ -63,11 +72,21 @@ def main():
                 ],
                 check=True,
             )
+            # Apple's Libsyscall builds machine-independent wrapper declarations
+            # separately from the native stubs, including LP64's wide VM aliases.
+            subprocess.run([
+                str(ROOT / "toolchain/bin/mig"), "-novouchers", "-arch", "i386",
+                "-I" + str(ROOT / "sources/xnu/osfmk"),
+                "-I" + str(ROOT / "sources/xnu/bsd"),
+                "-I" + str(SDK / "usr/include"), "-DPRIVATE",
+                "-header", str(private_header), "-user", "/dev/null",
+                "-server", "/dev/null", str(definition),
+            ], check=True)
         objects.append(
             compile_source(
                 user,
                 OUT / "obj/mach" / f"{name}User.o",
-                ["-I" + str(generated), "-DPRIVATE", "-DMIG_SERVER_ROUTINE="],
+                ["-I" + str(native), "-DPRIVATE", "-DMIG_SERVER_ROUTINE="],
             )
         )
     stamp.write_text(fingerprint)
