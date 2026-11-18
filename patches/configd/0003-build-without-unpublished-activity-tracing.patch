@@ -1,0 +1,752 @@
+--- a/SystemConfiguration.fproj/SCPrivate.h
++++ b/SystemConfiguration.fproj/SCPrivate.h
+@@ -28,6 +28,13 @@
+ #include <sys/socket.h>
+ #include <sys/stat.h>
+ #include <asl.h>
++
++#ifndef HAVE_OS_ACTIVITY
++#define HAVE_OS_ACTIVITY 1
++#endif
++#if HAVE_OS_ACTIVITY
++#include <os/activity.h>
++#endif
+ #include <sys/syslog.h>
+ #include <mach/message.h>
+ #include <sys/sysctl.h>
+--- a/IPMonitorControl/IPMonitorControl.c
++++ b/IPMonitorControl/IPMonitorControl.c
+@@ -270,11 +270,15 @@
+ 	= xpc_connection_create_mach_service(kIPMonitorControlServerName,
+ 					     queue, flags);
+     handler = ^(xpc_object_t event) {
++#if HAVE_OS_ACTIVITY
+ 	os_activity_t	activity_id;
++#endif
+ 	Boolean		retry;
+ 
++#if HAVE_OS_ACTIVITY
+ 	activity_id = os_activity_start("processing IPMonitor [rank] reply",
+ 					OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 	(void)IPMonitorControlHandleResponse(event, TRUE, &retry);
+ 	if (retry && control->assertions != NULL) {
+@@ -283,7 +287,9 @@
+ 				      control->connection);
+ 	}
+ 
++#if HAVE_OS_ACTIVITY
+ 	os_activity_end(activity_id);
++#endif
+     };
+     xpc_connection_set_event_handler(connection, handler);
+     control->connection = connection;
+--- a/IPMonitorControl/IPMonitorControlServer.c
++++ b/IPMonitorControl/IPMonitorControlServer.c
+@@ -454,14 +454,20 @@
+     xpc_handler_t	handler;
+ 
+     handler = ^(xpc_object_t event) {
++#if HAVE_OS_ACTIVITY
+ 	os_activity_t	activity_id;
+-
++#endif
++
++#if HAVE_OS_ACTIVITY
+ 	activity_id = os_activity_start("processing IPMonitor [rank] request",
+ 					OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 	IPMonitorControlServerHandleRequest(connection, event);
+ 
++#if HAVE_OS_ACTIVITY
+ 	os_activity_end(activity_id);
++#endif
+     };
+     xpc_connection_set_event_handler(connection, handler);
+     xpc_connection_resume(connection);
+@@ -480,11 +486,15 @@
+ 	return (NULL);
+     }
+     handler = ^(xpc_object_t event) {
++#if HAVE_OS_ACTIVITY
+ 	os_activity_t	activity_id;
++#endif
+ 	xpc_type_t	type;
+ 
++#if HAVE_OS_ACTIVITY
+ 	activity_id = os_activity_start("processing IPMonitor [rank] connection request",
+ 					OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 	type = xpc_get_type(event);
+ 	if (type == XPC_TYPE_CONNECTION) {
+@@ -506,7 +516,9 @@
+ 	    my_log(LOG_NOTICE, "unknown event %p", type);
+ 	}
+ 
++#if HAVE_OS_ACTIVITY
+ 	os_activity_end(activity_id);
++#endif
+     };
+     S_IPMonitorControlServerQueue = queue;
+     xpc_connection_set_event_handler(connection, handler);
+--- a/Plugins/IPMonitor/dns-configuration.c
++++ b/Plugins/IPMonitor/dns-configuration.c
+@@ -1670,15 +1670,19 @@
+ static void
+ dns_configuration_changed(CFMachPortRef port, void *msg, CFIndex size, void *info)
+ {
++#if HAVE_OS_ACTIVITY
+ 	os_activity_t			activity_id;
++#endif
+ 	static const CFStringRef	key		= CFSTR(_PATH_RESOLVER_DIR);
+ 	CFArrayRef			keys;
+ 	Boolean				resolvers_now;
+ 	static Boolean			resolvers_save	= FALSE;
+ 	struct stat			statbuf;
+ 
++#if HAVE_OS_ACTIVITY
+ 	activity_id = os_activity_start("processing DNS configuration change",
+ 					OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 	resolvers_now = (stat(_PATH_RESOLVER_DIR, &statbuf) == 0);
+ 	if (!resolvers_save && (resolvers_save == resolvers_now)) {
+@@ -1698,7 +1702,9 @@
+ 
+     done :
+ 
++#if HAVE_OS_ACTIVITY
+ 	os_activity_end(activity_id);
++#endif
+ 
+ 	return;
+ }
+--- a/Plugins/IPMonitor/ip_plugin.c
++++ b/Plugins/IPMonitor/ip_plugin.c
+@@ -7630,15 +7630,21 @@
+ 							0,
+ 							__network_change_queue());
+ 	dispatch_source_set_event_handler(S_network_change_timer, ^{
++#if HAVE_OS_ACTIVITY
+ 	    os_activity_t   activity_id;
+-
++#endif
++
++#if HAVE_OS_ACTIVITY
+ 	    activity_id = os_activity_start("posting delayed network change",
+ 					    OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 	    S_network_change_timeout = TRUE;
+ 	    post_network_change_when_ready();
+ 
++#if HAVE_OS_ACTIVITY
+ 	    os_activity_end(activity_id);
++#endif
+ 	});
+ 	dispatch_source_set_timer(S_network_change_timer,
+ 				  dispatch_time(DISPATCH_TIME_NOW,
+@@ -8458,12 +8464,16 @@
+ static void
+ InterfaceRankChanged(void * info)
+ {
++#if HAVE_OS_ACTIVITY
+     os_activity_t	activity_id;
++#endif
+     CFDictionaryRef 	assertions = NULL;
+     CFArrayRef		changes;
+ 
++#if HAVE_OS_ACTIVITY
+     activity_id = os_activity_start("processing IPMonitor [rank] change",
+ 				    OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+     changes = IPMonitorControlServerCopyInterfaceRankInformation(&assertions);
+     if (S_if_rank_dict != NULL) {
+@@ -8475,7 +8485,9 @@
+ 	CFRelease(changes);
+     }
+ 
++#if HAVE_OS_ACTIVITY
+     os_activity_end(activity_id);
++#endif
+ 
+     return;
+ }
+--- a/Plugins/InterfaceNamer/ifnamer.c
++++ b/Plugins/InterfaceNamer/ifnamer.c
+@@ -557,14 +557,18 @@
+ 					   SCPreferencesNotification   notificationType,
+ 					   void				*info)
+ {
++#if HAVE_OS_ACTIVITY
+     os_activity_t   activity_id;
++#endif
+ 
+     if ((notificationType & kSCPreferencesNotificationApply) != kSCPreferencesNotificationApply) {
+ 	return;
+     }
+ 
++#if HAVE_OS_ACTIVITY
+     activity_id = os_activity_start("check/update virtual network interface configuration",
+ 				    OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+     if (prefs == NULL) {
+ 	// if a new interface has been "named"
+@@ -592,7 +596,9 @@
+     // we are finished with current prefs, wait for changes
+     SCPreferencesSynchronize(prefs);
+ 
++#if HAVE_OS_ACTIVITY
+     os_activity_end(activity_id);
++#endif
+ 
+     return;
+ }
+@@ -1889,11 +1895,15 @@
+ static void
+ interfaceArrivalCallback(void *refcon, io_iterator_t iter)
+ {
++#if HAVE_OS_ACTIVITY
+     os_activity_t   activity_id;
++#endif
+     io_object_t	    obj;
+ 
++#if HAVE_OS_ACTIVITY
+     activity_id = os_activity_start("process new network interface",
+ 				    OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+     while ((obj = IOIteratorNext(iter)) != MACH_PORT_NULL) {
+ 	SCNetworkInterfaceRef	interface;
+@@ -1911,7 +1921,9 @@
+ 
+     updateInterfaces();
+ 
++#if HAVE_OS_ACTIVITY
+     os_activity_end(activity_id);
++#endif
+ 
+     return;
+ }
+@@ -1928,12 +1940,16 @@
+ static void
+ stackCallback(void *refcon, io_iterator_t iter)
+ {
++#if HAVE_OS_ACTIVITY
+     os_activity_t	activity_id;
++#endif
+     kern_return_t	kr;
+     io_object_t		stack;
+ 
++#if HAVE_OS_ACTIVITY
+     activity_id = os_activity_start("process IONetworkStack",
+ 				    OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+     stack = IOIteratorNext(iter);
+     if (stack == MACH_PORT_NULL) {
+@@ -1970,7 +1986,9 @@
+ 	IOObjectRelease(stack);
+     }
+ 
++#if HAVE_OS_ACTIVITY
+     os_activity_end(activity_id);
++#endif
+ 
+     return;
+ }
+@@ -1981,15 +1999,19 @@
+ 	      natural_t		messageType,
+ 	      void		*messageArgument)
+ {
++#if HAVE_OS_ACTIVITY
+     os_activity_t	activity_id;
++#endif
+ 
+     if (messageArgument != NULL) {
+ 	// if not yet quiet
+ 	return;
+     }
+ 
++#if HAVE_OS_ACTIVITY
+     activity_id = os_activity_start("process IOKit quiet",
+ 				    OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+     if (messageType == kIOMessageServiceBusyStateChange) {
+ 	addTimestamp(S_state, CFSTR("*QUIET*"));
+@@ -2022,7 +2044,9 @@
+ 
+   done :
+ 
++#if HAVE_OS_ACTIVITY
+     os_activity_end(activity_id);
++#endif
+ 
+     return;
+ }
+@@ -2159,11 +2183,15 @@
+ static void
+ timerCallback(CFRunLoopTimerRef	timer, void *info)
+ {
++#if HAVE_OS_ACTIVITY
+     os_activity_t   activity_id;
++#endif
+     CFStringRef	    snapshot;
+ 
++#if HAVE_OS_ACTIVITY
+     activity_id = os_activity_start("process IOKit timer",
+ 				    OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+     // We've been waiting for IOKit to quiesce and it just
+     // hasn't happenned.  Time to just move on!
+@@ -2180,7 +2208,9 @@
+     addTimestamp(S_state, CFSTR("*TIMEOUT&NAMED*"));
+     updateStore();
+ 
++#if HAVE_OS_ACTIVITY
+     os_activity_end(activity_id);
++#endif
+ 
+     return;
+ }
+--- a/Plugins/KernelEventMonitor/eventmon.c
++++ b/Plugins/KernelEventMonitor/eventmon.c
+@@ -871,11 +871,15 @@
+ 		close(so);
+ 	});
+ 	dispatch_source_set_event_handler(S_kev_source, ^{
++#if HAVE_OS_ACTIVITY
+ 		os_activity_t		activity_id;
++#endif
+ 		Boolean	ok;
+ 
++#if HAVE_OS_ACTIVITY
+ 		activity_id = os_activity_start("processing network kernel events",
+ 						OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 		ok = eventCallback(so);
+ 		if (!ok) {
+@@ -883,7 +887,9 @@
+ 			dispatch_source_cancel(S_kev_source);
+ 		}
+ 
++#if HAVE_OS_ACTIVITY
+ 		os_activity_end(activity_id);
++#endif
+ 	});
+ 	// NOTE: dispatch_resume() will be called in prime()
+ 
+--- a/Plugins/LinkConfiguration/linkconfig.c
++++ b/Plugins/LinkConfiguration/linkconfig.c
+@@ -592,14 +592,18 @@
+ static void
+ linkConfigChangedCallback(SCDynamicStoreRef store, CFArrayRef changedKeys, void *arg)
+ {
++#if HAVE_OS_ACTIVITY
+ 	os_activity_t		activity_id;
++#endif
+ 	CFDictionaryRef		changes;
+ 	CFIndex			i;
+ 	CFIndex			n;
+ 	static CFStringRef	prefix		= NULL;
+ 
++#if HAVE_OS_ACTIVITY
+ 	activity_id = os_activity_start("processing link configuration changes",
+ 					OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 	if (prefix == NULL) {
+ 		prefix = SCDynamicStoreKeyCreate(NULL,
+@@ -643,7 +647,9 @@
+ 		CFRelease(changes);
+ 	}
+ 
++#if HAVE_OS_ACTIVITY
+ 	os_activity_end(activity_id);
++#endif
+ 
+ 	return;
+ }
+--- a/Plugins/PreferencesMonitor/prefsmon.c
++++ b/Plugins/PreferencesMonitor/prefsmon.c
+@@ -775,11 +775,15 @@
+ 		    SCPreferencesNotification   notificationType,
+ 		    void			*info)
+ {
++#if HAVE_OS_ACTIVITY
+ 	os_activity_t		activity_id;
+-
+-
++#endif
++
++
++#if HAVE_OS_ACTIVITY
+ 	activity_id = os_activity_start("processing [SC] preferences.plist changes",
+ 					OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ #if	!TARGET_OS_IPHONE
+ 	if ((notificationType & kSCPreferencesNotificationCommit) == kSCPreferencesNotificationCommit) {
+@@ -810,7 +814,9 @@
+ 
+     done :
+ 
++#if HAVE_OS_ACTIVITY
+ 	os_activity_end(activity_id);
++#endif
+ 
+ 	return;
+ }
+--- a/Plugins/common/IPMonitorControlPrefs.c
++++ b/Plugins/common/IPMonitorControlPrefs.c
+@@ -67,17 +67,23 @@
+ static void
+ prefs_changed(__unused void * arg)
+ {
++#if HAVE_OS_ACTIVITY
+     os_activity_t	activity_id;
+-
++#endif
++
++#if HAVE_OS_ACTIVITY
+     activity_id = os_activity_start("processing logging preference change",
+ 				    OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+     /* get the current value */
+     if (S_callback != NULL) {
+ 	(*S_callback)(S_prefs);
+     }
+ 
++#if HAVE_OS_ACTIVITY
+     os_activity_end(activity_id);
++#endif
+ 
+     return;
+ }
+--- a/SystemConfiguration.fproj/SCDNotifierInformViaCallback.c
++++ b/SystemConfiguration.fproj/SCDNotifierInformViaCallback.c
+@@ -63,14 +63,18 @@
+ static void
+ rlsCallback(CFMachPortRef port, void *msg, CFIndex size, void *info)
+ {
++#if HAVE_OS_ACTIVITY
+ 	os_activity_t			activity_id;
++#endif
+ 	mach_no_senders_notification_t	*buf		= msg;
+ 	mach_msg_id_t			msgid		= buf->not_header.msgh_id;
+ 	SCDynamicStoreRef		store		= (SCDynamicStoreRef)info;
+ 	SCDynamicStorePrivateRef	storePrivate	= (SCDynamicStorePrivateRef)store;
+ 
++#if HAVE_OS_ACTIVITY
+ 	activity_id = os_activity_start("processing SCDynamicStore notification",
+ 					OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 	if (msgid == MACH_NOTIFY_NO_SENDERS) {
+ 		/* the server died, disable additional callbacks */
+@@ -97,7 +101,9 @@
+ 		CFRunLoopSourceSignal(storePrivate->rls);
+ 	}
+ 
++#if HAVE_OS_ACTIVITY
+ 	os_activity_end(activity_id);
++#endif
+ 
+ 	return;
+ }
+@@ -350,7 +356,9 @@
+ static void
+ rlsPerform(void *info)
+ {
++#if HAVE_OS_ACTIVITY
+ 	os_activity_t			activity_id;
++#endif
+ 	CFArrayRef			changedKeys	= NULL;
+ 	void				*context_info;
+ 	void				(*context_release)(const void *);
+@@ -358,8 +366,10 @@
+ 	SCDynamicStoreRef		store		= (SCDynamicStoreRef)info;
+ 	SCDynamicStorePrivateRef	storePrivate	= (SCDynamicStorePrivateRef)store;
+ 
++#if HAVE_OS_ACTIVITY
+ 	activity_id = os_activity_start("processing SCDynamicStore notification",
+ 					OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ #ifdef	DEBUG
+ 	SC_log(LOG_DEBUG, "  executing notification function");
+@@ -398,7 +408,9 @@
+ 		CFRelease(changedKeys);
+ 	}
+ 
++#if HAVE_OS_ACTIVITY
+ 	os_activity_end(activity_id);
++#endif
+ 
+ 	return;
+ }
+--- a/SystemConfiguration.fproj/SCNetworkConnection.c
++++ b/SystemConfiguration.fproj/SCNetworkConnection.c
+@@ -386,15 +386,21 @@
+ 			    void			(*context_release)(const void *),
+ 			    void			*context_info)
+ {
++#if HAVE_OS_ACTIVITY
+ 	os_activity_t	activity_id;
+-
++#endif
++
++#if HAVE_OS_ACTIVITY
+ 	activity_id = os_activity_start("processing SCNetworkConnection notification",
+ 					OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 	(*rlsFunction)(connection, nc_status, context_info);
+ 	if ((context_release != NULL) && (context_info != NULL)) {
+ 		(*context_release)(context_info);
+ 	}
++#if HAVE_OS_ACTIVITY
+ 	os_activity_end(activity_id);
++#endif
+ 
+ 	return;
+ }
+@@ -2725,10 +2731,14 @@
+ 								dispatch_retain(wait_for_session);
+ 								ne_session_set_event_handler(new_session, __SCNetworkConnectionQueue(),
+ 									^(ne_session_event_t event, void *event_data) {
++#if HAVE_OS_ACTIVITY
+ 										os_activity_t	activity_id;
+-
++#endif
++
++#if HAVE_OS_ACTIVITY
+ 										activity_id = os_activity_start("processing ne_session notification",
+ 														OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 										if (event == NESessionEventStatusChanged) {
+ 											dispatch_retain(wait_for_session);
+@@ -2747,7 +2757,9 @@
+ 											dispatch_release(wait_for_session);
+ 										}
+ 
++#if HAVE_OS_ACTIVITY
+ 										os_activity_end(activity_id);
++#endif
+ 									});
+ 								ne_session_start_with_options(new_session, start_options);
+ 							} else {
+--- a/SystemConfiguration.fproj/SCNetworkReachability.c
++++ b/SystemConfiguration.fproj/SCNetworkReachability.c
+@@ -1134,14 +1134,18 @@
+ static void
+ reachPerformAndUnlock(SCNetworkReachabilityPrivateRef targetPrivate)
+ {
++#if HAVE_OS_ACTIVITY
+ 	os_activity_t			activity_id;
++#endif
+ 	void				*context_info;
+ 	void				(*context_release)(const void *);
+ 	SCNetworkReachabilityCallBack	rlsFunction;
+ 	SCNetworkReachabilityFlags	flags		= 0;
+ 
++#if HAVE_OS_ACTIVITY
+ 	activity_id = os_activity_start("processing SCNetworkReachability notification",
+ 					OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 	if (!targetPrivate->scheduled) {
+ 		// if no longer scheduled
+@@ -1177,7 +1181,9 @@
+ 
+     done :
+ 
++#if HAVE_OS_ACTIVITY
+ 	os_activity_end(activity_id);
++#endif
+ 
+ 	return;
+ }
+--- a/SystemConfiguration.fproj/helper/SCHelper_server.c
++++ b/SystemConfiguration.fproj/helper/SCHelper_server.c
+@@ -1925,7 +1925,9 @@
+ static void
+ helperCallback(CFMachPortRef port, void *msg, CFIndex size, void *info)
+ {
++#if HAVE_OS_ACTIVITY
+ 	os_activity_t		activity_id;
++#endif
+ 	mig_reply_error_t *	bufRequest	= msg;
+ 	uint32_t		bufReply_q[MACH_MSG_BUFFER_SIZE/sizeof(uint32_t)];
+ 	mig_reply_error_t *	bufReply	= (mig_reply_error_t *)bufReply_q;
+@@ -1933,8 +1935,10 @@
+ 	mach_msg_return_t	mr;
+ 	int			options;
+ 
++#if HAVE_OS_ACTIVITY
+ 	activity_id = os_activity_start("processing SCHelper request",
+ 					OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 	if (bufSize == 0) {
+ 		// get max size for MiG reply buffers
+@@ -2013,7 +2017,9 @@
+ 	if (bufReply != (mig_reply_error_t *)bufReply_q)
+ 		CFAllocatorDeallocate(NULL, bufReply);
+ 
++#if HAVE_OS_ACTIVITY
+ 	os_activity_end(activity_id);
++#endif
+ 
+ 	return;
+ }
+--- a/configd.tproj/configd_server.c
++++ b/configd.tproj/configd_server.c
+@@ -97,7 +97,9 @@
+ void
+ configdCallback(CFMachPortRef port, void *msg, CFIndex size, void *info)
+ {
++#if HAVE_OS_ACTIVITY
+ 	os_activity_t		activity_id;
++#endif
+ 	mig_reply_error_t *	bufRequest	= msg;
+ 	uint32_t		bufReply_q[MACH_MSG_BUFFER_SIZE/sizeof(uint32_t)];
+ 	mig_reply_error_t *	bufReply	= (mig_reply_error_t *)bufReply_q;
+@@ -105,8 +107,10 @@
+ 	mach_msg_return_t	mr;
+ 	int			options;
+ 
++#if HAVE_OS_ACTIVITY
+ 	activity_id = os_activity_start("processing SCDynamicStore request",
+ 					OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 	if (bufSize == 0) {
+ 		// get max size for MiG reply buffers
+@@ -185,7 +189,9 @@
+ 	if (bufReply != (mig_reply_error_t *)bufReply_q)
+ 		CFAllocatorDeallocate(NULL, bufReply);
+ 
++#if HAVE_OS_ACTIVITY
+ 	os_activity_end(activity_id);
++#endif
+ 
+ 	return;
+ }
+--- a/dnsinfo/dnsinfo_server.c
++++ b/dnsinfo/dnsinfo_server.c
+@@ -240,11 +240,15 @@
+ 	xpc_connection_set_target_queue(c, _dnsinfo_server_queue());
+ 
+ 	xpc_connection_set_event_handler(c, ^(xpc_object_t xobj) {
++#if HAVE_OS_ACTIVITY
+ 		os_activity_t	activity_id;
++#endif
+ 		xpc_type_t	type;
+ 
++#if HAVE_OS_ACTIVITY
+ 		activity_id = os_activity_start("processing dnsinfo request",
+ 						OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 		type = xpc_get_type(xobj);
+ 		if (type == XPC_TYPE_DICTIONARY) {
+@@ -295,7 +299,9 @@
+ 				    type);
+ 		}
+ 
++#if HAVE_OS_ACTIVITY
+ 		os_activity_end(activity_id);
++#endif
+ 	});
+ 
+ 	xpc_connection_resume(c);
+@@ -340,11 +346,15 @@
+ 					       XPC_CONNECTION_MACH_SERVICE_LISTENER);
+ 
+ 	xpc_connection_set_event_handler(c, ^(xpc_object_t event) {
++#if HAVE_OS_ACTIVITY
+ 		os_activity_t	activity_id;
++#endif
+ 		xpc_type_t	type;
+ 
++#if HAVE_OS_ACTIVITY
+ 		activity_id = os_activity_start("processing dnsinfo connection",
+ 						OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 		type = xpc_get_type(event);
+ 		if (type == XPC_TYPE_CONNECTION) {
+@@ -373,7 +383,9 @@
+ 
+ 		}
+ 
++#if HAVE_OS_ACTIVITY
+ 		os_activity_end(activity_id);
++#endif
+ 	});
+ 
+ 	xpc_connection_resume(c);
+--- a/nwi/network_information_server.c
++++ b/nwi/network_information_server.c
+@@ -232,11 +232,15 @@
+ 	xpc_connection_set_target_queue(c, _nwi_state_server_queue());
+ 
+ 	xpc_connection_set_event_handler(c, ^(xpc_object_t xobj) {
++#if HAVE_OS_ACTIVITY
+ 		os_activity_t	activity_id;
++#endif
+ 		xpc_type_t	type;
+ 
++#if HAVE_OS_ACTIVITY
+ 		activity_id = os_activity_start("processing nwi request",
+ 						OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 		type = xpc_get_type(xobj);
+ 		if (type == XPC_TYPE_DICTIONARY) {
+@@ -287,7 +291,9 @@
+ 				    type);
+ 		}
+ 
++#if HAVE_OS_ACTIVITY
+ 		os_activity_end(activity_id);
++#endif
+ 	});
+ 
+ 	xpc_connection_resume(c);
+@@ -332,11 +338,15 @@
+ 					       XPC_CONNECTION_MACH_SERVICE_LISTENER);
+ 
+ 	xpc_connection_set_event_handler(c, ^(xpc_object_t event) {
++#if HAVE_OS_ACTIVITY
+ 		os_activity_t	activity_id;
++#endif
+ 		xpc_type_t	type;
+ 
++#if HAVE_OS_ACTIVITY
+ 		activity_id = os_activity_start("processing nwi connection",
+ 						OS_ACTIVITY_FLAG_DEFAULT);
++#endif
+ 
+ 		type = xpc_get_type(event);
+ 		if (type == XPC_TYPE_CONNECTION) {
+@@ -365,7 +375,9 @@
+ 
+ 		}
+ 
++#if HAVE_OS_ACTIVITY
+ 		os_activity_end(activity_id);
++#endif
+ 	});
+ 
+ 	xpc_connection_resume(c);
