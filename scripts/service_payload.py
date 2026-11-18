@@ -8,6 +8,7 @@ PROFILE = "/usr/share/commonplace/profile"
 CONFIGURATION_FRAMEWORK = "/System/Library/Frameworks/SystemConfiguration.framework"
 CONFIGURATION_PLUGINS = ("InterfaceNamer", "PreferencesMonitor", "KernelEventMonitor", "LinkConfiguration")
 CONFIGURATION_BUNDLES = "/System/Library/SystemConfiguration"
+IP_CONFIGURATION = CONFIGURATION_BUNDLES + "/IPConfiguration.bundle"
 DIRECTORIES = (
     "/Library",
     "/Library/LaunchDaemons",
@@ -16,6 +17,9 @@ DIRECTORIES = (
     CONFIGURATION_FRAMEWORK,
     CONFIGURATION_FRAMEWORK + "/Resources",
     CONFIGURATION_BUNDLES,
+    IP_CONFIGURATION,
+    IP_CONFIGURATION + "/Contents",
+    IP_CONFIGURATION + "/Contents/MacOS",
     *(path for name in CONFIGURATION_PLUGINS for path in (
         CONFIGURATION_BUNDLES + "/" + name + ".bundle",
         CONFIGURATION_BUNDLES + "/" + name + ".bundle/Contents",
@@ -44,10 +48,14 @@ def service_files():
             ("syslogd", "/usr/sbin/syslogd"),
             ("syslog", "/usr/bin/syslog"),
             ("configd", "/usr/libexec/configd"),
+            ("ipconfig", "/usr/sbin/ipconfig"),
             ("first-login", "/usr/libexec/commonplace/first-login"),
         )
     }
     files["/usr/libexec/commonplace/boot"] = ROOT / "userland/darwin/services/boot.sh"
+    for name in ("Info.plist", "MacOS/IPConfiguration"):
+        files[IP_CONFIGURATION + "/Contents/" + name] = (
+            ROOT / "build/darwin/bundles/IPConfiguration.bundle/Contents" / name)
     for name in CONFIGURATION_PLUGINS:
         files[CONFIGURATION_BUNDLES + "/" + name + ".bundle/Contents/Info.plist"] = (
             ROOT / "sources/configd/Plugins" / name / "Info.plist")
@@ -99,6 +107,9 @@ def service_defaults(directory, *, console_login=True):
         # runtime uses XNU dirty tracking. Keep these essential services alive
         # explicitly until both transaction protocols are integrated.
         value.pop("EnableTransactions", None)
+        if component == "configd":
+            info = plistlib.loads((ROOT / "sources/bootp/IPConfiguration.bproj/Info.plist").read_bytes())
+            value["MachServices"].update(info["MachServices"])
         value["KeepAlive"] = True
         value["RunAtLoad"] = True
         value["StandardErrorPath"] = "/var/log/" + value["Label"] + ".stderr"
