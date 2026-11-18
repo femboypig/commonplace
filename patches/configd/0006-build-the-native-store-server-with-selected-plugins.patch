@@ -1,0 +1,146 @@
+--- a/configd.tproj/configd.m
++++ b/configd.tproj/configd.m
+@@ -46,7 +46,6 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/wait.h>
+-#include <objc/objc-runtime.h>
+ #include <servers/bootstrap.h>
+ #include <vproc.h>
+ #include <vproc_priv.h>
+--- a/configd.tproj/plugin_support.c
++++ b/configd.tproj/plugin_support.c
+@@ -49,7 +49,6 @@
+ #include "configd.h"
+ #include "configd_server.h"
+ #include <SystemConfiguration/SCDPlugin.h>
+-#include "SCNetworkReachabilityInternal.h"
+ void	_SCDPluginExecInit();
+ 
+ 
+@@ -134,7 +133,11 @@
+ } builtin, *builtinRef;
+ 
+ 
++#ifndef HAVE_BUILTIN_PLUGINS
++#define HAVE_BUILTIN_PLUGINS 1
++#endif
+ static const builtin builtin_plugins[] = {
++#if HAVE_BUILTIN_PLUGINS
+ 	{
+ 		CFSTR("com.apple.SystemConfiguration.IPMonitor"),
+ 		&load_IPMonitor,
+@@ -172,6 +175,8 @@
+ 		NULL
+ 	},
+ #endif	// !TARGET_IPHONE_SIMULATOR
++#endif
++	{ NULL, NULL, NULL, NULL, NULL }
+ };
+ 
+ 
+@@ -431,7 +436,7 @@
+ 
+ 		SC_log(LOG_INFO, "adding  %@", bundleID);
+ 
+-		for (i = 0; i < sizeof(builtin_plugins)/sizeof(builtin_plugins[0]); i++) {
++		for (i = 0; builtin_plugins[i].bundleID != NULL; i++) {
+ 			if (CFEqual(bundleID, builtin_plugins[i].bundleID)) {
+ 				bundleInfo->load  = builtin_plugins[i].load;
+ 				bundleInfo->start = builtin_plugins[i].start;
+--- a/configd.tproj/session.c
++++ b/configd.tproj/session.c
+@@ -39,7 +39,9 @@
+ 
+ #include <unistd.h>
+ #include <bsm/libbsm.h>
++#if HAVE_SANDBOX_CHECKS
+ #include <sandbox.h>
++#endif
+ 
+ #if !TARGET_IPHONE_SIMULATOR || (defined(IPHONE_SIMULATOR_HOST_MIN_VERSION_REQUIRED) && (IPHONE_SIMULATOR_HOST_MIN_VERSION_REQUIRED >= 1090))
+ #define HAVE_MACHPORT_GUARDS
+@@ -419,7 +421,6 @@
+ }
+ 
+ 
+-#include <Security/Security.h>
+ #include <Security/SecTask.h>
+ 
+ static CFStringRef
+@@ -483,9 +484,9 @@
+ {
+ 	pid_t	caller_pid;
+ 
+-#if     (__MAC_OS_X_VERSION_MIN_REQUIRED >= 1080) && !TARGET_OS_IPHONE
++#if     HAVE_AUDIT_TOKEN_ACCESSORS
+ 	caller_pid = audit_token_to_pid(session->auditToken);
+-#else	// (__MAC_OS_X_VERSION_MIN_REQUIRED >= 1080) && !TARGET_OS_IPHONE
++#else	// HAVE_AUDIT_TOKEN_ACCESSORS
+ 	audit_token_to_au32(session->auditToken,
+ 			    NULL,		// auidp
+ 			    NULL,		// euid
+@@ -495,7 +496,7 @@
+ 			    &caller_pid,	// pid
+ 			    NULL,		// asid
+ 			    NULL);		// tid
+-#endif	// (__MAC_OS_X_VERSION_MIN_REQUIRED >= 1080) && !TARGET_OS_IPHONE
++#endif	// HAVE_AUDIT_TOKEN_ACCESSORS
+ 
+ 	return caller_pid;
+ }
+@@ -508,9 +509,9 @@
+ #if	!TARGET_IPHONE_SIMULATOR
+ 
+ 	if (session->callerRootAccess == UNKNOWN) {
+-#if     (__MAC_OS_X_VERSION_MIN_REQUIRED >= 1080) && !TARGET_OS_IPHONE
++#if     HAVE_AUDIT_TOKEN_ACCESSORS
+ 		session->callerEUID = audit_token_to_euid(session->auditToken);
+-#else	// (__MAC_OS_X_VERSION_MIN_REQUIRED >= 1080) && !TARGET_OS_IPHONE
++#else	// HAVE_AUDIT_TOKEN_ACCESSORS
+ 		audit_token_to_au32(session->auditToken,
+ 				    NULL,			// auidp
+ 				    &session->callerEUID,	// euid
+@@ -520,7 +521,7 @@
+ 				    NULL,			// pid
+ 				    NULL,			// asid
+ 				    NULL);			// tid
+-#endif	// (__MAC_OS_X_VERSION_MIN_REQUIRED >= 1080) && !TARGET_OS_IPHONE
++#endif	// HAVE_AUDIT_TOKEN_ACCESSORS
+ 		session->callerRootAccess = (session->callerEUID == 0) ? YES : NO;
+ 	}
+ 
+@@ -640,6 +641,7 @@
+ }
+ 
+ 
++#if HAVE_SANDBOX_CHECKS
+ __private_extern__
+ Boolean
+ hasPathAccess(serverSessionRef session, const char *path)
+@@ -652,9 +654,9 @@
+ 		return FALSE;
+ 	}
+ 
+-#if	(__MAC_OS_X_VERSION_MIN_REQUIRED >= 1080) && !TARGET_OS_IPHONE
++#if	HAVE_AUDIT_TOKEN_ACCESSORS
+ 	pid = audit_token_to_pid(session->auditToken);
+-#else	// (__MAC_OS_X_VERSION_MIN_REQUIRED >= 1080) && !TARGET_OS_IPHONE
++#else	// HAVE_AUDIT_TOKEN_ACCESSORS
+ 	audit_token_to_au32(session->auditToken,
+ 			    NULL,		// auidp
+ 			    NULL,		// euid
+@@ -664,7 +666,7 @@
+ 			    &pid,		// pid
+ 			    NULL,		// asid
+ 			    NULL);		// tid
+-#endif	// (__MAC_OS_X_VERSION_MIN_REQUIRED >= 1080) && !TARGET_OS_IPHONE
++#endif	// HAVE_AUDIT_TOKEN_ACCESSORS
+ 	if (sandbox_check(pid,							// pid
+ 			  "file-write-data",					// operation
+ 			  SANDBOX_FILTER_PATH | SANDBOX_CHECK_NO_REPORT,	// sandbox_filter_type
+@@ -675,3 +677,4 @@
+ 
+ 	return TRUE;
+ }
++#endif
