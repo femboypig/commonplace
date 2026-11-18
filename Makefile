@@ -276,3 +276,7 @@ check-mach: loader check-kernel rootfs
 .PHONY: check-configd
 check-configd: loader check-kernel darwin-services rootfs-tools
 	$(PYTHON) scripts/check-configd.py
+
+.PHONY: check-backtrace
+check-backtrace: loader check-kernel rootfs
+	$(PYTHON) scripts/check-backtrace.py

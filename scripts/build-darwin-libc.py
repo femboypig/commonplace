@@ -145,6 +145,7 @@ def main():
             "compat-43/sigaltstk.c",
             "gen/getttyent.c",
             "gen/thread_stack_pcs.c",
+            "gen/backtrace.c",
             "sys/_libc_init.c",
             "sys/_libc_fork_child.c",
             "gen/confstr.c",
