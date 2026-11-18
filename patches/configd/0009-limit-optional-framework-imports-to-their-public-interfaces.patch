@@ -1,0 +1,38 @@
+--- a/SystemConfiguration.fproj/dy_framework.h
++++ b/SystemConfiguration.fproj/dy_framework.h
+@@ -34,7 +34,13 @@
+ #if	!TARGET_OS_IPHONE
+ #include <IOKit/pwr_mgt/IOPMLibPrivate.h>
+ #endif	// !TARGET_OS_IPHONE
+-#include <Security/Security.h>
++#include <Security/Authorization.h>
++#include <Security/SecAccess.h>
++#include <Security/SecCertificate.h>
++#include <Security/SecCode.h>
++#include <Security/SecKeychain.h>
++#include <Security/SecKeychainItem.h>
++#include <Security/SecTrustedApplication.h>
+ #include <Security/SecCertificatePriv.h>
+ #include <Security/SecItem.h>	// only needed for Mac OS X 10.6[.x]
+ 
+--- a/SystemConfiguration.fproj/SCPreferencesKeychainPrivate.h
++++ b/SystemConfiguration.fproj/SCPreferencesKeychainPrivate.h
+@@ -35,7 +35,7 @@
+ #include <CoreFoundation/CoreFoundation.h>
+ #include <SystemConfiguration/SCPreferences.h>
+ #if	!TARGET_OS_IPHONE
+-#include <Security/Security.h>
++#include <Security/SecKeychain.h>
+ #else	// !TARGET_OS_IPHONE
+ typedef struct OpaqueSecKeychainRef *SecKeychainRef;
+ #endif	// !TARGET_OS_IPHONE
+--- a/SystemConfiguration.fproj/SCPreferencesKeychainPrivate.c
++++ b/SystemConfiguration.fproj/SCPreferencesKeychainPrivate.c
+@@ -40,6 +40,7 @@
+ #include "dy_framework.h"
+ 
+ #include "SCPreferencesInternal.h"
++#include "SCPreferencesKeychainPrivate.h"
+ 
+ 
+ #if	!TARGET_OS_IPHONE

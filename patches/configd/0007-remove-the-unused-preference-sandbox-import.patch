@@ -1,0 +1,10 @@
+--- a/SystemConfiguration.fproj/SCPOpen.c
++++ b/SystemConfiguration.fproj/SCPOpen.c
+@@ -48,7 +48,6 @@
+ 
+ #include <fcntl.h>
+ #include <pthread.h>
+-#include <sandbox.h>
+ #include <unistd.h>
+ #include <sys/errno.h>
+ 
