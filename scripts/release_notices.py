@@ -27,6 +27,7 @@ PROJECTS = (
     "iokit_user",
     "carbon_headers",
     "security_headers",
+    "security",
     "openbsm",
     "mdns",
     "cctools",

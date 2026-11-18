@@ -385,6 +385,12 @@
       "revision": "0dd3d5185349c6e535d83449e497dc89691b1f78",
       "url": "https://codeload.github.com/apple-oss-distributions/configd/tar.gz/0dd3d5185349c6e535d83449e497dc89691b1f78",
       "sha256": "9114404b4cbcf346ae03089cee234859cc5fd4fca9898f0e6cbd90d179de0390"
+    },
+    "security": {
+      "repository": "apple-oss-distributions/Security",
+      "revision": "4f36c5f47ec9f03c406c088d2c427bd5582b2631",
+      "url": "https://codeload.github.com/apple-oss-distributions/Security/tar.gz/4f36c5f47ec9f03c406c088d2c427bd5582b2631",
+      "sha256": "6aff1ce91add4ab649aa2969bd6e7d665c89427e45a52f2508c9846b9fd43e11"
     }
   }
 }
