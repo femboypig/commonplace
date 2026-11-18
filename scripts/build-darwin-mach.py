@@ -80,6 +80,7 @@ def main():
         "mach_legacy.c",
         "ms_thread_switch.c",
         "mig_reply_port.c",
+        "mig_reply_setup.c",
         "mig_strncpy.c",
         "mig_allocate.c",
         "mig_deallocate.c",
